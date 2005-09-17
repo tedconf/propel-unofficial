@@ -18,13 +18,13 @@
 	  files for your data model.  PHP must also have compiled in XML (libxml2, xsl)
 	  support in order to take advantage of all build options.
 
-  	* PHING >= 2.0.0
+  	* PHING >= 2.1.0
 	  Propel uses the PHING build system to build the classes and SQL definition
 	  files for your data model.  PHING is an open-source project build system
 	  based on Apache ANT.  PHING 2 is the (development) version built for PHP5.
 	  See http://phing.tigris.org/ to learn how to install Phing (it's easy).
 	  
-    * Creole >- 1.0.0	  
+    * Creole >- 1.0.1	  
 	  Creole is a Uniform DB API framework for PHP5. Creole is available as a PEAR 
 	  package or can be installed in a more traditional manner. See 
 	  http://creole.phpdb.org/ to get a copy of the Creole classes.
@@ -147,7 +147,7 @@
   Build
   -----
   
-  This assumes that you have already installed and configured a copy of PHING 2.
+  This assumes that you have already installed and configured a copy of PHING 2.1.
 
     % cd /var/www/php/propel/generator  
     % phing -Dproject=mykillerapp    

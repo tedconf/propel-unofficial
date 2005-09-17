@@ -2,6 +2,10 @@
   P R O P E L    C H A N G E S
   ============================
 
+ September 17, 2005 - 1.1.1
+
+  Due to popular demand, the 1.1.1 release introduces compatibility with Phing 2.1.0-final. It does not contain any new features.
+
  April 7, 2005 - 1.1.0
 	
   Big Changes:

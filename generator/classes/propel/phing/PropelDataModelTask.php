@@ -57,7 +57,7 @@ class PropelDataModelTask extends AbstractPropelDataModelTask {
     /**
      * [REQUIRED] Set the output file for the
      * generation process.
-     * @param string $outputFile (TODO: change this to File)
+     * @param string $outputFile (TODO: change this to PhingFile)
      * @return void
      */
     public function setOutputFile($outputFile) {

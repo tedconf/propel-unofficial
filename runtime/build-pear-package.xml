@@ -90,7 +90,7 @@
 			
 			<option name="baseinstalldir" value="propel"/>
 			
-			<option name="notes">The 1.1.0 release adds some new features and fixes several bugs.</option>
+			<option name="notes">Due to popular demand, the 1.1.1 release introduces compatibility with Phing 2.1.0-final. It does not contain any new features.</option>
 			
 			<!-- Set the simple options -->
 			<option name="description">This is the runtime component of the Propel object persistence framework.</option>

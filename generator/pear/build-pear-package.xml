@@ -116,7 +116,7 @@
 			
 			<option name="baseinstalldir" value="propel"/>
 			
-			<option name="notes">The 1.1.0 release adds some new features and fixes several bugs. See CHANGELOG for important changes.</option>
+			<option name="notes">Due to popular demand, the 1.1.1 release introduces compatibility with Phing 2.1.0-final. It does not contain any new features.</option>
 			
 			<!-- Set the simple options -->
 			<option name="description">Propel is an object persistence layer for PHP5 based on Apache Torque. In practical terms, Propel allows you to use objects instead of SQL to read and write rows in your database tables. Propel is composed of two tools: (1) a generator that creates SQL definition files (DDL) and PHP classes for your datamodel, and (2) a runtime engine that transparently handles object persistence and retrieval. Propel makes it easy to customize generated classes and, by using XML for the datamodel definition, can be easily integrated with an existing application framework.</option>
@@ -145,7 +145,7 @@
 				<element>
 					<element key="name" value="phing"/>
 					<element key="type" value="pkg"/>
-					<element key="version" value="2.0.0"/>
+					<element key="version" value="2.1.0"/>
 					<element key="rel" value="ge"/>
 				</element>
 				<element>
@@ -171,7 +171,7 @@
 			
 			<mapping name="platformexceptions">
 				<element key="pear/pear-propel-gen.bat" value="windows"/>
-				<element key="pear/pear-propel-gen" value="(*ix|*ux|darwin*|SunOS*)"/>
+				<element key="pear/pear-propel-gen" value="(*ix|*ux|darwin*|*BSD|SunOS*)"/>
 			</mapping>
 			
 			<mapping name="replacements">				
