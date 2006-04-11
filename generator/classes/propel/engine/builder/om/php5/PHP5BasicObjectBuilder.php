@@ -726,7 +726,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 */
 	public function buildPkeyCriteria()
 	{
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
@@ -757,7 +757,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 */
 	public function buildCriteria()
 	{
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());

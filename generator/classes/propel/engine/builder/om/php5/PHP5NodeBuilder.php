@@ -394,7 +394,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 			!\$this->obj->isDeleted() && 
 			!isset(\$this->childNodes[\$i]))
 		{
-			\$criteria = new Criteria(".$this->getStubPeerBuilder()->getClassname()."::DATABASE_NAME);
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getStubPeerBuilder()->getClassname()."::DATABASE_NAME);
 			\$criteria->add(".$this->getStubNodePeerBuilder()->getClassname()."::NPATH_COLNAME, \$this->getNodePath() . ".$this->getStubNodePeerBuilder()->getClassname()."::NPATH_SEP . \$i, Criteria::EQUAL);
 
 			if (\$childObj = ".$this->getStubPeerBuilder()->getClassname()."::doSelectOne(\$criteria, \$con))
@@ -447,7 +447,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 		else if (\$querydb)
 		{
 			\$db = Propel::getDb($peerClassname::DATABASE_NAME);
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
 			\$criteria->add($nodePeerClassname::NPATH_COLNAME, \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . '%', Criteria::LIKE);
 			\$criteria->addAnd($nodePeerClassname::NPATH_COLNAME, \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . '%' . $nodePeerClassname::NPATH_SEP . '%', Criteria::NOT_LIKE);
 			\$criteria->addAsColumn('npathlen', \$db->strLength($nodePeerClassname::NPATH_COLNAME));
@@ -547,7 +547,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 			\$sep = strrpos(\$npath, $nodePeerClassname::NPATH_SEP);
 			\$ppath = substr(\$npath, 0, \$sep);
 			
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
 			\$criteria->add($nodePeerClassname::NPATH_COLNAME, \$ppath, Criteria::EQUAL);
 			
 			if (\$parentObj = $peerClassname::doSelectOne(\$criteria, \$con))

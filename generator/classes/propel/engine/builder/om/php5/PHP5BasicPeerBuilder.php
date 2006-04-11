@@ -889,7 +889,7 @@ if (Propel::isInit()) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
 		}
 
-		\$selectCriteria = new Criteria(self::DATABASE_NAME);
+		\$selectCriteria = new " . $this->getBuildProperty('criteriaClass') . "(self::DATABASE_NAME);
 
 		if (\$values instanceof Criteria) {
 			\$criteria = clone \$values; // rename for clarity
@@ -1000,7 +1000,7 @@ if (Propel::isInit()) {
 		$script .= "
 		} else {
 			// it must be the primary key
-			\$criteria = new Criteria(self::DATABASE_NAME);";
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(self::DATABASE_NAME);";
 
 		if (count($table->getPrimaryKey()) === 1) {
 			$pkey = $table->getPrimaryKey();
@@ -1210,7 +1210,7 @@ if (Propel::isInit()) {
 							$columnNamesL = $fk->getForeignColumns(); // should be same num as foreign
 					$script .= "
 			// set fkey col in related $fkClassName rows to NULL
-			\$selectCriteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+			\$selectCriteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
 			\$updateValues = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
 
 					for ($x=0,$xlen=count($columnNamesF); $x < $xlen; $x++) {
@@ -1314,7 +1314,7 @@ if (Propel::isInit()) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
 		}
 
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
 ";
 		if (count($table->getPrimaryKey()) === 1) {
 			$pkey = $table->getPrimaryKey();
@@ -1367,7 +1367,7 @@ if (Propel::isInit()) {
 		if (empty(\$pks)) {
 			\$objs = array();
 		} else {
-			\$criteria = new Criteria();";
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();";
 		if (count($table->getPrimaryKey()) == 1) {
 			$k1 = $table->getPrimaryKey();
 			$script .= "
@@ -1431,7 +1431,7 @@ if (Propel::isInit()) {
 		if (\$con === null) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
 		}
-		\$criteria = new Criteria();";
+		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "

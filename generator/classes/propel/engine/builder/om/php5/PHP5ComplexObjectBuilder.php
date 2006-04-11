@@ -528,7 +528,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
 		if (\$criteria === null) {
-			\$criteria = new Criteria();
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
 		}
 		elseif (\$criteria instanceof Criteria)
 		{
@@ -716,7 +716,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
 		if (\$criteria === null) {
-			\$criteria = new Criteria();
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
 		}
 		elseif (\$criteria instanceof Criteria)
 		{
@@ -772,7 +772,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
 		if (\$criteria === null) {
-			\$criteria = new Criteria();
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
 		}
 		elseif (\$criteria instanceof Criteria)
 		{

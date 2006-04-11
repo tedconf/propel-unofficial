@@ -371,7 +371,7 @@ abstract class ".$this->getClassname()." {
      */
     public static function retrieveNodeByNP(\$np, \$ancestors = false, \$descendants = false, \$con = null)
     {
-        \$criteria = new Criteria($peerClassname::DATABASE_NAME);
+        \$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
         \$criteria->add(self::NPATH_COLNAME, \$np, Criteria::EQUAL);
         \$criteria = self::buildFamilyCriteria(\$criteria, \$ancestors, \$descendants);
         \$rs = $peerClassname::doSelectRS(\$criteria, \$con);
@@ -508,7 +508,7 @@ abstract class ".$this->getClassname()." {
          * WHERE npath = '1.2.2' OR npath LIKE '1.2.2.%'
          */
         
-        \$criteria = new Criteria($peerClassname::DATABASE_NAME);
+        \$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
         \$criteria->add($nodePeerClassname::NPATH_COLNAME, \$nodePath, Criteria::EQUAL);
         \$criteria->addOr($nodePeerClassname::NPATH_COLNAME, \$nodePath . self::NPATH_SEP . '%', Criteria::LIKE);
 // For now, we call BasePeer directly since $peerClassname tries to 
@@ -550,7 +550,7 @@ abstract class ".$this->getClassname()." {
         */
 
         if (\$criteria === null)
-            \$criteria = new Criteria($peerClassname::DATABASE_NAME);
+            \$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
 
         if (!\$criteria->getSelectColumns())
             $peerClassname::addSelectColumns(\$criteria);
