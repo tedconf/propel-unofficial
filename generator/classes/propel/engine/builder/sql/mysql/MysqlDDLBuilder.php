@@ -142,7 +142,7 @@ CREATE TABLE ".$platform->quoteIdentifier($table->getName())."
 			}
 		}
 		
-		$script .= "ENGINE=$mysqlTableType";
+		$script .= "Type=$mysqlTableType";
 		if($table->getDescription()) {
 			$script .= " COMMENT='".$platform->escapeText($table->getDescription())."'";
 		}
