@@ -117,35 +117,6 @@ abstract class ".$this->getClassname()." {
 		$script .= "
 } // " . $this->getClassname() . "
 ";
-		$this->addStaticMapBuilderRegistration($script);
-	}
-
-	/**
-	 * Adds the static map builder registraction code.
-	 * @param string &$script The script will be modified in this method.
-	 */
-	protected function addStaticMapBuilderRegistration(&$script)
-	{
-		$table = $this->getTable();
-		$mapBuilderFile = $this->getMapBuilderBuilder()->getClassFilePath();
-
-		$script .= "
-// static code to register the map builder for this Peer with the main Propel class
-if (Propel::isInit()) {
-	// the MapBuilder classes register themselves with Propel during initialization
-	// so we need to load them here.
-	try {
-		".$this->getClassname()."::getMapBuilder();
-	} catch (Exception \$e) {
-		Propel::log('Could not initialize Peer: ' . \$e->getMessage(), Propel::LOG_ERR);
-	}
-} else {
-	// even if Propel is not yet initialized, the map builder class can be registered
-	// now and then it will be loaded when Propel initializes.
-	require_once '$mapBuilderFile';
-	Propel::registerMapBuilder('".$this->getMapBuilderBuilder()->getClasspath()."');
-}
-";
 	}
 
 	/**
@@ -178,9 +149,11 @@ if (Propel::isInit()) {
 		$this->addInheritanceColumnConstants($script);
 
 		$script .= "
-	/** The PHP to DB Name Mapping */
-	private static \$phpNameMap = null;
-
+	/**
+	 * The MapBuilder instance for this peer.
+	 * @var MapBuilder
+	 */
+	private static \$mapBuilder = null; 
 ";
 
 		$this->addFieldNamesAttribute($script);
@@ -337,45 +310,16 @@ if (Propel::isInit()) {
 	{
 		$script .= "
 	/**
-	 * @return MapBuilder the map builder for this peer
-	 * @throws PropelException Any exceptions caught during processing will be
-	 *		 rethrown wrapped into a PropelException.
+	 * Get a (singleton) instance of the MapBuilder for this peer class.
+	 * @return MapBuilder The map builder for this peer
 	 */
 	public static function getMapBuilder()
 	{
-		include_once '" . $this->getMapBuilderBuilder()->getClassFilePath()."';
-		return ".$this->basePeerClassname."::getMapBuilder('". $this->getMapBuilderBuilder()->getClasspath() ."');
-	}";
-	}
-
-	/**
-	 * Adds the getPhpNameMap() method.
-	 * @param string &$script The script will be modified in this method.
-	 * @todo Replace with static version (this can be built at build-time).
-	 */
-	protected function addGetPhpNameMap(&$script)
-	{
-		$script .= "
-	/**
-	 * Gets a map (hash) of PHP names to DB column names.
-	 *
-	 * @return array The PHP to DB name map for this peer
-	 * @throws PropelException Any exceptions caught during processing will be
-	 *		 rethrown wrapped into a PropelException.
-	 * @deprecated Use the getFieldNames() and translateFieldName() methods instead of this.
-	 */
-	public static function getPhpNameMap()
-	{
-		if (self::\$phpNameMap === null) {
-			\$map = ".$this->getTable()->getPhpName()."Peer::getTableMap();
-			\$columns = \$map->getColumns();
-			\$nameMap = array();
-			foreach (\$columns as \$column) {
-				\$nameMap[\$column->getPhpName()] = \$column->getColumnName();
-			}
-			self::\$phpNameMap = \$nameMap;
+		if (self::\$mapBuilder === null) {
+			include_once '" . $this->getMapBuilderBuilder()->getClassFilePath()."';
+			self::\$mapBuilder = new ".$this->getMapBuilderBuilder()->getClassname()."();
 		}
-		return self::\$phpNameMap;
+		return self::\$mapBuilder;
 	}";
 	}
 
@@ -415,8 +359,6 @@ if (Propel::isInit()) {
 		} /* if table->getchildrencolumn() */
 
 	} //
-
-
 
 	/**
 	 * Adds the alias() utility method.
@@ -538,9 +480,9 @@ if (Propel::isInit()) {
 			\$criteria->addSelectColumn(\$column);
 		}
 
-		\$rs = ".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con);
-		if (\$rs->next()) {
-			return \$rs->getInt(1);
+		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con);
+		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			return \$row[0];
 		} else {
 			// no rows returned; we infer that means 0 matches.
 			return 0;
@@ -634,8 +576,7 @@ if (Propel::isInit()) {
 		// Set the correct dbName
 		\$criteria->setDbName(self::DATABASE_NAME);
 
-		// BasePeer returns a Creole ResultSet, set to return
-		// rows indexed numerically.
+		// BasePeer returns a PDOStatement
 		return ".$this->basePeerClassname."::doSelect(\$criteria, \$con);
 	}";
 	}
@@ -655,7 +596,7 @@ if (Propel::isInit()) {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function populateObjects(ResultSet \$rs)
+	public static function populateObjects(PDOStatement \$stmt)
 	{
 		\$results = array();
 	";
@@ -668,20 +609,20 @@ if (Propel::isInit()) {
 
 		$script .= "
 		// populate the object(s)
-		while(\$rs->next()) {
+		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 		";
 		if ($table->getChildrenColumn()) {
 			$script .= "
 			// class must be set each time from the record row
-			\$cls = Propel::import(".$this->getPeerClassname()."::getOMClass(\$rs, 1));
+			\$cls = Propel::import(".$this->getPeerClassname()."::getOMClass(\$row, 0));
 			\$obj = new \$cls();
-			\$obj->hydrate(\$rs);
+			\$obj->hydrate(\$row);
 			\$results[] = \$obj;
 			";
 		} else {
 			$script .= "
 			\$obj = new \$cls();
-			\$obj->hydrate(\$rs);
+			\$obj->hydrate(\$row);
 			\$results[] = \$obj;
 			";
 		}
@@ -703,19 +644,19 @@ if (Propel::isInit()) {
 	 * The returned Class will contain objects of the default type or
 	 * objects that inherit from the default.
 	 *
-	 * @param ResultSet \$rs ResultSet with pointer to record containing om class.
-	 * @param int \$colnum Column to examine for OM class information (first is 1).
+	 * @param array \$row PDO result row.
+	 * @param int \$colnum Column to examine for OM class information (first is 0).
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function getOMClass(ResultSet \$rs, \$colnum)
+	public static function getOMClass(\$row, \$colnum)
 	{
 		try {
 ";
 		if ($col->isEnumeratedClasses()) {
 			$script .= "
 			\$omClass = null;
-			\$classKey = \$rs->getString(\$colnum - 1 + " . $col->getPosition() . ");
+			\$classKey = \$row[\$colnum + " . ($col->getPosition() - 1) . "];
 
 			switch(\$classKey) {
 ";
@@ -735,7 +676,7 @@ if (Propel::isInit()) {
 ";
 		} else { /* if not enumerated */
 			$script .= "
-			\$omClass = Propel::import(\$rs->getString(\$colnum - 1 + ".$col->getPosition()."));
+			\$omClass = Propel::import(\$row[\$colnum + ".($col->getPosition()-1)."));
 ";
 		}
 		$script .= "
@@ -822,7 +763,7 @@ if (Propel::isInit()) {
 	 * Method perform an INSERT on the database, given a ".$table->getPhpName()." or Criteria object.
 	 *
 	 * @param mixed \$values Criteria or ".$table->getPhpName()." object containing data that is used to create the INSERT statement.
-	 * @param Connection \$con the connection to use
+	 * @param PDO \$con the PDO connection to use
 	 * @return mixed The new primary key.
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
@@ -856,11 +797,11 @@ if (Propel::isInit()) {
 		try {
 			// use transaction because \$criteria could contain info
 			// for more than one table (I guess, conceivably)
-			\$con->begin();
+			Transaction::begin(\$con);
 			\$pk = ".$this->basePeerClassname."::doInsert(\$criteria, \$con);
-			\$con->commit();
+			Transaction::commit(\$con);
 		} catch(PropelException \$e) {
-			\$con->rollback();
+			Transaction::rollback(\$con);
 			throw \$e;
 		}
 
@@ -942,7 +883,7 @@ if (Propel::isInit()) {
 		try {
 			// use transaction because \$criteria could contain info
 			// for more than one table or we could emulating ON DELETE CASCADE, etc.
-			\$con->begin();
+			Transaction::begin(\$con);
 			";
 			if ($this->isDeleteCascadeEmulationNeeded()) {
 			    $script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(), \$con);
@@ -953,10 +894,10 @@ if (Propel::isInit()) {
 			";
 			}
 			$script .= "\$affectedRows += BasePeer::doDeleteAll(".$this->getPeerClassname()."::TABLE_NAME, \$con);
-			\$con->commit();
+			Transaction::commit(\$con);
 			return \$affectedRows;
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			Transaction::rollback(\$con);
 			throw \$e;
 		}
 	}
@@ -1052,7 +993,7 @@ if (Propel::isInit()) {
 		try {
 			// use transaction because \$criteria could contain info
 			// for more than one table or we could emulating ON DELETE CASCADE, etc.
-			\$con->begin();
+			Transaction::begin(\$con);
 			";
 
 		if ($this->isDeleteCascadeEmulationNeeded()) {
@@ -1064,10 +1005,10 @@ if (Propel::isInit()) {
 
 		$script .= "
 			\$affectedRows += {$this->basePeerClassname}::doDelete(\$criteria, \$con);
-			\$con->commit();
+			Transaction::commit(\$con);
 			return \$affectedRows;
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			Transaction::rollback(\$con);
 			throw \$e;
 		}
 	}

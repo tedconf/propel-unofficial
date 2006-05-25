@@ -70,36 +70,11 @@ class PHP5BasicObjectBuilder extends ObjectBuilder {
 require_once '".$this->getFilePath($parentClass)."';
 ";
 
-
-
 		if (!empty($interface)) {
 			$script .= "
 require_once '".$this->getFilePath($interface)."';
 ";
 		}
-
-
-		if (!$table->isAlias()) {
-
-			// If any columns in table are BLOB or CLOB then we need to make
-			// sure those classes are included so we can do things like
-			// if ($v instanceof Lob) etc.
-
-			$includes_lobs = false;
-			foreach ($table->getColumns() as $col) {
-				if ($col->isLob()) {
-					$includes_lobs = true;
-					break;
-				}
-			}
-
-			if($includes_lobs) {
-				$script .= "
-include_once 'creole/util/Clob.php';
-include_once 'creole/util/Blob.php';
-";
-			}
-		} // if table is not alias
 
 		$script .= "
 
@@ -438,7 +413,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * the [$clo] column, since it is not populated by
 	 * the hydrate() method.
 	 *
-	 * @param \$con Connection
+	 * @param \$con PDO
 	 * @return void
 	 * @throws PropelException - any underlying error will be wrapped and re-thrown.
 	 */
@@ -447,8 +422,8 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		\$c = \$this->buildPkeyCriteria();
 		\$c->addSelectColumn(".$this->getColumnConstant($col).");
 		try {
-			\$rs = ".$this->getPeerClassname()."::doSelectRS(\$c, \$con);
-			\$rs->next();
+			\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$c, \$con);
+			\$row = \$stmt->fetch(PDO::FETCH_NUM);
 ";
 		$affix = CreoleTypes::getAffix(CreoleTypes::getCreoleCode($col->getType()));
 		$clo = strtolower($col->getName());
@@ -457,12 +432,12 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			 case PropelTypes::TIME:
 			 case PropelTypes::TIMESTAMP:
 			 	$script .= "
-			\$this->$clo = \$rs->get$affix(1, null);
+			\$this->$clo = \$row[0]; // FIXME - it's a timestamp ... we may wish to format it ...
 ";
 				break;
 			default:
 				$script .= "
-			\$this->$clo = \$rs->get$affix(1);
+			\$this->$clo = \$row[0];
 ";
 		} // switch
 		$script .= "
@@ -546,22 +521,9 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			$lobClass = 'Clob';
 		}
 		$script .= "
-		// if the passed in parameter is the *same* object that
-		// is stored internally then we use the Lob->isModified()
-		// method to know whether contents changed.
-		if (\$v instanceof Lob && \$v === \$this->$clo) {
-			\$changed = \$v->isModified();
-		} else {
-			\$changed = (\$this->$clo !== \$v);
-		}
-		if (\$changed) {
-			if ( !(\$v instanceof Lob) ) {
-				\$obj = new $lobClass();
-				\$obj->setContents(\$v);
-			} else {
-				\$obj = \$v;
-			}
-			\$this->$clo = \$obj;
+		// FIXME - LOBs need to be streams in PDO; I'm sure there will be special handling here.
+		if (\$this->$clo !== \$v) {
+			\$this->$clo = \$v;
 			\$this->modifiedColumns[] = ".$this->getColumnConstant($col).";
 		}
 ";
@@ -651,24 +613,24 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	/**
 	 * Hydrates (populates) the object variables with values from the database resultset.
 	 *
-	 * An offset (1-based \"start column\") is specified so that objects can be hydrated
+	 * An offset (0-based \"start column\") is specified so that objects can be hydrated
 	 * with a subset of the columns in the resultset rows.  This is needed, for example,
 	 * for results of JOIN queries where the resultset row includes columns from two or
 	 * more tables.
 	 *
-	 * @param ResultSet \$rs The ResultSet class with cursor advanced to desired record pos.
-	 * @param int \$startcol 1-based offset column which indicates which restultset column to start with.
+	 * @param array \$row The row returned by PDOStatement->fetch(PDO::FETCH_NUM) 
+	 * @param int \$startcol 0-based offset column which indicates which restultset column to start with.
 	 * @return int next starting column
 	 * @throws PropelException  - Any caught Exception will be rewrapped as a PropelException.
 	 */
-	public function hydrate(ResultSet \$rs, \$startcol = 1)
+	public function hydrate(\$row, \$startcol = 0)
 	{
 		try {
 ";
 			$n = 0;
 			foreach($table->getColumns() as $col) {
 				if(!$col->isLazyLoad()) {
-					$affix = CreoleTypes::getAffix(CreoleTypes::getCreoleCode($col->getType()));
+					// $affix = CreoleTypes::getAffix(CreoleTypes::getCreoleCode($col->getType()));
 					$clo = strtolower($col->getName());
 					switch($col->getType()) {
 
@@ -676,12 +638,12 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 						case PropelTypes::TIME:
 						case PropelTypes::TIMESTAMP:
 							$script .= "
-			\$this->$clo = \$rs->get$affix(\$startcol + $n, null);
+			\$this->$clo = \$row[\$startcol + $n]; // FIXME - this is a timestamp, we should maybe convert it (?)
 ";
 							break;
 						default:
 							$script .= "
-			\$this->$clo = \$rs->get$affix(\$startcol + $n);
+			\$this->$clo = \$row[\$startcol + $n];
 ";
 					}
 					$n++;
@@ -948,7 +910,7 @@ $script .= "
 	/**
 	 * Removes this object from datastore and sets delete attribute.
 	 *
-	 * @param Connection \$con
+	 * @param PDO \$con
 	 * @return void
 	 * @throws PropelException
 	 * @see BaseObject::setDeleted()
@@ -965,12 +927,12 @@ $script .= "
 		}
 
 		try {
-			\$con->begin();
+			Transaction::begin(\$con);
 			".$this->getPeerClassname()."::doDelete(\$this, \$con);
 			\$this->setDeleted(true);
-			\$con->commit();
+			Transaction::commit(\$con);
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			Transaction::rollback(\$con);
 			throw \$e;
 		}
 	}
@@ -1011,7 +973,7 @@ $script .= "
 	 *
 	 * If the object is new, it inserts it; otherwise an update is performed.
 	 *
-	 * @param Connection \$con
+	 * @param PDO \$con
 	 * @return int The number of rows affected by this insert/update operation (for non-complex OM this will be at most 1).
 	 * @throws PropelException
 	 */

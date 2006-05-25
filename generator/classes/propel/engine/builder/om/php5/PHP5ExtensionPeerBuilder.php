@@ -122,6 +122,26 @@ class ".$this->getClassname()." extends $baseClassname {
 		$script .= "
 } // " . $this->getClassname() . "
 ";
+		$this->addStaticMapBuilderRegistration($script);
+	}
+	
+	/**
+	 * Adds the static map builder registration code.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addStaticMapBuilderRegistration(&$script)
+	{
+		$table = $this->getTable();
+		$mapBuilderFile = $this->getMapBuilderBuilder()->getClassFilePath();
+
+		$script .= "
+// static code to register the map builder for this table with the main Propel class
+try {
+	Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getPeerClassname()."::TABLE_NAME, ".$this->getPeerClassname()."::getMapBuilder());
+} catch (Exception \$e) {
+	Propel::log('Could not register MapBuilder  for ".$this->getPeerClassname()." with Propel: ' . \$e->getMessage(), Propel::LOG_ERR);
+}
+";
 	}
 	
 } // PHP5ExtensionPeerBuilder

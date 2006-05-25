@@ -21,6 +21,7 @@
  */
  
 include_once 'propel/map/ValidatorMap.php';
+include_once 'propel/util/PropelColumnTypes.php';
 
 /**
  * ColumnMap is used to model a column of a table in a database.
@@ -44,12 +45,9 @@ include_once 'propel/map/ValidatorMap.php';
  * @package propel.map
  */
 class ColumnMap {
-
-    /** @var int Creole type for this column. */
-    private $creoleType;
     
-    /** @var string Native PHP type of the column. */
-    private $type = null;
+    /** @var string Propel type of the column. */
+    private $type;
 
     /** Size of the column. */
     private $size = 0;
@@ -99,7 +97,17 @@ class ColumnMap {
     {
         return $this->columnName;
     }
-
+	
+	/**
+     * Get the name of a column.
+     *
+     * @return string A String with the column name.
+     */
+    public function getPhpName()
+    {
+        return $this->phpName;
+    }
+    
     /**
      * Set the php anme of this column.
      *
@@ -109,16 +117,6 @@ class ColumnMap {
     public function setPhpName($phpName)
     {
         $this->phpName = $phpName;
-    }
-
-    /**
-     * Get the name of a column.
-     *
-     * @return string A String with the column name.
-     */
-    public function getPhpName()
-    {
-        return $this->phpName;
     }
 
     /**
@@ -149,29 +147,70 @@ class ColumnMap {
     {
         return $this->table->getName();
     }
+    
+    /**
+     * Get the Propel type of this column.
+     *
+     * @return string A string representing the Propel type (e.g. PropelColumnTypes::DATE).
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
 
     /**
-     * Set the type of this column.
+     * Set the Propel type of this column.
      *
-     * @param string $type A string representing the PHP native type.
+     * @param string $type A string representing the Propel type (e.g. PropelColumnTypes::DATE).
      * @return void
      */
     public function setType($type)
     {
         $this->type = $type;
     }
-
-     /**
-     * Set the Creole type of this column.
+    
+    /**
+     * Get the PHP type of this column.
      *
-     * @param int $type An int representing Creole type for this column.
-     * @return void
+     * @return int The PDO::PARMA_* value
      */
-    public function setCreoleType($type)
+    public function getPhpType()
     {
-        $this->creoleType = $type;
+        return PropelColumnTypes::getPhpType($this->type);
     }
     
+	/**
+     * Get the PDO type of this column.
+     *
+     * @return int The PDO::PARMA_* value
+     */
+    public function getPdoType()
+    {
+    	return PropelColumnTypes::getPdoType($this->type);
+    }
+    
+    /**
+     * Whether this is a BLOB or CLOB.
+     * @return boolean
+     */
+    public function isLob()
+    {
+		return ($this->type == PropelColumnTypes::BLOB || $this->type == PropelColumnTypes::CLOB);
+	}
+	
+	/**
+     * Whether this is a DATE/TIME/TIMESTAMP column that is post-epoch (1970).
+	 * 
+	 * PHP cannot handle pre-epoch timestamps well -- hence the need to differentiate
+	 * between epoch and pre-epoch timestamps.
+	 *  
+     * @return boolean
+     */
+    public function isEpochTemporal()
+    {
+		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME);
+	}
+	
     /**
      * Set the size of this column.
      *
@@ -245,27 +284,6 @@ class ColumnMap {
     public function getValidators()
     {
       return $this->validators;
-    }
-
-    
-    /**
-     * Get the native PHP type of this column.
-     *
-     * @return string A string specifying the native PHP type.
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Get the Creole type of this column.
-     *
-     * @return string A string specifying the native PHP type.
-     */
-    public function getCreoleType()
-    {
-        return $this->creoleType;
     }
 
     /**
