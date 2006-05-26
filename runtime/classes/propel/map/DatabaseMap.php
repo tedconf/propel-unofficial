@@ -44,28 +44,38 @@ include_once 'propel/map/TableMap.php';
  */
 class DatabaseMap {
 
-    /** Name of the database. */
+    /** @var string Name of the database. */
     private $name;
 
-    /** Name of the tables in the database. */
+    /** @var array TableMap[] Tables in the database. */
     private $tables = array();
-
+    
 	/**
 	 * The table MapBuilder objects that will initialize tables (on demand).
 	 * @var array Map of table builders (name => MapBuilder)
 	 */
 	private $tableBuilders = array();
-
+	
     /**
      * Constructor.
      *
      * @param string $name Name of the database.
+     * @param DBAdapter $adapter
      */
     public function __construct($name)
     {
         $this->name = $name;
     }
-
+	
+	/**
+	 * Convenience method to get the DBAdapter registered with Propel for this database.
+	 * @see Propel::getDB(string)
+	 */
+	public function getDBAdapter()
+	{
+		return Propel::getDB($this->name);
+	} 
+	
     /**
      * Does this database contain this specific table?
      *
