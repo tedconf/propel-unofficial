@@ -93,7 +93,7 @@ class ColumnMap {
      *
      * @return string A String with the column name.
      */
-    public function getColumnName()
+    public function getName()
     {
         return $this->columnName;
     }
@@ -209,6 +209,15 @@ class ColumnMap {
     public function isEpochTemporal()
     {
 		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME);
+	}
+	
+	/**
+	 * Whether this column is a text column (varchar, char, longvarchar).
+	 * @return boolean
+	 */	
+	public function isText()
+	{
+		return ($this->type == PropelColumnTypes::VARCHAR || $this->type == PropelColumnTypes::LONGVARCHAR || $this->type == PropelColumnTypes::CHAR);
 	}
 	
     /**
@@ -359,4 +368,18 @@ class ColumnMap {
     {
         return $this->relatedColumnName;
     }
+    
+    /**
+     * Performs DB-specific ignore case, but only if the column type necessitates it.
+     * @param string $str The expression we want to apply the ignore case formatting to (e.g. the column name).
+     * @param DBAdapter $db
+     */
+    public function ignoreCase($str, DBAdapter $db)
+    {
+		if ($this->isText()) {
+			return $db->ignoreCase($str);
+		} else {
+			return $str;
+		}
+	}
 }

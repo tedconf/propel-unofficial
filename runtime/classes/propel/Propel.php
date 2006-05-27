@@ -319,29 +319,6 @@ class Propel {
 	}
 	
 	/**
-	 * Register a MapBuilder
-	 *
-	 * @param string $className the MapBuilder
-	 */
-	public static function registerMapBuilder($className)
-	{
-		self::$mapBuilders[] = $className;
-	}
-
-	/**
-	 * Returns the specified property of the given database, or the empty
-	 * string if no value is set for the property.
-	 *
-	 * @param string $db   The name of the database whose property to get.
-	 * @param string $prop The name of the property to get.
-	 * @return mixed The property's value.
-	 */
-	private static function getDatabaseProperty($db, $prop)
-	{
-		return isset(self::$configuration['datasources'][$db][$prop]) ? self::$configuration['datasources'][$db][$prop] : null;
-	}
-
-	/**
 	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
 	 * 
 	 * @param string $name The name that is used to look up the DSN from the runtime properties file. 
