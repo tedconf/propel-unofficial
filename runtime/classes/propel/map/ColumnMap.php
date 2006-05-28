@@ -19,33 +19,33 @@
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
- 
+
 include_once 'propel/map/ValidatorMap.php';
 include_once 'propel/util/PropelColumnTypes.php';
 
 /**
  * ColumnMap is used to model a column of a table in a database.
- * 
+ *
  * GENERAL NOTE
  * ------------
  * The propel.map classes are abstract building-block classes for modeling
  * the database at runtime.  These classes are similar (a lite version) to the
  * propel.engine.database.model classes, which are build-time modeling classes.
- * These classes in themselves do not do any database metadata lookups, but instead 
- * are used by the MapBuilder classes that were generated for your datamodel. The 
+ * These classes in themselves do not do any database metadata lookups, but instead
+ * are used by the MapBuilder classes that were generated for your datamodel. The
  * MapBuilder that was created for your datamodel build a representation of your
- * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc. 
+ * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc.
  * classes. See propel/templates/om/php5/MapBuilder.tpl and the classes generated
- * by that template for your datamodel to further understand how these are put 
+ * by that template for your datamodel to further understand how these are put
  * together.
- * 
+ *
  * @author Hans Lellelid <hans@xmpl.org> (Propel)
  * @author John D. McNally <jmcnally@collab.net> (Torque)
  * @version $Revision$
  * @package propel.map
  */
 class ColumnMap {
-    
+
     /** @var string Propel type of the column. */
     private $type;
 
@@ -75,7 +75,7 @@ class ColumnMap {
 
     /** validators for this column */
     private $validators = array();
-	
+
     /**
      * Constructor.
      *
@@ -97,7 +97,7 @@ class ColumnMap {
     {
         return $this->columnName;
     }
-	
+
 	/**
      * Get the name of a column.
      *
@@ -107,7 +107,7 @@ class ColumnMap {
     {
         return $this->phpName;
     }
-    
+
     /**
      * Set the php anme of this column.
      *
@@ -147,7 +147,7 @@ class ColumnMap {
     {
         return $this->table->getName();
     }
-    
+
     /**
      * Get the Propel type of this column.
      *
@@ -168,7 +168,7 @@ class ColumnMap {
     {
         $this->type = $type;
     }
-    
+
     /**
      * Get the PHP type of this column.
      *
@@ -178,7 +178,7 @@ class ColumnMap {
     {
         return PropelColumnTypes::getPhpType($this->type);
     }
-    
+
 	/**
      * Get the PDO type of this column.
      *
@@ -188,7 +188,7 @@ class ColumnMap {
     {
     	return PropelColumnTypes::getPdoType($this->type);
     }
-    
+
     /**
      * Whether this is a BLOB or CLOB.
      * @return boolean
@@ -197,29 +197,29 @@ class ColumnMap {
     {
 		return ($this->type == PropelColumnTypes::BLOB || $this->type == PropelColumnTypes::CLOB);
 	}
-	
+
 	/**
      * Whether this is a DATE/TIME/TIMESTAMP column that is post-epoch (1970).
-	 * 
+	 *
 	 * PHP cannot handle pre-epoch timestamps well -- hence the need to differentiate
 	 * between epoch and pre-epoch timestamps.
-	 *  
+	 *
      * @return boolean
      */
     public function isEpochTemporal()
     {
 		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME);
 	}
-	
+
 	/**
 	 * Whether this column is a text column (varchar, char, longvarchar).
 	 * @return boolean
-	 */	
+	 */
 	public function isText()
 	{
 		return ($this->type == PropelColumnTypes::VARCHAR || $this->type == PropelColumnTypes::LONGVARCHAR || $this->type == PropelColumnTypes::CHAR);
 	}
-	
+
     /**
      * Set the size of this column.
      *
@@ -252,7 +252,7 @@ class ColumnMap {
     {
         $this->notNull = $nn;
     }
-	
+
 	/**
 	 * Gets the default value for this column.
 	 * @return mixed String or NULL
@@ -261,7 +261,7 @@ class ColumnMap {
 	{
 		return $this->defaultValue;
 	}
-	
+
     /**
      * Set the foreign key for this column.
      *
@@ -368,18 +368,5 @@ class ColumnMap {
     {
         return $this->relatedColumnName;
     }
-    
-    /**
-     * Performs DB-specific ignore case, but only if the column type necessitates it.
-     * @param string $str The expression we want to apply the ignore case formatting to (e.g. the column name).
-     * @param DBAdapter $db
-     */
-    public function ignoreCase($str, DBAdapter $db)
-    {
-		if ($this->isText()) {
-			return $db->ignoreCase($str);
-		} else {
-			return $str;
-		}
-	}
+
 }

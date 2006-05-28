@@ -232,9 +232,9 @@ class BasePeer
 
 		// the primary key
 		$id = null;
-		
+
 		$db = Propel::getDB($criteria->getDbName());
-		
+
 		// Get the table name and method for determining the primary
 		// key value.
 		$keys = $criteria->keys();
@@ -260,7 +260,7 @@ class BasePeer
 
 		// pk will be null if there is no primary key defined for the table
 		// we're inserting into.
-		if ($pk !== null && $useIdGen && !$criteria->containsKey($pk->getFullyQualifiedName()) && $db->isGetIdBeforeInsert()) {		
+		if ($pk !== null && $useIdGen && !$criteria->containsKey($pk->getFullyQualifiedName()) && $db->isGetIdBeforeInsert()) {
 			try {
 				$id = $db->getId($con, $keyInfo);
 			} catch (Exception $e) {
@@ -367,9 +367,9 @@ class BasePeer
 				self::populateStmtValues($stmt, array_merge(self::buildParams($updateTablesColumns[$tableName], $updateValues), $selectParams), $dbMap, $db);
 
 				$stmt->execute();
-				
-				$affectedRows = $stmt->rowCount(); 
-				
+
+				$affectedRows = $stmt->rowCount();
+
 				$stmt = null; // close
 
 			} catch (Exception $e) {
@@ -396,11 +396,11 @@ class BasePeer
 	{
 		$dbMap = Propel::getDatabaseMap($criteria->getDbName());
 		$db = Propel::getDB($criteria->getDbName());
-		
+
 		if ($con === null) {
 			$con = Propel::getConnection($criteria->getDbName());
 		}
-		
+
 		$stmt = null;
 
 		try {
@@ -414,20 +414,72 @@ class BasePeer
 			$sql = self::createSelectSql($criteria, $params);
 
  			$stmt = $con->prepare($sql);
- 			
- 			// FIXME - add SQL-modification for LIMIT/OFFSET into DBAdapters & createSelectSql method.  
+
+ 			// FIXME - add SQL-modification for LIMIT/OFFSET into DBAdapters & createSelectSql method.
 			// $stmt->setLimit($criteria->getLimit());
 			// $stmt->setOffset($criteria->getOffset());
 
 			self::populateStmtValues($stmt, $params, $dbMap, $db);
 
 			$stmt->execute();
-			
+
 			if ($criteria->isUseTransaction()) Transaction::commit($con);
-			
+
 		} catch (Exception $e) {
 			if ($stmt) $stmt = null; // close
 			if ($criteria->isUseTransaction()) Transaction::rollback($con);
+			Propel::log($e->getMessage(), Propel::LOG_ERR);
+			throw new PropelException($e);
+		}
+
+		return $stmt;
+	}
+
+	/**
+	 * CRITERIA 2 - Executes query build by createSelectSql() and returns ResultSet.
+	 *
+	 * @param Criteria $criteria A Criteria.
+	 * @param PDO $con A PDO connection to use.
+	 * @return ResultSet The resultset.
+	 * @throws PropelException
+	 * @see createSelectSql()
+	 */
+	public static function doSelect2(Query $query, PDO $con = null)
+	{
+		$dbMap = Propel::getDatabaseMap($query->getDbName());
+		$db = Propel::getDB($query->getDbName());
+
+		if ($con === null) {
+			$con = Propel::getConnection($query->getDbName());
+		}
+
+		$stmt = null;
+
+		try {
+
+			// Transaction support exists for (only?) Postgres, which must
+			// have SELECT statements that include bytea columns wrapped w/
+			// transactions.
+			if ($query->isUseTransaction()) Transaction::begin($con);
+
+			$params = array();
+			$sql = self::createSelectSql2($query, $params);
+
+ 			$stmt = $con->prepare($sql);
+
+ 			// FIXME - add SQL-modification for LIMIT/OFFSET into DBAdapters & createSelectSql method.
+			// $stmt->setLimit($criteria->getLimit());
+			// $stmt->setOffset($criteria->getOffset());
+
+			self::populateStmtValues2($stmt, $params, $dbMap, $db);
+
+			$stmt->execute();
+
+			if ($query->isUseTransaction()) Transaction::commit($con);
+
+		} catch (Exception $e) {
+			if ($stmt) $stmt = null; // close
+			if ($query->isUseTransaction()) Transaction::rollback($con);
 			Propel::log($e->getMessage(), Propel::LOG_ERR);
 			throw new PropelException($e);
 		}
@@ -452,16 +504,16 @@ class BasePeer
 			$value = $param['value'];
 
 			if ($value === null) {
-			
+
 				$stmt->bindValue($i++, null, PDO::PARAM_NULL);
 				// $stmt->setNull($i++);
-				
+
 			} else {
-			
+
 				$cMap = $dbMap->getTable($tableName)->getColumn($columnName);
 				$type = $cMap->getType();
 				$pdoType = $cMap->getPdoType();
-				
+
 				if (is_numeric($value) && $cMap->isEpochTemporal()) { // it's a timestamp that needs to be formatted
 					if ($type == PropelColumnTypes::TIMESTAMP) {
 						$value = date($db->getTimestampFormatter(), $value);
@@ -471,14 +523,57 @@ class BasePeer
 						$value = date($db->getTimeFormatter(), $value);
 					}
 				}
-				
+
 				Propel::log("Binding " . var_export($value, true) . " at position $i w/ Propel type $type and PDO type $pdoType", Propel::LOG_DEBUG);
-				
+
 				$stmt->bindValue($i++, $value, $pdoType);
 			}
 		} // foreach
 	}
-	
+
+	/**
+	 * CRITERIA 2 - Populates values in a prepared statement.
+	 *
+	 * @param PreparedStatement $stmt
+	 * @param array $params array('column' => ..., 'table' => ..., 'value' => ...)
+	 * @param DatabaseMap $dbMap
+	 * @return int The number of params replaced.
+	 */
+	private static function populateStmtValues2($stmt, $bindValues, DatabaseMap $dbMap, DBAdapter $db)
+	{
+		$i = 1;
+		
+		foreach($bindValues as $columnValue) {
+		
+			$value = $columnValue->getValue();
+			
+			if ($value === null) {
+			
+				$stmt->bindValue($i++, null, PDO::PARAM_NULL);
+
+			} else {
+				
+				$cMap = $columnValue->getQueryColumn()->getColumnMap();
+				$type = $cMap->getType();
+				$pdoType = $cMap->getPdoType();
+
+				if (is_numeric($value) && $cMap->isEpochTemporal()) { // it's a timestamp that needs to be formatted
+					if ($type == PropelColumnTypes::TIMESTAMP) {
+						$value = date($db->getTimestampFormatter(), $value);
+					} else if ($type == PropelColumnTypes::DATE) {
+						$value = date($db->getDateFormatter(), $value);
+					} else if ($type == PropelColumnTypes::TIME) {
+						$value = date($db->getTimeFormatter(), $value);
+					}
+				}
+
+				Propel::log("Binding " . var_export($value, true) . " at position $i w/ Propel type $type and PDO type $pdoType", Propel::LOG_DEBUG);
+
+				$stmt->bindValue($i++, $value, $pdoType);
+			}
+		} // foreach
+	}
+
 	/**
 	 * Applies any validators that were defined in the schema to the specified columns.
 	 *
@@ -666,11 +761,11 @@ class BasePeer
 			$whereClause[] = $sb;
 
 		}
-		
+
 		// handle RIGHT (straight) joins
-		// Loop through the joins, 
+		// Loop through the joins,
 		// joins with a null join type will be added to the FROM clause and the condition added to the WHERE clause.
-		// joins of a specified type: the LEFT side will be added to the fromClause and the RIGHT to the joinClause 
+		// joins of a specified type: the LEFT side will be added to the fromClause and the RIGHT to the joinClause
 		// New Code.
 		foreach ((array) $criteria->getJoins() as $join) { // we'll only loop if there's actually something here
 
@@ -682,14 +777,14 @@ class BasePeer
 				$leftTableAlias = " $leftTable";
 				$leftTable = $realTable;
 			}
-			
+
 			$rightTable = $join->getRightTableName();
 			$rightTableAlias = '';
 			if ($realTable = $criteria->getTableForAlias($rightTable)) {
 				$rightTableAlias = " $rightTable";
 				$rightTable = $realTable;
 			}
-					
+
 			// determine if casing is relevant.
 			if ($ignoreCase = $criteria->isIgnoreCase()) {
 				$leftColType = $dbMap->getTable($leftTable)->getColumn($join->getLeftColumnName())->getType();
@@ -703,24 +798,24 @@ class BasePeer
 			} else {
 				$condition = $join->getLeftColumn() . '=' . $join->getRightColumn();
 			}
-					
-			// add 'em to the queues..  
-			if ($joinType = $join->getJoinType()) { 
+
+			// add 'em to the queues..
+			if ($joinType = $join->getJoinType()) {
 				if (!$fromClause) {
 					$fromClause[] = $leftTable . $leftTableAlias;
 				}
 				$joinTables[] = $rightTable . $rightTableAlias;
 				$joinClause[] = $join->getJoinType() . ' ' . $rightTable . $rightTableAlias . " ON ($condition)";
-			} else { 
+			} else {
 				$fromClause[] = $leftTable . $leftTableAlias;
 				$fromClause[] = $rightTable . $rightTableAlias;
 				$whereClause[] = $condition;
 			}
 		}
-		
+
 		// Unique from clause elements
 		$fromClause = array_unique($fromClause);
-				
+
 		// tables should not exist in both the from and join clauses
 		if ($joinTables && $fromClause) {
 			foreach ($fromClause as $fi => $ftable) {
@@ -729,56 +824,7 @@ class BasePeer
 				}
 			}
 		}
-/*
-				// Old Code.
-				$joins =& $criteria->getJoins();
-				if (!empty($joins)) {
-					for ($i=0, $joinSize=count($joins); $i < $joinSize; $i++) {
-						$join =& $joins[$i];
-						$join1 = $join->getLeftColumn();
-						$join2 = $join->getRightColumn();
 
-						$tableName = substr($join1, 0, strpos($join1, '.'));
-						$table = $criteria->getTableForAlias($tableName);
-						if ($table !== null) {
-							$fromClause[] = $table . ' ' . $tableName;
-						} else {
-							$fromClause[] = $tableName;
-						}
-
-						$dot = strpos($join2, '.');
-						$tableName = substr($join2, 0, $dot);
-						$table = $criteria->getTableForAlias($tableName);
-						if ($table !== null) {
-							$fromClause[] = $table . ' ' . $tableName;
-						} else {
-							$fromClause[] = $tableName;
-							$table = $tableName;
-						}
-						$ignoreCase = ($criteria->isIgnoreCase() && ($dbMap->getTable($table)->getColumn(substr($join2, $dot + 1))->getType() == "string"));
-						if ($ignoreCase) {
-							$whereClause[] = $db->ignoreCase($join1) . '=' . $db->ignoreCase($join2);
-						} else {
-							$whereClause[] = $join1 . '=' . $join2;
-						}
-					if ($join->getJoinType()) {
-							$leftTable = $fromClause[count($fromClause) - 2];
-							$rightTable = $fromClause[count($fromClause) - 1];
-							$onClause = $whereClause[count($whereClause) - 1];
-							unset($whereClause[count($whereClause) - 1]);
-							$fromClause [] = $leftTable . ' ' . $join->getJoinType() . ' ' . $rightTable . ' ON ' . $onClause;
-
-							// remove all references to joinTables made by selectColumns, criteriaColumns
-							for ($i = 0, $fromClauseSize=count($fromClause); $i < $fromClauseSize; $i++) {
-								if ($fromClause[$i] == $leftTable || $fromClause[$i] == $rightTable) {
-									unset($fromClause[$i]);
-								}
-							}
-						} // If join type
-					} // Join for loop
-				} // If Joins
-*/
-		
 		// Add the GROUP BY columns
 		$groupByClause = $groupBy;
 
@@ -793,14 +839,14 @@ class BasePeer
 		 if (!empty($orderBy)) {
 
 			foreach($orderBy as $orderByColumn) {
-				
+
 				// Add function expression as-is.
-				
+
 				if (strpos($orderByColumn, '(') !== false) {
 					$orderByClause[] = $orderByColumn;
 					continue;
 				}
-				
+
 				// Split orderByColumn (i.e. "table.column DESC")
 
 				$dotPos = strpos($orderByColumn, '.');
@@ -858,6 +904,156 @@ class BasePeer
 				.($orderByClause ? " ORDER BY ".implode(",", $orderByClause) : "");
 
 		Propel::log($sql . ' [LIMIT: ' . $criteria->getLimit() . ', OFFSET: ' . $criteria->getOffset() . ']', Propel::LOG_DEBUG);
+
+		return $sql;
+
+	}
+
+	/**
+	 * Method to create an SQL query based on values in a Criteria.
+	 *
+	 * This method creates only prepared statement SQL (using ? where values
+	 * will go).  The second parameter ($params) stores the values that need
+	 * to be set before the statement is executed.  The reason we do it this way
+	 * is to let the PDO layer handle all escaping & value formatting.
+	 *
+	 * @param Criteria $criteria Criteria for the SELECT query.
+	 * @param array &$params Parameters that are to be replaced in prepared statement.
+	 * @return string
+	 * @throws PropelException Trouble creating the query string.
+	 */
+	public static function createSelectSql2(Query $query, &$bindValues) {
+		
+		$criteria = $query->getCriteria();
+		$dbname = $criteria->getDbName();
+		
+		// we don't need to use DATABASE_NAME constants anymore, but clearly
+		// it involves a little less dereferencing ....
+		// $dbMap = $criteria->getQueryTable()->getTableMap()->getDatabase();
+		
+		// FIXME - these methods should be re-thought, since there's a more efficient
+		// way to get the map directly from Criteria
+		$db = Propel::getDB($dbname);		
+		$dbMap = Propel::getDatabaseMap($dbname);
+
+
+		// redundant definition $selectModifiers = array();
+		//$selectClause = array();
+		$fromClause = array();
+		$joinClause = array();
+		$joinTables = array();
+		$whereClause = array();
+		$orderByClause = array();
+		// redundant definition $groupByClause = array();
+
+		$orderBy = $query->getOrderByColumns();
+		$groupBy = $query->getGroupByColumns();
+		
+		// FIXME ... we should try to handle this on a Criteria-by-Criteria basis 
+		$ignoreCase = $criteria->getIgnoreCase();
+		
+		$selectColumns = $query->getSelectColumns();
+
+		// simple copy
+		//FIXME - implement: $selectModifiers = $query->getSelectModifiers();
+
+
+		// Add the primary table to FROM clause
+		
+		$fromClause[] = $criteria->getQueryTable()->getFromClauseSql();		
+		// FIXME - we need to also add any tables that aren't represented by JOINS
+		// For that, we want a $query->getUnjoinedTables() method.
+				
+		
+		// Add the criteria to WHERE clause
+		$whereClauseFromCriteria = "";
+		$criteria->buildSql($whereClauseFromCriteria, $bindValues);
+		
+		$whereClause[] = $whereClauseFromCriteria;
+		
+		// handle RIGHT (straight) joins
+		// Loop through the joins,
+		// joins with a null join type will be added to the FROM clause and the condition added to the WHERE clause.
+		// joins of a specified type: the LEFT side will be added to the fromClause and the RIGHT to the joinClause
+		// New Code.
+		foreach ($query->getJoins() as $join) { // we'll only loop if there's actually something here
+			
+			// FIXME - most of this stuff could be moved into the Join class.  There's no 
+			// reason why it needs to be in BasePeer ...
+			
+			// The join might have been established using an alias name
+			$leftCol = $join->getLeftColumn();
+			$rightCol = $join->getRightColumn();
+
+			$leftTable = $join->getLeftTable();
+			$rightTable = $join->getRightTable();
+
+			// build the condition
+			if ($ignoreCase) {
+				$condition = $leftCol->ignoreCase($leftCol->getQualifiedName()) . '=' . $rightCol->ignoreCase($rightCol->getQualifiedName());
+			} else {
+				$condition = $leftCol->getQualifiedName() . '=' . $rightCol->getQualifiedName();
+			}
+
+			// add 'em to the queues..
+			if ( $join->getJoinType() !== Join::IMPLICIT ) {
+				$joinTables[] = $rightTable->getFromClauseSql();
+				$joinClause[] = $join->getJoinType() . ' ' . $rightTable->getFromClauseSql() . " ON (".$condition.")";
+			} else {
+				$fromClause[] = $leftTable->getFromClauseSql();
+				$fromClause[] = $rightTable->getFromClauseSql();
+				$whereClause[] = $condition;
+			}
+		}
+
+		// Unique from clause elements
+		$fromClause = array_unique($fromClause);
+
+		// tables should not exist in both the from and join clauses
+		if ($joinTables && $fromClause) {
+			foreach ($fromClause as $fi => $ftableAndAlias) {
+				if (in_array($ftableAndAlias, $joinTables)) {
+					unset($fromClause[$fi]);
+				}
+			}
+		}
+
+		// Add the GROUP BY columns
+		$groupByClause = $groupBy;
+
+		$having = $query->getHaving();
+		$havingSql = "";
+		if ($having !== null) {
+			$having->buildSql($havingSql, $params);
+		}
+		
+		if (!empty($orderBy)) {
+
+			foreach($orderBy as $orderByColumn) {
+				$direction = $orderByColumn->getDirection();
+				if ($ignoreCase && $orderByColumn->getColumnMap()->isText()) {
+					$orderByClause[] = $db->ignoreCaseInOrderBy($orderByColumn->getQualifiedName()) . ' ' . $direction;
+				} else {
+					$orderByClause[] = $orderByColumn->getQualifiedName() . ' ' . $direction;
+				}
+			}
+		}
+
+
+		// Build the SQL from the arrays we compiled
+		$sql =  "SELECT "
+				.($selectModifiers ? implode(" ", $selectModifiers) . " " : "")
+				.implode(", ", $selectColumns)
+				." FROM ".implode(", ", $fromClause)
+								.($joinClause ? ' ' . implode(' ', $joinClause) : '')
+				.($whereClause ? " WHERE ".implode(" AND ", $whereClause) : "")
+				.($groupByClause ? " GROUP BY ".implode(",", $groupByClause) : "")
+				.($havingSql ? " HAVING ".$havingSql : "")
+				.($orderByClause ? " ORDER BY ".implode(",", $orderByClause) : "");
+		
+		// FIXME -- Implement the LIMIT/OFFSET stuff in the DBAdapter classes
+		
+		Propel::log($sql . ' [LIMIT: ' . $query->getLimit() . ', OFFSET: ' . $query->getOffset() . ']', Propel::LOG_DEBUG);
 
 		return $sql;
 
