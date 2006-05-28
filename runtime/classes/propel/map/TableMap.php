@@ -115,7 +115,7 @@ class TableMap {
      *
      * @return DatabaseMap A DatabaseMap.
      */
-    public function getDatabaseMap()
+    public function getDatabase()
     {
         return $this->dbMap;
     }
