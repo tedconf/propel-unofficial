@@ -18,7 +18,7 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 
 	public function buildSql(&$sql, &$values)
 	{
-		$col = $this->getColumn();
+		$col = $this->getQueryColumn();
 
 		if ($this->values !== null) {
 
@@ -28,7 +28,7 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 				$sql .= $this->getEmptyValuesSql();
 			} else {
 
-				$sql .= $this->getColname() . $this->getOperator();
+				$sql .= $col->getQualifiedName() . ' ' . $this->getOperator();
 
 				foreach($this->values as $value) {
                     $values[] = new ColumnValue($col, $value);

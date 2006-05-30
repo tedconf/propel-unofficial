@@ -75,15 +75,9 @@ class Criteria2 extends BaseExpressionContainer implements ExpressionContainer {
 			$expr->setQueryTable($this->getQueryTable());
 		}
     	if ($this->container === null) {
-			if ($expr instanceof LogicExpression) {
-				$this->container = $expr;
-			} else {
-				$this->container = new AndExpr();
-				$this->container->add($expr);
-			}
-		} else { // we already have a container
-			$this->container->add($expr);
-		}
+    		$this->container = new AndExpr();
+    	}
+		$this->container->add($expr);
 		return $this;
 	}
 
@@ -273,6 +267,28 @@ class OrExpr extends LogicExpression {
 
 }
 
+/**
+ * An expression containing custom SQL.
+ */
+class CustomExpr extends BaseExpression implements Expression {
+
+	private $customSql;
+	
+	/**
+	 * Constructs a new object with custom SQL.
+	 * @param string $sql
+	 */
+	public function __construct($sql)
+	{
+		$this->customSql = $sql;
+	}
+	
+	public function buildSql(&$sql, &$values)
+	{
+		$sql .= $this->customSql;
+	}
+	
+}
 
 /**
  * A class to hold a column-value pair.
