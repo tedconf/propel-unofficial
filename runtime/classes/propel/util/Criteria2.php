@@ -269,10 +269,15 @@ class OrExpr extends LogicExpression {
 
 /**
  * An expression containing custom SQL.
+ * 
+ * This can be used a simple container for custom SQL (e.g. passed as a value
+ * to another expression) or it can be used as a standalone Expression (e.g.
+ * added to a Criteria).
+ * 
  */
-class CustomExpr extends BaseExpression implements Expression {
+class SqlExpr extends BaseExpression implements Expression {
 
-	private $customSql;
+	private $sql;
 	
 	/**
 	 * Constructs a new object with custom SQL.
@@ -280,12 +285,17 @@ class CustomExpr extends BaseExpression implements Expression {
 	 */
 	public function __construct($sql)
 	{
-		$this->customSql = $sql;
+		$this->sql = $sql;
 	}
 	
 	public function buildSql(&$sql, &$values)
 	{
-		$sql .= $this->customSql;
+		$sql .= $this->sql;
+	}
+	
+	public function getSql()
+	{
+		return $this->sql;
 	}
 	
 }
