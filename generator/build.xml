@@ -124,8 +124,8 @@
  issue as far as maintenance is concerned.
 -->
 
-<target name="convert-props" depends="configure">
-	<phing phingfile="build-propel.xml" target="convert-props"/>
+<target name="copy-runtime-conf" depends="configure">
+	<phing phingfile="build-propel.xml" target="copy-runtime-conf"/>
 </target>
 
 <target name="create-db" depends="configure">

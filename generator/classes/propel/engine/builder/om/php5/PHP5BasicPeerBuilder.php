@@ -170,8 +170,8 @@ abstract class ".$this->getClassname()." {
 		foreach ($this->getTable()->getColumns() as $col) {
 
 			$script .= "
-	/** the column name for the ".strtoupper($col->getName()) ." field */
-	const ".$this->getColumnName($col) ." = '".$this->getTable()->getName().".".strtoupper($col->getName())."';
+	/** the column name for the [".$col->getName()."] column */
+	const ".$this->getColumnName($col) ." = '".$col->getName()."';
 ";
 		} // foreach
 	}
@@ -301,7 +301,64 @@ abstract class ".$this->getClassname()." {
 	}
 ";
 	} // addTranslateFieldName()
-
+	
+	/**
+	 * Adds the createCriteria() method.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addCreateCriteria(&$script)
+	{
+		$script .= "
+	/**
+	 * Create a new Criteria object for use with this table.
+	 * @param string \$alias The table alias to use for this Criteria.
+	 */
+	public static function createCriteria(\$alias = null)
+	{
+		return new Criteria2(".$this->getPeerClassname()."::createQueryTable(\$alias));
+	}
+";
+	}
+	
+	/**
+	 * Adds the createQuery() method.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addCreateQuery(&$script)
+	{
+		$script .= "
+	/**
+	 * Create a new Query object for use with this table.
+	 * @param Criteria \$criteria The Criteria to use for this query. 
+	 */
+	public static function createQuery(Criteria \$criteria = null)
+	{
+		if (\$criteria === null) {
+			\$criteria = ".$this->getPeerClassname()."::createCriteria();
+		}
+		return new Query(\$criteria);
+	}
+";
+	}
+	
+	/**
+	 * Adds the createQueryTable() method.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addCreateQueryTable(&$script)
+	{
+		$script .= "
+	/**
+	 * Create a new QueryTable object representing this table for use in a query.
+	 * @param string \$alias The table alias to use for this QueryTable.
+	 */
+	public static function createQueryTable(\$alias = null)
+	{
+		return new QueryTable(".$this->getPeerClassname()."::getTableMap(), \$alias);
+	}
+";
+	}
+	
 	/**
 	 * Adds the getMapBuilder() method.
 	 * @param string &$script The script will be modified in this method.
@@ -348,8 +405,8 @@ abstract class ".$this->getClassname()." {
 	/** A key representing a particular subclass */
 	const CLASSKEY_".strtoupper($child->getKey())." = '" . $child->getKey() . "';
 
-        /** A key representing a particular subclass */
-        const CLASSKEY_".strtoupper($child->getClassName())." = '" . $child->getKey() . "';
+	/** A key representing a particular subclass */
+	const CLASSKEY_".strtoupper($child->getClassName())." = '" . $child->getKey() . "';
 
 	/** A class that can be returned by this peer. */
 	const CLASSNAME_".strtoupper($child->getKey())." = '". $childBuilder->getClasspath() . "';
@@ -359,32 +416,6 @@ abstract class ".$this->getClassname()." {
 		} /* if table->getchildrencolumn() */
 
 	} //
-
-	/**
-	 * Adds the alias() utility method.
-	 * @param string &$script The script will be modified in this method.
-	 */
-	protected function addAlias(&$script)
-	{
-		$script .= "
-	/**
-	 * Convenience method which changes table.column to alias.column.
-	 *
-	 * Using this method you can maintain SQL abstraction while using column aliases.
-	 * <code>
-	 *		\$c->addAlias(\"alias1\", TablePeer::TABLE_NAME);
-	 *		\$c->addJoin(TablePeer::alias(\"alias1\", TablePeer::PRIMARY_KEY_COLUMN), TablePeer::PRIMARY_KEY_COLUMN);
-	 * </code>
-	 * @param string \$alias The alias for the current table.
-	 * @param string \$column The column name for current table. (i.e. ".$this->getTable()->getPhpName()."Peer::COLUMN_NAME).
-	 * @return string
-	 */
-	public static function alias(\$alias, \$column)
-	{
-		return str_replace(".$this->getPeerClassname()."::TABLE_NAME.'.', \$alias.'.', \$column);
-	}
-";
-	} // addAliasMethod
 
 	/**
 	 * Adds the addSelectColumns() method.
@@ -400,17 +431,22 @@ abstract class ".$this->getClassname()." {
 	 * XML schema will not be added to the select list and only loaded
 	 * on demand.
 	 *
-	 * @param criteria object containing the columns to add.
+	 * @param Query \$query The query _to which_ we want to add select columns for this table.
+	 * @param QueryTable \$queryTable The query table that we are adding the select columns from. (If none
+	 *									is set, then assume that we are adding from \$query's table.)
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function addSelectColumns(Criteria \$criteria)
+	public static function addSelectColumns(Query \$query, QueryTable \$queryTable = null)
 	{
+		if (\$queryTable === null) {
+			\$queryTable = \$query->getQueryTable();
+		}		 
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			if (!$col->isLazyLoad()) {
 				$script .= "
-		\$criteria->addSelectColumn(".$this->getPeerClassname()."::".$this->getColumnName($col).");
+		\$query->addSelectColumn(\$queryTable->createQueryColumn(".$this->getPeerClassname()."::".$this->getColumnName($col)."));
 ";
 			} // if !col->isLazyLoad
 		} // foreach
@@ -441,8 +477,8 @@ abstract class ".$this->getClassname()." {
 		}
 
 		$script .= "
-	const COUNT = 'COUNT($count_col)';
-	const COUNT_DISTINCT = 'COUNT(DISTINCT $count_col)';
+	const COUNT = 'COUNT(\$1%s.$count_col)';
+	const COUNT_DISTINCT = 'COUNT(DISTINCT \$1%s.$count_col)';
 ";
 	}
 
@@ -456,22 +492,22 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Returns the number of rows matching criteria.
 	 *
-	 * @param Criteria \$criteria
-	 * @param boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
+	 * @param Query \$query
 	 * @param Connection \$con
 	 * @return int Number of matching rows.
 	 */
-	public static function doCount(Criteria \$criteria, \$distinct = false, \$con = null)
+	public static function doCount(Query \$query, PDO \$con = null)
 	{
 		// we're going to modify criteria, so copy it first
-		\$criteria = clone \$criteria;
+		\$query = clone \$query;
 
 		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
+		\$query->clearSelectColumns()->clearOrderByColumns();
+		
+		if (in_array(Query::DISTINCT, \$query->getSelectModifiers())) {
+			\$criteria->addSelectColumn(new VirtualQueryColumn(".$this->getPeerClassname()."::COUNT_DISTINCT));
 		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+			\$criteria->addSelectColumn(new VirtualQueryColumn(".$this->getPeerClassname()."::COUNT));
 		}
 
 		// just in case we're grouping: add those columns to the select statement
@@ -480,7 +516,7 @@ abstract class ".$this->getClassname()." {
 			\$criteria->addSelectColumn(\$column);
 		}
 
-		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$query, \$con);
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			return \$row[0];
 		} else {
@@ -506,11 +542,11 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectOne(Criteria \$criteria, \$con = null)
+	public static function doSelectOne(Query \$query, PDO \$con = null)
 	{
-		\$critcopy = clone \$criteria;
-		\$critcopy->setLimit(1);
-		\$objects = ".$this->getPeerClassname()."::doSelect(\$critcopy, \$con);
+		\$qcopy = clone \$query;
+		\$qcopy->setLimit(1);
+		\$objects = ".$this->getPeerClassname()."::doSelect(\$qcopy, \$con);
 		if (\$objects) {
 			return \$objects[0];
 		}
@@ -534,9 +570,9 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelect(Criteria \$criteria, \$con = null)
+	public static function doSelect(Query \$query, PDO \$con = null)
 	{
-		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con));
+		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$query, \$con));
 	}";
 	}
 
@@ -549,35 +585,33 @@ abstract class ".$this->getClassname()." {
 
 		$script .= "
 	/**
-	 * Prepares the Criteria object and uses the parent doSelect()
-	 * method to get a ResultSet.
+	 * Prepares the Query object and uses the ".$this->basePeerClassname."::doSelect()
+	 * method to get a result set.
 	 *
-	 * Use this method directly if you want to just get the resultset
+	 * Use this method directly if you want to just get the PDOStatement result set
 	 * (instead of an array of objects).
 	 *
-	 * @param Criteria \$criteria The Criteria object used to build the SELECT statement.
-	 * @param Connection \$con the connection to use
+	 * @param Query \$query The Query object used to build the SELECT statement.
+	 * @param PDO \$con the connection to use
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
-	 * @return ResultSet The resultset object with numerically-indexed fields.
+	 * @return PDOStatement The resultset object with numerically-indexed fields.
 	 * @see ".$this->basePeerClassname."::doSelect()
 	 */
-	public static function doSelectRS(Criteria \$criteria, \$con = null)
+	public static function doSelectStmt(Query \$query, PDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
-
-		if (!\$criteria->getSelectColumns()) {
-			\$criteria = clone \$criteria;
-			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
+		  
+		if (!\$query->getSelectColumns()) {
+			\$query = clone \$query;
+			\$query->addDefaultSelectColumns();
+			// ".$this->getPeerClassname()."::addSelectColumns(\$query);
 		}
-
-		// Set the correct dbName
-		\$criteria->setDbName(self::DATABASE_NAME);
-
+		
 		// BasePeer returns a PDOStatement
-		return ".$this->basePeerClassname."::doSelect(\$criteria, \$con);
+		return ".$this->basePeerClassname."::doSelect(\$query, \$con);
 	}";
 	}
 
@@ -768,16 +802,16 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doInsert(\$values, \$con = null)
+	public static function doInsert(\$values, PDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
 		}
 
-		if (\$values instanceof Criteria) {
-			\$criteria = clone \$values; // rename for clarity
+		if (\$values instanceof ColumnValueCollection) {
+			\$values = clone \$values; // clone, because we're modifying it below
 		} else {
-			\$criteria = \$values->buildCriteria(); // build Criteria from ".$table->getPhpName()." object
+			\$values = \$values->buildColumnValueCollection();
 		}
 ";
 
@@ -785,20 +819,14 @@ abstract class ".$this->getClassname()." {
 			$cfc = $col->getPhpName();
 			if ($col->isPrimaryKey() && $col->isAutoIncrement() && $table->getIdMethod() != "none") {
 				$script .= "
-		\$criteria->remove(".$this->getColumnConstant($col)."); // remove pkey col since this table uses auto-increment
+		\$values->remove(".$this->getColumnConstant($col)."); // remove pkey col since this table uses auto-increment
 ";
 			}
 		}
 		$script .= "
-
-		// Set the correct dbName
-		\$criteria->setDbName(self::DATABASE_NAME);
-
 		try {
-			// use transaction because \$criteria could contain info
-			// for more than one table (I guess, conceivably)
 			Transaction::begin(\$con);
-			\$pk = ".$this->basePeerClassname."::doInsert(\$criteria, \$con);
+			\$pk = ".$this->basePeerClassname."::doInsert(\$values, \$con);
 			Transaction::commit(\$con);
 		} catch(PropelException \$e) {
 			Transaction::rollback(\$con);
@@ -819,7 +847,7 @@ abstract class ".$this->getClassname()." {
 		$table = $this->getTable();
 		$script .= "
 	/**
-	 * Method perform an UPDATE on the database, given a ".$table->getPhpName()." or Criteria object.
+	 * Method perform an UPDATE on the database, given a ".$table->getPhpName()." or ColumnValueCollection object.
 	 *
 	 * @param mixed \$values Criteria or ".$table->getPhpName()." object containing data that is used to create the UPDATE statement.
 	 * @param Connection \$con The connection to use (specify Connection object to exert more control over transactions).
@@ -827,36 +855,32 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doUpdate(\$values, \$con = null)
+	public static function doUpdate(\$obj, PDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
+		
+		
 
-		\$selectCriteria = new " . $this->getBuildProperty('criteriaClass') . "(self::DATABASE_NAME);
-
-		if (\$values instanceof Criteria) {
-			\$criteria = clone \$values; // rename for clarity
-";
+		if (\$obj instanceof ColumnValueCollection) {
+			\$values = clone \$obj; // rename for clarity
+			\$selectCriteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getColumns() as $col) {
 			if($col->isPrimaryKey()) {
 				$script .= "
-			\$comparison = \$criteria->getComparison(".$this->getColumnConstant($col).");
-			\$selectCriteria->add(".$this->getColumnConstant($col).", \$criteria->remove(".$this->getColumnConstant($col)."), \$comparison);
+			\$selectCriteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$values->remove(".$this->getColumnConstant($col).")));
 ";
 			}  /* if col is prim key */
 	 	} /* foreach */
 
 		$script .= "
 		} else { // \$values is ".$table->getPhpName()." object
-			\$criteria = \$values->buildCriteria(); // gets full criteria
-			\$selectCriteria = \$values->buildPkeyCriteria(); // gets criteria w/ primary key(s)
+			\$selectCriteria = \$obj->buildPkeyCriteria(); // gets criteria w/ primary key(s)
+			\$values = \$obj->buildColumnValueCollection();			
 		}
 
-		// set the correct dbName
-		\$criteria->setDbName(self::DATABASE_NAME);
-
-		return {$this->basePeerClassname}::doUpdate(\$selectCriteria, \$criteria, \$con);
+		return ".$this->basePeerClassname."::doUpdate(\$selectCriteria, \$values, \$con);
 	}
 ";
 	}
@@ -874,7 +898,7 @@ abstract class ".$this->getClassname()." {
 	 *
 	 * @return int The number of affected rows (if supported by underlying database driver).
 	 */
-	public static function doDeleteAll(\$con = null)
+	public static function doDeleteAll(PDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
@@ -923,70 +947,34 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	 public static function doDelete(\$values, \$con = null)
+	 public static function doDelete(\$obj, PDO \$con = null)
 	 {
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
 
-		if (\$values instanceof Criteria) {
-			\$criteria = clone \$values; // rename for clarity
-		} elseif (\$values instanceof ".$table->getPhpName().") {
+		if (\$obj instanceof Criteria) {
+			\$criteria = clone \$obj; // rename for clarity
+		} elseif (\$obj instanceof ".$table->getPhpName().") {
 ";
 		if (count($table->getPrimaryKey()) > 0) {
 			$script .= "
-			\$criteria = \$values->buildPkeyCriteria();";
+			\$criteria = \$obj->buildPkeyCriteria();";
 		} else {
 			$script .= "
-			\$criteria = \$values->buildCriteria();";
+			// this table has no primary key, so we build a Criteria that contains
+			// all the columns from the object
+			\$criteria = ".$this->getPeerClassname()."::createCriteria();			
+			foreach(\$obj->buildColumnValueCollection() as \$cv) {
+				\$criteria->add(EqualExpr(\$cv->getColumnMap()->getName(), \$cv->getValue()));
+			}
+";
 		}
 
 		$script .= "
 		} else {
-			// it must be the primary key
-			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(self::DATABASE_NAME);";
-
-		if (count($table->getPrimaryKey()) === 1) {
-			$pkey = $table->getPrimaryKey();
-			$col = array_shift($pkey);
-			$script .= "
-			\$criteria->add(".$this->getColumnConstant($col).", (array) \$values, Criteria::IN);";
-		} else {
-			$script .= "
-			// primary key is composite; we therefore, expect
-			// the primary key passed to be an array of pkey
-			// values
-			if(count(\$values) == count(\$values, COUNT_RECURSIVE))
-			{
-				// array is not multi-dimensional
-				\$values = array(\$values);
-			}
-			\$vals = array();
-			foreach(\$values as \$value)
-			{
-";
-			$i=0;
-			foreach($table->getPrimaryKey() as $col) {
-				$script .= "
-				\$vals[$i][] = \$value[$i];";
-				$i++;
-			}
-			$script .= "
-			}
-";
-			$i=0;
-			foreach($table->getPrimaryKey() as $col) {
-				$script .= "
-			\$criteria->add(".$this->getColumnConstant($col).", \$vals[$i], Criteria::IN);";
-				$i++;
-			}
-		} /* if count(table->getPrimaryKeys()) */
-
-		$script .= "
+			throw new PropelException(\"Inavlid parameter passed to ".$this->getPeerClassname()."::doDelete(): \" . var_export(\$obj, true)); 
 		}
-
-		// Set the correct dbName
-		\$criteria->setDbName(self::DATABASE_NAME);
 
 		\$affectedRows = 0; // initialize var to track total num of affected rows
 
@@ -1004,7 +992,7 @@ abstract class ".$this->getClassname()." {
 		}
 
 		$script .= "
-			\$affectedRows += {$this->basePeerClassname}::doDelete(\$criteria, \$con);
+			\$affectedRows += ".$this->basePeerClassname."::doDelete(\$criteria, \$con);
 			Transaction::commit(\$con);
 			return \$affectedRows;
 		} catch (PropelException \$e) {
@@ -1249,37 +1237,25 @@ abstract class ".$this->getClassname()." {
 	 * Retrieve a single object by pkey.
 	 *
 	 * @param mixed \$pk the primary key.
-	 * @param Connection \$con the connection to use
+	 * @param PDO \$con the connection to use
 	 * @return " . $table->getPhpName() . "
 	 */
-	public static function ".$this->getRetrieveMethodName()."(\$pk, \$con = null)
+	public static function ".$this->getRetrieveMethodName()."(\$pk, PDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection(self::DATABASE_NAME);
 		}
 
-		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = " .$this->getPeerClassname()."::createCriteria();
 ";
-		if (count($table->getPrimaryKey()) === 1) {
-			$pkey = $table->getPrimaryKey();
-			$col = array_shift($pkey);
-			$script .= "
-		\$criteria->add(".$this->getColumnConstant($col).", \$pk);
+		$pkey = $table->getPrimaryKey();
+		$col = array_shift($pkey);
+		$script .= "
+		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$pk));
 ";
-		} else {
-			// primary key is composite; we therefore, expect
-			// the primary key passed to be an array of pkey
-			// values
-			$i=0;
-			foreach($table->getPrimaryKey() as $col) {
-	   			$script .= "
-		\$criteria->add(".$this->getColumnConstant($col).", \$pk[$i]);";
-				$i++;
-			}
-		} /* if count(table.PrimaryKeys) */
 		$script .= "
 
-		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
+		\$v = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
 
 		return !empty(\$v) > 0 ? \$v[0] : null;
 	}
@@ -1302,43 +1278,24 @@ abstract class ".$this->getClassname()." {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function ".$this->getRetrieveMethodName()."s(\$pks, \$con = null)
+	public static function ".$this->getRetrieveMethodName()."s(\$pks, PDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
 
 		\$objs = null;
 		if (empty(\$pks)) {
 			\$objs = array();
 		} else {
-			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();";
-		if (count($table->getPrimaryKey()) == 1) {
-			$k1 = $table->getPrimaryKey();
-			$script .= "
-			\$criteria->add(".$this->getColumnConstant($k1[0]).", \$pks, Criteria::IN);";
-		} else {
-			$script .= "
-			foreach(\$pks as \$pk) {";
-			$i = 0;
-			foreach($table->getPrimaryKey() as $col) {
-				$script .= "
-				\$c{$i} = \$criteria->getNewCriterion(".$this->getPeerClassname($col).", \$pk[$i], Criteria::EQUAL);";
-				$j = $i - 1;
-				if ($i > 0) {
-					$script .= "
-				\$c{$j}->addAnd(\$c{$i});";
-				} /* if $i > 0 */
-				$i++;
-			} /* foreach */
-
-			$script .= "
-
-				\$criteria->addOr(\$c0);
-			}";
-		} /* if count prim keys == 1 */
+			\$criteria = ".$this->getPeerClassname()."::createCriteria();";
+					
+		$k1 = $table->getPrimaryKey();
 		$script .= "
-			\$objs = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
+			\$criteria->add(new InExpr(".$this->getColumnConstant($k1[0]).", \$pks));";
+	
+		$script .= "
+			\$objs = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
 		}
 		return \$objs;
 	}
@@ -1374,16 +1331,16 @@ abstract class ".$this->getClassname()." {
 		} /* foreach */
 		$script .= ", \$con = null) {
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
 		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
-		\$criteria->add(".$this->getColumnConstant($col).", $".$clo.");";
+		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
 		}
 		$script .= "
-		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
+		\$v = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
 
 		return !empty(\$v) ? \$v[0] : null;
 	}";

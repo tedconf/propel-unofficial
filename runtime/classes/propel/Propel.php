@@ -136,11 +136,6 @@ class Propel {
 					. "a valid configuration. Please check the log files "
 					. "for further details.");
 		}
-
-		// Support having the configuration stored within a 'propel' sub-section or at the top-level
-		if (isset(self::$configuration['propel']) && is_array(self::$configuration['propel'])) {
-			self::$configuration = self::$configuration['propel'];
-		}
 		
 		// reset the connection map (this should enable runtime changes of connection params)
 		self::$connectionMap = array();
@@ -336,7 +331,7 @@ class Propel {
 			$key = $name.'.dsn';
 			
 			if (!isset(self::$configuration['datasources'][$key])) {
-				throw new PropelException("Unable to find " . $key . ".dsn in the [datasources] section of your configuration file.");
+				throw new PropelException("Unable to find " . $key . " in the [datasources] section of your configuration file.");
 			}
 			
 			$dsn = self::$configuration['datasources'][$key];			

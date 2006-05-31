@@ -77,11 +77,6 @@ require_once '".$this->getFilePath($interface)."';
 		}
 
 		$script .= "
-
-include_once 'propel/util/Criteria.php';
-";
-
-		$script .= "
 include_once '".$this->getStubPeerBuilder()->getClassFilePath()."';
 ";
 	} // addIncludes()
@@ -160,7 +155,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			$this->addFromArray($script);
 		}
 
-		$this->addBuildCriteria($script);
+		$this->addBuildColumnValueCollection($script);
 		$this->addBuildPkeyCriteria($script);
 		$this->addGetPrimaryKey($script);
 		$this->addSetPrimaryKey($script);
@@ -681,20 +676,17 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	/**
 	 * Builds a Criteria object containing the primary key for this object.
 	 *
-	 * Unlike buildCriteria() this method includes the primary key values regardless
-	 * of whether or not they have been modified.
-	 *
 	 * @return Criteria The Criteria object containing value(s) for primary key(s).
 	 */
 	public function buildPkeyCriteria()
 	{
-		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = ".$this->getPeerClassname()."::createCriteria();
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
 			if ($col->isPrimaryKey()) {
 				$script .= "
-		\$criteria->add(".$this->getColumnConstant($col).", \$this->$clo);";
+		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$this->$clo));";
 			}
 		}
 
@@ -709,26 +701,26 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	/**
 	 *
 	 */
-	protected function addBuildCriteria(&$script)
+	protected function addBuildColumnValueCollection(&$script)
 	{
 		$script .= "
 	/**
-	 * Build a Criteria object containing the values of all modified columns in this object.
+	 * Build a ColumnValueCollection object containing the values of all modified columns in this object.
 	 *
-	 * @return Criteria The Criteria object containing all modified values.
+	 * @return ColumnValueCollection The ColumnValueCollection object containing all modified values.
 	 */
-	public function buildCriteria()
+	public function buildColumnValueCollection()
 	{
-		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$coll = new ColumnValueCollection(".$this->getPeerClassname()."::getTableMap());
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
-		if (\$this->isColumnModified(".$this->getColumnConstant($col).")) \$criteria->add(".$this->getColumnConstant($col).", \$this->$clo);";
+		if (\$this->isColumnModified(".$this->getColumnConstant($col).")) \$coll->set(".$this->getColumnConstant($col).", \$this->$clo);";
 		}
 		$script .= "
 
-		return \$criteria;
+		return \$coll;
 	}
 ";
 	} // addBuildCriteria()

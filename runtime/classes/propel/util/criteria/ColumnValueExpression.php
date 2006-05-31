@@ -31,7 +31,7 @@ abstract class ColumnValueExpression extends ColumnExpression implements Express
 				// this is a SqlExpr, so the value is going to be the result of SqlExpr->getSql()
 				
 				// We're not going to honor the ignore sql setting for custom SQL							
-				$sql .= $col->getQualifiedName() . ' ' . $this->getOperator() . ' ' . $this->value->getSql();
+				$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ' . $this->value->getSql();
 				
 			} else {
 			
@@ -40,13 +40,13 @@ abstract class ColumnValueExpression extends ColumnExpression implements Express
 				if ($this->getIgnoreCase()) {
 					$sql .= $this->getIgnoreCaseSql();
 			    } else {
-		        	$sql .= $col->getQualifiedName() . ' ' . $this->getOperator() . ' ?';
+		        	$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ?';
 		    	}
 	
 				// need to track the field in params, because
 				// we'll need it to determine the correct setter
 				// method later on (e.g. field 'review.DATE' => setDate());
-				$values[] = new ColumnValue($col, $this->value);
+				$values[] = new ColumnValue($col->getColumnMap(), $this->value);
 			}
 						
 		} else {
@@ -67,7 +67,7 @@ abstract class ColumnValueExpression extends ColumnExpression implements Express
 	protected function getIgnoreCaseSql()
 	{
 		$col = $this->getQueryColumn();
-		return $col->ignoreCase($col->getQualifiedName()) . ' ' . $this->getOperator() . ' ' . $col->ignoreCase('?');
+		return $col->ignoreCase($col->getQualifiedSql()) . ' ' . $this->getOperator() . ' ' . $col->ignoreCase('?');
 	}
 
 	/**
@@ -75,7 +75,7 @@ abstract class ColumnValueExpression extends ColumnExpression implements Express
 	 */
 	protected function getNullValueSql()
 	{
-		throw new PropelException("Could not build SQL for expression: " . $this->getQueryColumn()->getQualifiedName() . " ". $this->getOperator() . " NULL");
+		throw new PropelException("Could not build SQL for expression: " . $this->getQueryColumn()->getQualifiedSql() . " ". $this->getOperator() . " NULL");
 	}
 
 }

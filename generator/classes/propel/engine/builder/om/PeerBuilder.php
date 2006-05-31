@@ -140,14 +140,17 @@ abstract class PeerBuilder extends OMBuilder {
 		if (!$table->isAlias()) {
 			$this->addConstantsAndAttributes($script);
 		}
-
+		
+		$this->addCreateCriteria($script);
+		$this->addCreateQuery($script);
+		$this->addCreateQueryTable($script);
+		
 		$this->addGetMapBuilder($script);
 
 		$this->addTranslateFieldName($script);
 		$this->addGetFieldNames($script);
 
 		if (!$table->isAlias()) {
-			$this->addAlias($script); // alias() utility method (deprecated?)
 			$this->addSelectMethods($script);
 			$this->addGetTableMap($script);
 		}

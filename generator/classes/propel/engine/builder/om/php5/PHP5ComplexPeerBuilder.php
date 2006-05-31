@@ -147,18 +147,26 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null)
+	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Query \$q, PDO \$con = null)
 	{
-		\$c = clone \$c;
-
-		// Set the correct dbName if it has not been overridden
-		if (\$c->getDbName() == Propel::getDefaultDB()) {
-			\$c->setDbName(self::DATABASE_NAME);
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
+		
+		// Debugging problem ... commenting out clone ...
+		// \$q = clone \$q;
 
-		".$this->getPeerClassname()."::addSelectColumns(\$c);
-		\$startcol = (".$this->getPeerClassname()."::NUM_COLUMNS - ".$this->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS) + 1;
-		".$joinedTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$c);
+		\$q->addDefaultSelectColumns();
+		// used to be: ".$this->getPeerClassname()."::addSelectColumns(\$q);
+		
+		\$startcol = (".$this->getPeerClassname()."::NUM_COLUMNS - ".$this->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS);
+		
+		\$myQueryTable = \$q->getQueryTable();
+		\$joinedQueryTable = ".$joinedTablePeerBuilder->getPeerClassname()."::createQueryTable();
+		
+		\$q->addSelectColumnsForTable(\$joinedQueryTable);
+		
+		// used to be: ".$joinedTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$q, \$joinedQueryTable);
 ";
 		
 						$lfMap = $fk->getLocalForeignMapping();
@@ -166,10 +174,12 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 							$column = $table->getColumn($columnName);
 							$columnFk = $joinTable->getColumn( $lfMap[$columnName] );
 							$script .= "
-		\$c->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).");"; //CHECKME
+		
+		\$q->addJoin(\$myQueryTable->createQueryColumn(".$this->getColumnConstant($column)."), \$joinedQueryTable->createQueryColumn(".$joinedTablePeerBuilder->getColumnConstant($columnFk).")); //CHECKME
+"; 
 						}
 						$script .= "
-		\$stmt = ".$this->basePeerClassname."::doSelect(\$c, \$con);
+		\$stmt = ".$this->basePeerClassname."::doSelect(\$q, \$con);
 		\$results = array();
 
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {

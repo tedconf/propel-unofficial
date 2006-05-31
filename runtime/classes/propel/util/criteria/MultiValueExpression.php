@@ -28,10 +28,10 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 				$sql .= $this->getEmptyValuesSql();
 			} else {
 
-				$sql .= $col->getQualifiedName() . ' ' . $this->getOperator();
+				$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator();
 
 				foreach($this->values as $value) {
-                    $values[] = new ColumnValue($col, $value);
+                    $values[] = new ColumnValue($col->getColumnMap(), $value);
                 }
 
                 $inString = '(' . substr(str_repeat("?,", count($this->values)), 0, -1) . ')';

@@ -90,16 +90,7 @@
 
     <phingcall target="sql"/>
     <phingcall target="om"/>
-    <phingcall target="convert-props"/>
-  </target>
-
-  <target
-    name="old-build"
-    description="==> generates sql + [new] om classes">
-
-    <phingcall target="sql"/>
-    <phingcall target="old-om"/>
-    <phingcall target="convert-props"/>
+    <phingcall target="copy-runtime-conf"/>
   </target>
 
   <!-- ================================================================ -->
@@ -191,43 +182,6 @@
         excludes="${propel.schema.sql.excludes}"
       />
     </propel-sql>
-  </target>
-
-
-  <target
-    name="old-sql"
-    depends="sql-check"
-    unless="propel.internal.sql.uptodate"
-    description="==> generates the SQL for your project">
-
-    <echo message="+------------------------------------------+"/>
-    <echo message="|                                          |"/>
-    <echo message="| Generating SQL for YOUR Propel project!  |"/>
-    <echo message="| (using deprecated legacy SQL template)   |"/>
-	<echo message="|                                          |"/>
-    <echo message="+------------------------------------------+"/>
-
-    <phingcall target="old-sql-template"/>
-
-  </target>
-
-  <target name="old-sql-template">
-    <propel-old-sql
-	  validate="${propel.schema.validate}"
-	  xsd="${propel.schema.xsd.file}"
-	  xsl="${propel.schema.xsl.file}"
-      outputDirectory="${propel.sql.dir}"
-      sqldbmap="${propel.sql.dir}/sqldb.map"
-      targetDatabase="${propel.database}"
-      templatePath="${propel.templatePath}"
-      packageObjectModel="${propel.packageObjectModel}"
-      >
-      <mapper type="glob" from="${propel.sql.mapper.from}" to="${propel.sql.mapper.to}"/>
-      <schemafileset dir="${propel.schema.dir}"
-        includes="${propel.schema.sql.includes}"
-        excludes="${propel.schema.sql.excludes}"
-      />
-    </propel-old-sql>
   </target>
 
   <!-- ================================================================ -->
@@ -475,65 +429,26 @@
     </propel-om>
   </target>
 
-  <!-- the new OM tasks -->
-
-  <target
-    name="old-om"
-    depends="om-check"
-    unless="propel.internal.om.uptodate"
-    description="==> generates the OLD Peer-based object model for your project">
-
-    <echo message="+------------------------------------------+"/>
-    <echo message="|                                          |"/>
-    <echo message="| Generating Peer-based Object Model for   |"/>
-    <echo message="| YOUR Propel project (OLD OM TEMPLATES).  |"/>
-    <echo message="|                                          |"/>
-    <echo message="+------------------------------------------+"/>
-
-    <phingcall target="old-om-template"/>
-    <!--<phingcall target="om-tar"/>-->
-  </target>
-
-  <target name="old-om-template">
-    <propel-old-om
-	  validate="${propel.schema.validate}"
-	  xsd="${propel.schema.xsd.file}"
-	  xsl="${propel.schema.xsl.file}"
-      outputDirectory="${propel.php.dir}"
-      targetDatabase="${propel.database}"
-      targetPackage="${propel.targetPackage}"
-      templatePath="${propel.templatePath}"
-      targetPlatform="${propel.targetPlatform}">
-      <schemafileset dir="${propel.schema.dir}"
-        includes="${propel.schema.om.includes}"
-        excludes="${propel.schema.om.excludes}"
-      />
-    </propel-old-om>
-  </target>
-
-
   <!-- ================================================================== -->
   <!-- P R O P S   T O   P H P   A R R A Y                                -->
   <!-- ================================================================== -->
 
   <target
-    name="convert-props"
+    name="copy-runtime-conf"
     description="==> converts properties file to PHP array">
 
     <echo message="+------------------------------------------+"/>
     <echo message="|                                          |"/>
-    <echo message="| Converting project properties file to an |"/>
-    <echo message="| array dump for run-time performance.     |"/>
+    <echo message="| Copying your runtime config file(s) to   |"/>
+    <echo message="| the output directory.                    |"/>
     <echo message="|                                          |"/>
     <echo message="+------------------------------------------+"/>
 
-    <capsule
-      templatePath="${propel.templatePath}"
-      controlTemplate="${propel.template.conf}"
-      outputDirectory="${propel.phpconf.dir}"
-      outputFile="${propel.runtime.phpconf.file}">
-      <assign name="propertiesFile" value="${propel.conf.dir}/${propel.runtime.conf.file}"/>
-     </capsule>
+    <copy todir="${propel.phpconf.dir}">
+    	<fileset dir="${propel.conf.dir}">
+			<include name="${propel.runtime.conf.includes}"/>
+		</fileset>
+    </copy>
 
   </target>
 

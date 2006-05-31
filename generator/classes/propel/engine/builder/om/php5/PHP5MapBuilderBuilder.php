@@ -224,7 +224,7 @@ class ".$this->getClassname()." implements MapBuilder {
 		\$tMap->setUseIdGenerator(false);
 ";
 		}
-
+		
 		if ($table->getIdMethodParameters()) {
 			$params = $table->getIdMethodParameters();
 			$imp = $params[0];
@@ -244,8 +244,8 @@ class ".$this->getClassname()." implements MapBuilder {
 		// Add columns to map
 		foreach ($table->getColumns() as $col) {
 			$tfc=$table->getPhpName();
-			$cfc=$col->getPhpName();
-			$cup=strtoupper($col->getName());
+			$phpname=$col->getPhpName();
+			$colname=$col->getName();
 			if (!$col->getSize()) {
 				$size = "null";
 			} else {
@@ -254,21 +254,21 @@ class ".$this->getClassname()." implements MapBuilder {
 			if($col->isPrimaryKey()) {
 				if($col->isForeignKey()) {
 					$script .= "
-		\$tMap->addForeignPrimaryKey('$cup', '$cfc', '".$col->getType()."' , '".$col->getRelatedTableName()."', '".strtoupper($col->getRelatedColumnName())."', ".($col->isNotNull() ? 'true' : 'false').", ".$size.");
+		\$tMap->addForeignPrimaryKey('$colname', '$phpname', '".$col->getType()."' , '".$col->getRelatedTableName()."', '".$col->getRelatedColumnName()."', ".($col->isNotNull() ? 'true' : 'false').", ".$size.");
 ";
 				} else {
 					$script .= "
-		\$tMap->addPrimaryKey('$cup', '$cfc', '".$col->getType()."', ".var_export($col->isNotNull(), true).", ".$size.");
+		\$tMap->addPrimaryKey('$colname', '$phpname', '".$col->getType()."', ".var_export($col->isNotNull(), true).", ".$size.");
 ";
 				} 
 			} else {
 				if($col->isForeignKey()) {
 					$script .= "
-		\$tMap->addForeignKey('$cup', '$cfc', '".$col->getType()."', '".$col->getRelatedTableName()."', '".strtoupper($col->getRelatedColumnName())."', ".($col->isNotNull() ? 'true' : 'false').", ".$size.");
+		\$tMap->addForeignKey('$colname', '$phpname', '".$col->getType()."', '".$col->getRelatedTableName()."', '".$col->getRelatedColumnName()."', ".($col->isNotNull() ? 'true' : 'false').", ".$size.");
 ";
             } else { 
 					$script .= "
-		\$tMap->addColumn('$cup', '$cfc', '".$col->getType()."', ".var_export($col->isNotNull(), true).");
+		\$tMap->addColumn('$colname', '$phpname', '".$col->getType()."', ".var_export($col->isNotNull(), true).");
 ";
 				} 
 			} // if col-is prim key
@@ -276,15 +276,15 @@ class ".$this->getClassname()." implements MapBuilder {
 		
 		foreach($table->getValidators() as $val) {
 			$col = $val->getColumn();
-			$cup = strtoupper($col->getName());
+			$colname = $col->getName();
 			foreach($val->getRules() as $rule) {
 				if ($val->getTranslate() !== Validator::TRANSLATE_NONE) {
 					$script .= "
-		\$tMap->addValidator('$cup', '".$rule->getName()."', '".$rule->getClass()."', '".$rule->getValue()."', ".$val->getTranslate()."('".str_replace("'", "\'", $rule->getMessage())."'));
+		\$tMap->addValidator('$colname', '".$rule->getName()."', '".$rule->getClass()."', '".$rule->getValue()."', ".$val->getTranslate()."('".str_replace("'", "\'", $rule->getMessage())."'));
 ";
 				} else {
 					$script .= "
-		\$tMap->addValidator('$cup', '".$rule->getName()."', '".$rule->getClass()."', '".$rule->getValue()."', '".str_replace("'", "\'", $rule->getMessage())."');
+		\$tMap->addValidator('$colname', '".$rule->getName()."', '".$rule->getClass()."', '".$rule->getValue()."', '".str_replace("'", "\'", $rule->getMessage())."');
 ";
 				} // if ($rule->getTranslation() ...
   			} // foreach rule

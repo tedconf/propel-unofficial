@@ -96,5 +96,17 @@ class DBSQLite extends DBAdapter {
 	{
 		return '[' . $text . ']';
 	}
+	
+	/**
+     * @see DBAdapter::applyLimit()
+     */
+    public function applyLimit(&$sql, $offset, $limit)
+    {
+        if ( $limit > 0 ) {
+            $sql .= " LIMIT " . $limit . ($offset > 0 ? " OFFSET " . $offset : "");
+        } elseif ( $offset > 0 ) {
+            $sql .= " LIMIT -1 OFFSET " . $offset;
+        }
+    }
 
 }

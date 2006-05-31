@@ -82,20 +82,7 @@ class TableMap {
         $this->dbMap = $containingDB;
         $this->columns = array();
     }
-    
-    /**
-     * Normalizes the column name, removing table prefix and uppercasing.
-     * @param string $name
-     * @return string Normalized column name.
-     */
-    private function normalizeColName($name) {
-        if (false !== ($pos = strpos($name, '.'))) {
-            $name = substr($name, $pos + 1);
-        }
-        $name = strtoupper($name);
-        return $name;
-    }
-    
+
     /**
      * Does this table contain the specified column?
      *
@@ -106,8 +93,8 @@ class TableMap {
     {
         if (!is_string($name)) {
             $name = $name->getColumnName();
-        }        
-        return isset($this->columns[$this->normalizeColName($name)]);
+        }
+        return isset($this->columns[$name]);
     }
 
     /**
@@ -199,6 +186,22 @@ class TableMap {
     {
         return $this->columns;
     }
+    
+    /**
+     * Gets the columns that comprise the primary key.
+     * 
+     * Note: this is not a performance-enhanced function, so avoid calling repetitively.
+     * 
+     * @return array ColumnMap[]
+     */
+    public function getPrimaryKey()
+    {
+    	$pk = array();
+		foreach($this->getColumns() as $col) {
+			if ($col->isPrimaryKey()) $pk[] = $col;
+		}
+		return $pk;
+	}
 
     /**
      * Get a ColumnMap for the named table.
@@ -209,7 +212,6 @@ class TableMap {
      */
     public function getColumn($name)
     {
-        $name = $this->normalizeColName($name);
         if (!isset($this->columns[$name])) {
             throw new PropelException("Cannot fetch ColumnMap for undefined column: " . $name);
         }

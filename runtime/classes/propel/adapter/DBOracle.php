@@ -93,5 +93,30 @@ class DBOracle extends DBAdapter {
     {
         return "LENGTH($s)";
     }
+    
+    /**
+     * @see DBAdapter::applyLimit()
+     */
+    public function applyLimit(&$sql, $offset, $limit)
+    {
+		 $sql =
+			'SELECT B.* FROM (  '
+			.  'SELECT A.*, rownum AS PROPEL$ROWNUM FROM (  '
+			. $sql
+			. '  ) A '
+			.  ' ) B WHERE ';
+
+        if ( $offset > 0 ) {
+            $sql				.= ' B.PROPEL$ROWNUM > ' . $offset;            
+
+            if ( $limit > 0 )
+			{
+                $sql			.= ' AND B.PROPEL$ROWNUM <= '
+									. ( $offset + $limit );
+            }
+        } else {
+			$sql				.= ' B.PROPEL$ROWNUM <= ' . $limit;
+		}
+	}
 	
 }

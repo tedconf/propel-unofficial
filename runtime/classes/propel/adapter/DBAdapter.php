@@ -224,4 +224,10 @@ abstract class DBAdapter {
 	{
 		return "H:i:s";
 	}
+	
+	/**
+	 * Modifies the passed-in SQL to add LIMIT and/or OFFSET. 
+	 */
+	public abstract function applyLimit(&$sql, $offset, $limit);
+	
 }

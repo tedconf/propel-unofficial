@@ -21,28 +21,6 @@
 
 require_once 'propel/util/Criteria2.php';
 
-//This class will probably contain a single Criteria class which stores information
-//about FROM-clause (joins) and WHERE-clause criteria.  This is because the Criteria is
-//a table-centric class, whereas this Query class could represent multiple tables.  Joins
-//represent relationships from one table to another, so it makes sense to root them in
-//the Criteria class.
-//
-//Joins can be broken down like this:
-//	FROM table1
-//		INNER JOIN table2 ON (EXPR)
-//			INNER JOIN table2 ON (EXPR)
-//
-//And the API will probably look something like:
-//  $c->addJoinedTable(TableMap, new EqualColExpr(COL1, COL2));
-//
-//It is also important to have a primary table and then follow the chain along to get
-//the columns.  This is because the columns need to be added to the select list in
-//a particular order -- and that is the job of this class.
-//
-//So, this class will be responsible for "rolling up" the nested table & column information
-//from the Criteria class and presenting it in a friendly way for the BasePeer::createSelectSql()
-//method.
-
 /**
  * This is a utility class for holding criteria information for a query.
  *
@@ -51,10 +29,14 @@ require_once 'propel/util/Criteria2.php';
  * @author Hans Lellelid <hans@xmpl.org> (Propel)
  */
 class Query  {
-
+	
+	const ALL = "ALL";
+	const DISTINCT = "DISTINCT";
+	
 	private $criteria;
 	private $useTransaction = false;
-	private $selectColumnsTables = array();
+	private $selectModifiers = array();
+	private $selectColumns = array();
 	private $having;
 	private $joins = array();
 	private $limit;
@@ -94,6 +76,11 @@ class Query  {
 		$this->criteria = $c;
 	}
 	
+	public function getQueryTable()
+	{
+		return $this->criteria->getQueryTable();
+	}
+	
 	public function getDbName()
 	{
 		return $this->criteria->getDbName();
@@ -121,7 +108,6 @@ class Query  {
     {
         return $this->useTransaction;
     }
-
 	
 	/**
 	 *
@@ -140,34 +126,59 @@ class Query  {
 	 */
 	public function addJoin(QueryColumn $leftCol, QueryColumn $rightCol, $joinType = Join::IMPLICIT)
 	{
-		$this->joins[] = new QueryJoin($leftCol, $rightCol, $joinType);
+		$j = new Join($leftCol, $rightCol, $joinType);
+		$this->joins[] = $j;
 	}
 	
 	/**
 	 * Adds (all) columns for the specified table to the SELECT query.
-	 * @param QueryTable $qt The table we want to add columns for.
+	 * @param QueryColumn $qc
 	 */
+	public function addSelectColumn(QueryColumn $qc)
+	{
+		$this->selectColumnsTables[] = $qc;
+	}
+	
 	public function addSelectColumnsForTable(QueryTable $qt)
 	{
-		$this->selectColumnsTables[] = $qt;
+		$tMap = $qt->getTableMap();
+		foreach($tMap->getColumns() as $colMap) {
+			$this->selectColumns[] = new ConcreteQueryColumn($colMap, $qt);
+		}
+	}
+	
+	public function addDefaultSelectColumns()
+	{
+		$this->addSelectColumnsForTable($this->getQueryTable());
 	}
 	
 	/**
-	 * Gets select columns by iterating over all the tables that were added with addSelectColumns(QueryTable)
-	 * and returning an array of qualified column names.
+	 * Gets select columns.
+	 * @return array QueryColumn[]
 	 */
 	public function getSelectColumns()
 	{
-		$selectColumns = array();
-		foreach($this->selectColumnsTables as $qt) {
-			$alias = $qt->getAliasOrName();
-			foreach($qt->getTableMap()->getColumns() as $colmap) {
-				$selectColumns[] = $alias . '.' . $colmap->getName();
-			}
-		}
-		return $selectColumns;
+		return $this->selectColumns;
 	}
-
+	
+	/**
+	 * Adds a select modifier to this query.
+	 * @param string $modifier
+	 */
+	public function addSelectModifier($modifier)
+	{
+		$this->selectModifiers[] = $modifier;
+	}
+	
+	/**
+	 * Get the select modifiers for this query.
+	 * @rturn array string[]
+	 */
+	public function getSelectModifiers()
+	{
+		return $this->selectMOidifers;
+	}
+	
     /**
      * Set max number of rows to return.
      *
@@ -179,7 +190,6 @@ class Query  {
         $this->limit = $limit;
         return $this;
     }
-
 
     /**
      * Set max number of rows to return.
@@ -211,6 +221,11 @@ class Query  {
         return $this->orderByColumns;
     }
 
+	public function addGroupByColumn(QueryColumn $qc)
+	{
+		$htis->groupByColumns[] = $qc;
+	}
+	
     /**
      * Get group by columns.
      *
@@ -370,12 +385,13 @@ class QueryTable {
 	}
 	
 	/**
-	 * Creates a QueryColumn from this table.
+	 * Creates a ConcreteQueryColumn from this table.
 	 * 
-	 * The column is initialized from the ColumnMap (looked up in TableMap) if it is not already set. 
+	 * The column is initialized from the ColumnMap (looked up in TableMap).
 	 * 
 	 * @param string $colname
-	 * @return QueryColumn
+	 * @return ConcreteQueryColumn
+	 * @throws PropelException - if column cannot be loaded from TableMap
 	 */
 	public function createQueryColumn($colname)
 	{
@@ -383,17 +399,18 @@ class QueryTable {
 		if (!$col) {
 			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
 		}
-		return new QueryColumn($col, $this);
+		return new ConcreteQueryColumn($col, $this);
 	}
 
 	/**
-	 * Creates an OrderByColumn from this table.
+	 * Creates an ConcreteOrderByColumn from this table.
 	 * 
-	 * The column is initialized from the ColumnMap (looked up in TableMap) if it is not already set. 
+	 * The column is initialized from the ColumnMap (looked up in TableMap).
 	 * 
 	 * @param string $colname
 	 * @param string $order The order for the sort (OrderByColumn::ASC or OrderByColumn::DESC).
-	 * @return QueryColumn
+	 * @return ConcreteOrderByColumn
+	 * @throws PropelException - if column cannot be loaded from TableMap
 	 */
 	public function createOrderByColumn($colname, $order)
 	{
@@ -401,7 +418,31 @@ class QueryTable {
 		if (!$col) {
 			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
 		}
-		return new OrderByColumn($col, $this, $order);
+		return new ConcreteOrderByColumn($col, $this, $order);
+	}
+	
+	/**
+	 * Creates a CustomQueryColumn from this table.
+	 * 
+	 * 
+	 * @param string $sql
+	 * @return QueryColumn
+	 */
+	public function createCustomQueryColumn($sql)
+	{
+		return new CustomQueryColumn($sql, $this);
+	}
+
+	/**
+	 * Creates a CustomOrderByColumn from this table.
+	 *  
+	 * @param string $sql
+	 * @param string $order The order for the sort (OrderByColumn::ASC or OrderByColumn::DESC).
+	 * @return QueryColumn
+	 */
+	public function createCustomOrderByColumn($sql, $order)
+	{
+		return new CustomOrderByColumn($sql, $this, $order);
 	}
 
 }
@@ -411,7 +452,34 @@ class QueryTable {
  * 
  * 
  */
-class QueryColumn {
+interface QueryColumn {
+
+	public function getQueryTable();
+	
+	public function getQualifiedSql();
+	
+}
+
+/**
+ * 
+ * 
+ */
+interface OrderByColumn extends QueryColumn {
+
+	const ASC = 'ASC';
+	const DESC = 'DESC';
+
+	public function setDirection($direction);
+	
+	public function getDirection();
+
+}
+
+/**
+ * 
+ * 
+ */
+class ConcreteQueryColumn implements QueryColumn {
 
 	private $queryTable;
 	private $columnMap;
@@ -426,25 +494,15 @@ class QueryColumn {
 	{
 		return $this->queryTable;
 	}
-	
-	public function getName()
-	{
-		return $this->columnMap->getName();
-	}
 
 	public function getColumnMap()
 	{
 		return $this->columnMap;
 	}
 
-	public function setColumnMap(ColumnMap $columnMap)
+	public function getQualifiedSql()
 	{
-		$this->columnMap = $columnMap;
-	}
-
-	public function getQualifiedName()
-	{
-		return $this->queryTable->getAliasOrName() . '.' . $this->getName();
+		return $this->queryTable->getAliasOrName() . '.' . $this->columnMap->getName();
 	}
 
  	/**
@@ -463,22 +521,11 @@ class QueryColumn {
 	}
 }
 
-/**
- * 
- * 
- */
-class OrderByColumn extends QueryColumn {
 
-	const ASC = 'ASC';
-	const DESC = 'DESC';
 
+class ConcreteOrderByColumn extends ConcreteQueryColumn {
+	
 	private $direction;
-
-	public function __construct(ColumnMap $column, QueryTable $table, $direction = self::ASC)
-	{
-		parent::__construct($column, $table);
-		$this->direction = $direction;
-	}
 	
 	public function setDirection($direction)
 	{
@@ -489,8 +536,54 @@ class OrderByColumn extends QueryColumn {
 	{
 		return $this->direction;
 	}
-
 }
+
+/**
+ * 
+ * 
+ */
+class CustomQueryColumn implements QueryColumn {
+
+	private $queryTable;
+	private $sql;
+
+	public function __construct($sql, QueryTable $queryTable)
+	{
+		$this->sql = $sql;
+		$this->queryTable = $queryTable;
+	}
+	
+	public function getQueryTable()
+	{
+		return $this->queryTable;
+	}
+
+	public function getQualifiedSql()
+	{
+		return sprintf($this->sql, $this->queryTable->getAliasOrName());
+	}
+}
+
+
+/**
+ * 
+ * 
+ */
+class CustomOrderByColumn extends CustomQueryColumn implements OrderByColumn {
+
+	private $direction;
+	
+	public function setDirection($direction)
+	{
+		$this->direction = $direction;
+	}
+
+	public function getDirection()
+	{
+		return $this->direction;
+	}
+}
+
 
 /**
 * Data object to describe a join between two tables, for example
@@ -498,7 +591,7 @@ class OrderByColumn extends QueryColumn {
 * table_a LEFT JOIN table_b ON table_a.id = table_b.a_id
 * </pre>
 */
-class QueryJoin {
+class Join {
 
 	const IMPLICIT = "IMPLICIT";
 	const LEFT = "LEFT";
@@ -529,8 +622,8 @@ class QueryJoin {
      */
     public function __construct(QueryColumn $leftCol, QueryColumn $rightCol, $joinType = self::IMPLICIT)
     {
-	    $this->leftColumn = $leftColumn;
-	    $this->rightColumn = $rightColumn;
+	    $this->leftColumn = $leftCol;
+	    $this->rightColumn = $rightCol;
 	    $this->joinType = $joinType;
     }
 

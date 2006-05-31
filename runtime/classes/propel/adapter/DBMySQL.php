@@ -126,5 +126,17 @@ class DBMySQL extends DBAdapter {
 	{
 		return '`' . $text . '`';
 	}
+	
+	/**
+     * @see DBAdapter::applyLimit()
+     */
+    public function applyLimit(&$sql, $offset, $limit)
+    {
+        if ( $limit > 0 ) {
+            $sql .= " LIMIT " . ($offset > 0 ? $offset . ", " : "") . $limit;
+        } else if ( $offset > 0 ) {
+            $sql .= " LIMIT " . $offset . ", 18446744073709551615";
+        }
+    }
 
 }

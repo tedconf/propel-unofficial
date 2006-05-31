@@ -128,7 +128,7 @@ class EqualExpr extends ColumnValueExpression {
 
 	protected function getNullValueSql()
 	{
-		return $this->getQueryColumn()->getQualifiedName() . " IS NULL";
+		return $this->getQueryColumn()->getQualifiedSql() . " IS NULL";
 	}
 
 }
@@ -143,7 +143,7 @@ class NotEqualExpr extends ColumnValueExpression {
 
 	protected function getNullValueSql()
 	{
-		return $this->getQueryColumn()->getQualifiedName() . " IS NOT NULL";
+		return $this->getQueryColumn()->getQualifiedSql() . " IS NOT NULL";
 	}
 
 }
@@ -314,21 +314,21 @@ class ColumnValue {
 
 	/**
 	 *
-	 * @param ColumnMan $col
+	 * @param ColumnMap $col
 	 * @param mixed $value
 	 */
-	public function __construct(QueryColumn $col, $value)
+	public function __construct(ColumnMap $col, $value)
 	{
 		$this->column = $col;
 		$this->value = $value;
 	}
 
-	public function getQueryColumn()
+	public function getColumnMap()
 	{
 		return $this->column;
 	}
 
-	public function setQueryColumn(QueryColumn $col)
+	public function setColumnMap(ColumnMap $col)
 	{
 		$this->column = $col;
 	}
@@ -342,5 +342,138 @@ class ColumnValue {
 	{
 		$this->value = $val;
 	}
+
+}
+
+/**
+ * This class represents a collection of ColumnValue objects for a single table.
+ * 
+ * This class is used by the doInsert() methods to store a collection of ColumnValue
+ * objects for insertion.
+ *
+ * @author Hans Lellelid <hans@xmpl.org>
+ */
+class ColumnValueCollection implements IteratorAggregate {
+
+	private $tableMap;
+	private $columnValues = array();
+	
+	
+	/**
+	 * Constructs a new collection for the specified table.
+	 * @param TableMap $table A TableMap
+	 */
+	public function __construct(TableMap $table)
+	{
+		$this->tableMap = $table;
+	}
+	
+	public function add(ColumnValue $cv)
+	{
+		$this->columnValues[$cv->getColumnMap()->getName()] = $cv;
+	}
+	
+	/**
+	 * Creates the QueryColumn and then ColumnValue objects and adds to collection.
+	 * @param string $colname The name of the column.
+	 * @param mixed $value The value.
+	 */ 
+	public function set($colname, $value)
+	{
+		$colMap = $this->tableMap->getColumn($colname);
+		if (!$colMap) {
+			throw new PropelException("Unable to load ColumnMap for column [" . $colname . "]");
+		}
+		$this->columnValues[$colname] = new ColumnValue($colMap, $value); // we could call ->add() but this is a tad quicker
+	}
+	
+	public function get($key)
+	{
+		if (!isset($this->columnValues[$key])) {
+			return null;
+		}
+		return $this->columnValues[$key];
+	}
+	
+	public function remove($key)
+	{
+		if (isset($this->columnValues[$key])) {
+			unset($this->columnValues[$key]);
+		}
+	}
+	
+	public function keys()
+	{
+		return array_keys($this->columnValues);
+	}
+	
+	public function containsKey($key)
+	{
+		return array_key_exists($key, $this->columnValues);
+	}
+	
+	public function size()
+	{
+		return count($this->columnValues);
+	}
+	
+	public function getTableMap()
+	{
+		return $this->tableMap;
+	}
+	
+	/**
+	 * SPL IteratorAggregate method to return an Iterator for this object.
+	 * @return Iterator
+	 */
+	public function getIterator()
+	{
+		return new ColumnValueCollectionIterator($this);
+	}
+}
+
+/**
+ * Class that implements SPL Iterator interface for iterating over a ColumnValueCollection. 
+ * 
+ * @author Hans Lellelid <hans@xmpl.org>
+ * @package propel.util
+ */
+class ColumnValueCollectionIterator implements Iterator {
+
+    private $idx = 0;
+    private $criteria;
+    private $criteriaKeys;
+    private $criteriaSize;
+    
+    public function __construct(ColumnValueCollection $coll) {
+        $this->coll = $coll;
+        $this->keys = $coll->keys();
+        $this->size = $coll->size();
+    }
+
+    public function rewind() {
+        $this->idx = 0;
+    }
+    
+    public function valid() {
+        return $this->idx < $this->size;
+    }
+    
+    public function key() {
+        return $this->keys[$this->idx];
+    }
+    
+    public function current() {
+        return $this->coll->get($this->keys[$this->idx]);
+    }
+    
+    public function next() {
+        $this->idx++;
+    }
+    
+    public function size()
+	{
+    	return $this->size;
+    }
 
 }

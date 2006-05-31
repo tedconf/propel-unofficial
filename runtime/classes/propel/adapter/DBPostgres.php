@@ -130,4 +130,17 @@ class DBPostgres extends DBAdapter {
 	{
 		return "H:i:s O";
 	}
+	
+	/**
+     * @see DBAdapter::applyLimit()
+     */
+    public function applyLimit(&$sql, $offset, $limit)
+    {
+        if ( $limit > 0 ) {
+            $sql .= " LIMIT ".$limit;
+        }
+        if ( $offset > 0 ) {
+            $sql .= " OFFSET ".$offset;
+        }
+    }
 }
