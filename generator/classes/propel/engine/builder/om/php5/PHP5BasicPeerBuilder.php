@@ -315,7 +315,7 @@ abstract class ".$this->getClassname()." {
 	 */
 	public static function createCriteria(\$alias = null)
 	{
-		return new Criteria2(".$this->getPeerClassname()."::createQueryTable(\$alias));
+		return new Criteria(".$this->getPeerClassname()."::createQueryTable(\$alias));
 	}
 ";
 	}

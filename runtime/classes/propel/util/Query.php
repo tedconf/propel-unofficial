@@ -19,7 +19,7 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/util/Criteria2.php';
+require_once 'propel/util/Criteria.php';
 
 /**
  * This is a utility class for holding criteria information for a query.
@@ -50,7 +50,7 @@ class Query  {
      *
      * @param Crieria The primary Criteria for this query.
      */
-    public function __construct(Criteria2 $c)
+    public function __construct(Criteria $c)
     {
         $this->setCriteria($c);
     }

@@ -38,7 +38,7 @@ require_once 'propel/util/criteria/LogicExpression.php';
  * @version $Revision: 372 $
  * @package propel.util
  */
-class Criteria2 extends BaseExpressionContainer implements ExpressionContainer {
+class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 
     /**
      * @var ContainerExpression (Defaults to AndExpr if none specified).

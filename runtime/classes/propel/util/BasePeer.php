@@ -106,7 +106,7 @@ class BasePeer
 	 * 				is returned (supported) by the PDO driver.
 	 * @throws PropelException
 	 */
-	public static function doDelete(Criteria2 $criteria, PDO $con)
+	public static function doDelete(Criteria $criteria, PDO $con)
 	{
 		$dbname = $criteria->getDbName();
 		
@@ -278,7 +278,7 @@ class BasePeer
 	 * 				is returned (supported) by the Creole db driver.
 	 * @throws PropelException
 	 */
-	public static function doUpdate(Criteria2 $selectCriteria, ColumnValueCollection $updateValues, PDO $con)
+	public static function doUpdate(Criteria $selectCriteria, ColumnValueCollection $updateValues, PDO $con)
 	{
 		$tableMap = $updateValues->getTableMap();
 		$dbMap = $tableMap->getDatabase();
