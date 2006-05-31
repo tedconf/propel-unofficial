@@ -261,6 +261,16 @@ class Query  {
     	$this->orderByColumns[] = $qt->createOrderByColumn($name, OrderByColumn::DESC);
         return $this;
     }
+    
+    /**
+     * Adds an already-configured OrderByColumn to this Query.
+	 * @param OrderByColumn $orderBy 
+     */
+    public function addOrderBy(OrderByColumn $orderBy)
+	{
+    	$this->orderByColumns[] = $orderBy;
+    	return $this;
+    }
 
     /**
      * Get Having Criterion.
