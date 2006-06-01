@@ -434,7 +434,7 @@ abstract class LogicExpression extends BaseExpressionContainer {
 	/**
 	 * @see Expression::buildSql()
 	 */
-	public function buildSql(&$sql, &$params)
+	public function buildSql(&$params)
 	{
         // each expression gets nested in ()
         $sql = '(';
