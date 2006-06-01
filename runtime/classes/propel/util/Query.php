@@ -19,7 +19,7 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/util/Criteria.php';
+include_once 'propel/util/Criteria.php';
 
 /**
  * This is a utility class for holding criteria information for a query.
@@ -88,14 +88,17 @@ class Query  {
 	
     /**
      * Will force the sql represented by this query to be executed within a transaction.
+	 * 
 	 * This is here primarily to support the oid type in
      * postgresql.  Though it can be used to require any single sql statement
      * to use a transaction.
-     * @return void
+     * 
+     * @return Query This modified Query object.
      */
     public function setUseTransaction($v)
     {
         $this->useTransaction = (boolean) $v;
+        return $this;
     }
 
     /**
@@ -110,8 +113,8 @@ class Query  {
     }
 	
 	/**
-	 *
-	 * 
+	 * Gets the joins for this query.
+	 * @return array Join[]
 	 */
 	public function getJoins()
 	{
@@ -123,33 +126,47 @@ class Query  {
 	 * @param QueryColumn $leftCol The column for the left part of the join.
 	 * @param QueryColumn $rightCol The column for the right part of the join.
 	 * @param string $joinType The type of the JOIN (e.g. Join::IMPLICIT, Join::LEFT, Join::INNER)
+	 * @return Query This modified Query object.
 	 */
 	public function addJoin(QueryColumn $leftCol, QueryColumn $rightCol, $joinType = Join::IMPLICIT)
 	{
-		$j = new Join($leftCol, $rightCol, $joinType);
-		$this->joins[] = $j;
+		$this->joins[] = new Join($leftCol, $rightCol, $joinType);
+		return $this;
 	}
 	
 	/**
 	 * Adds (all) columns for the specified table to the SELECT query.
 	 * @param QueryColumn $qc
+	 * @return Query This modified Query object.
 	 */
 	public function addSelectColumn(QueryColumn $qc)
 	{
 		$this->selectColumnsTables[] = $qc;
+		return $this;
 	}
 	
+	/**
+	 * Adds the select columns for a specified QueryTable to this Query.
+	 * @param QueryTable $qt
+	 * @return Query This modified Query object.
+	 */
 	public function addSelectColumnsForTable(QueryTable $qt)
 	{
 		$tMap = $qt->getTableMap();
 		foreach($tMap->getColumns() as $colMap) {
-			$this->selectColumns[] = new ConcreteQueryColumn($colMap, $qt);
+			$this->selectColumns[] = new ActualQueryColumn($colMap, $qt);
 		}
+		return $this;
 	}
 	
+	/**
+	 * Adds the select columns for the current table to this Query.
+	 * @return Query This modified Query object.
+	 */
 	public function addDefaultSelectColumns()
 	{
 		$this->addSelectColumnsForTable($this->getQueryTable());
+		return $this;
 	}
 	
 	/**
@@ -164,10 +181,12 @@ class Query  {
 	/**
 	 * Adds a select modifier to this query.
 	 * @param string $modifier
+	 * @return Query This modified Query object.
 	 */
 	public function addSelectModifier($modifier)
 	{
 		$this->selectModifiers[] = $modifier;
+		return $this;
 	}
 	
 	/**
@@ -181,7 +200,6 @@ class Query  {
 	
     /**
      * Set max number of rows to return.
-     *
      * @param int $limit The number of rows to return.
      * @return Query The modified Query object.
      */
@@ -193,8 +211,7 @@ class Query  {
 
     /**
      * Set max number of rows to return.
-     *
-     * @return The number of rows to return.
+     * @return int The number of rows to return.
      */
     public function getLimit()
     {
@@ -203,7 +220,6 @@ class Query  {
 
     /**
      * Get offset.
-     *
      * @return An int with the value for offset.
      */
     public function getOffset()
@@ -212,15 +228,18 @@ class Query  {
     }
 
     /**
-     * Get order by columns.
-     *
-     * @return array An array with the name of the order columns.
+     * Get order-by columns.
+     * @return array OrderByColumn[]
      */
     public function getOrderByColumns()
     {
         return $this->orderByColumns;
     }
-
+	
+	/**
+	 * Adds a group-by column to this Query.
+	 * @param QueryColumn $qc
+	 */
 	public function addGroupByColumn(QueryColumn $qc)
 	{
 		$htis->groupByColumns[] = $qc;
@@ -228,8 +247,7 @@ class Query  {
 	
     /**
      * Get group by columns.
-     *
-     * @return array
+     * @return array QueryColumn[]
      */
     public function getGroupByColumns()
     {
@@ -240,7 +258,7 @@ class Query  {
      * Add order by column name, explicitly specifying ascending.
      *
      * @param name The name of the column to order by.
-     * @return A modified Criteria object.
+     * @return Query This modified Query object.
      */
     public function addAscOrderBy($name)
     {
@@ -253,7 +271,7 @@ class Query  {
      * Add order by column name, explicitly specifying descending.
      *
      * @param string $name The name of the column to order by.
-     * @return Criteria The modified Criteria object.
+     * @return Query This modified Query object.
      */
     public function addDescOrderBy($name)
     {
@@ -273,9 +291,9 @@ class Query  {
     }
 
     /**
-     * Get Having Criterion.
+     * Get "having" expression.
      *
-     * @return Criterion A Criterion object that is the having clause.
+     * @return Expression An Expression object that is the having clause.
      */
     public function getHaving()
     {
@@ -292,7 +310,7 @@ class Query  {
      * </code>
      *
      * @param Expression $having
-     * @return Criteria A modified Criteria object.
+     * @return Query This modified Query object.
      */
     public function setHaving(Expression $having)
     {
@@ -333,367 +351,4 @@ class Query  {
 		}
 	}
 
-}
-
-/**
- * The QueryTable class represents a table and its alias as it is being used in the query.
- *
- */
-class QueryTable {
-
-	private $tableMap;
-	private $alias;
-	private $columns = array();
-
-	public function __construct(TableMap $tableMap, $alias = null)
-	{
-		$this->tableMap = $tableMap;
-		$this->alias = $alias;
-	}
-
-	public function setTableMap(TableMap $table)
-	{
-		$this->tableMap = $table;
-	}
-
-	public function getTableMap()
-	{
-		return $this->tableMap;
-	}
-
-	public function setAlias($alias)
-	{
-		$this->alias = $alias;
-	}
-
-	public function getAlias()
-	{
-		return $this->alias;
-	}
-
-	public function getName()
-	{
-		return $this->tableMap->getName();
-	}
-
-	/**
-	 * Convenience method to get the column alias or name, if no alias is defined.
-	 * @return string
-	 */
-	public function getAliasOrName()
-	{
-		return $this->getAlias() ? $this->getAlias() : $this->getName();
-	}
-	
-	/**
-	 * Convenience method to get the SQL used in a FROM clause (e.g. "table alias").
-	 * @return string
-	 */ 
-	public function getFromClauseSql()
-	{
-		return $this->getName() .  ' ' . $this->getAliasOrName();
-	}
-	
-	/**
-	 * Creates a ConcreteQueryColumn from this table.
-	 * 
-	 * The column is initialized from the ColumnMap (looked up in TableMap).
-	 * 
-	 * @param string $colname
-	 * @return ConcreteQueryColumn
-	 * @throws PropelException - if column cannot be loaded from TableMap
-	 */
-	public function createQueryColumn($colname)
-	{
-		$col = $this->tableMap->getColumn($colname);
-		if (!$col) {
-			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
-		}
-		return new ConcreteQueryColumn($col, $this);
-	}
-
-	/**
-	 * Creates an ConcreteOrderByColumn from this table.
-	 * 
-	 * The column is initialized from the ColumnMap (looked up in TableMap).
-	 * 
-	 * @param string $colname
-	 * @param string $order The order for the sort (OrderByColumn::ASC or OrderByColumn::DESC).
-	 * @return ConcreteOrderByColumn
-	 * @throws PropelException - if column cannot be loaded from TableMap
-	 */
-	public function createOrderByColumn($colname, $order)
-	{
-		$col = $this->tableMap->getColumn($colname);
-		if (!$col) {
-			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
-		}
-		return new ConcreteOrderByColumn($col, $this, $order);
-	}
-	
-	/**
-	 * Creates a CustomQueryColumn from this table.
-	 * 
-	 * 
-	 * @param string $sql
-	 * @return QueryColumn
-	 */
-	public function createCustomQueryColumn($sql)
-	{
-		return new CustomQueryColumn($sql, $this);
-	}
-
-	/**
-	 * Creates a CustomOrderByColumn from this table.
-	 *  
-	 * @param string $sql
-	 * @param string $order The order for the sort (OrderByColumn::ASC or OrderByColumn::DESC).
-	 * @return QueryColumn
-	 */
-	public function createCustomOrderByColumn($sql, $order)
-	{
-		return new CustomOrderByColumn($sql, $this, $order);
-	}
-
-}
-
-
-/**
- * 
- * 
- */
-interface QueryColumn {
-
-	public function getQueryTable();
-	
-	public function getQualifiedSql();
-	
-}
-
-/**
- * 
- * 
- */
-interface OrderByColumn extends QueryColumn {
-
-	const ASC = 'ASC';
-	const DESC = 'DESC';
-
-	public function setDirection($direction);
-	
-	public function getDirection();
-
-}
-
-/**
- * 
- * 
- */
-class ConcreteQueryColumn implements QueryColumn {
-
-	private $queryTable;
-	private $columnMap;
-
-	public function __construct(ColumnMap $columnMap, QueryTable $queryTable)
-	{
-		$this->columnMap = $columnMap;
-		$this->queryTable = $queryTable;
-	}
-	
-	public function getQueryTable()
-	{
-		return $this->queryTable;
-	}
-
-	public function getColumnMap()
-	{
-		return $this->columnMap;
-	}
-
-	public function getQualifiedSql()
-	{
-		return $this->queryTable->getAliasOrName() . '.' . $this->columnMap->getName();
-	}
-
- 	/**
-     * Performs DB-specific ignore case, but only if the column type necessitates it.
-     * @param string $str The expression we want to apply the ignore case formatting to (e.g. the column name).
-     * @param DBAdapter $db
-     */
-    public function ignoreCase($str)
-    {
-		if ($this->columnMap->isText()) {
-			$db = $this->columnMap->getTable()->getDatabase()->getAdapter();
-			return $db->ignoreCase($str);
-		} else {
-			return $str; 
-		}
-	}
-}
-
-
-
-class ConcreteOrderByColumn extends ConcreteQueryColumn {
-	
-	private $direction;
-	
-	public function setDirection($direction)
-	{
-		$this->direction = $direction;
-	}
-
-	public function getDirection()
-	{
-		return $this->direction;
-	}
-}
-
-/**
- * 
- * 
- */
-class CustomQueryColumn implements QueryColumn {
-
-	private $queryTable;
-	private $sql;
-
-	public function __construct($sql, QueryTable $queryTable)
-	{
-		$this->sql = $sql;
-		$this->queryTable = $queryTable;
-	}
-	
-	public function getQueryTable()
-	{
-		return $this->queryTable;
-	}
-
-	public function getQualifiedSql()
-	{
-		return sprintf($this->sql, $this->queryTable->getAliasOrName());
-	}
-}
-
-
-/**
- * 
- * 
- */
-class CustomOrderByColumn extends CustomQueryColumn implements OrderByColumn {
-
-	private $direction;
-	
-	public function setDirection($direction)
-	{
-		$this->direction = $direction;
-	}
-
-	public function getDirection()
-	{
-		return $this->direction;
-	}
-}
-
-
-/**
-* Data object to describe a join between two tables, for example
-* <pre>
-* table_a LEFT JOIN table_b ON table_a.id = table_b.a_id
-* </pre>
-*/
-class Join {
-
-	const IMPLICIT = "IMPLICIT";
-	const LEFT = "LEFT";
-	const RIGHT = "RIGHT";
-	const INNER = "INNER";
-
-    /** the left column of the join condition */
-    private $leftColumn = null;
-
-    /** the right column of the join condition */
-    private $rightColumn = null;
-
-    /** the type of the join (LEFT JOIN, ...), or null */
-    private $joinType = null;
-
-    /**
-     * Constructor
-     *
-     * @param Criteria $foreignCriteria The foreign Criteria, which is used to hold the table and any alias info.
-     * @param QueryColumn $leftColumn the left column of the join condition;
-     *        might contain an alias name
-     * @param QueryColumn $rightColumn the right column of the join condition
-     *        might contain an alias name
-     * @param string $joinType the type of the join. Valid join types are
-     *        null (adding the join condition to the where clause),
-     *        Join::LEFT, Criteria::RIGHT, and Criteria::INNER
-     *
-     */
-    public function __construct(QueryColumn $leftCol, QueryColumn $rightCol, $joinType = self::IMPLICIT)
-    {
-	    $this->leftColumn = $leftCol;
-	    $this->rightColumn = $rightCol;
-	    $this->joinType = $joinType;
-    }
-
-    /**
-     * @return the type of the join, i.e. Criteria::LEFT_JOIN(), ...,
-     *         or null for adding the join condition to the where Clause
-     */
-    public function getJoinType()
-    {
-	    return $this->joinType;
-    }
-
-    /**
-     * @return the left column of the join condition
-     */
-    public function getLeftColumn()
-    {
-	    return $this->leftColumn;
-    }
-
-    /**
-     *
-     * @return QueryTable
-     */
-    public function getLeftTable()
-	{
-    	return $this->leftColumn->getQueryTable();
-    }
-
-    /**
-     * @return the right column of the join condition
-     */
-    public function getRightColumn()
-    {
-	    return $this->rightColumn;
-    }
-
-    /**
-     *
-     * @return QueryTable
-     */
-    public function getRightTable()
-	{
-    	return $this->rightColumn->getQueryTable();
-    }
-
-    /**
-     * returns a String representation of the class,
-     * mainly for debugging purposes
-     * @return a String representation of the class
-     */
-    public function toString()
-    {
-        $result = "";
-        if ($this->joinType != null)
-        {
-            $result .= $this->joinType . " : ";
-        }
-        $result .= $this->leftColumn . "=" . $this->rightColumn . " (ignoreCase not considered)";
-
-        return $result;
-    }
 }

@@ -415,47 +415,7 @@ abstract class ".$this->getClassname()." {
 			} /* if col->isenumerated...() */
 		} /* if table->getchildrencolumn() */
 
-	} //
-
-	/**
-	 * Adds the addSelectColumns() method.
-	 * @param string &$script The script will be modified in this method.
-	 */
-	protected function addAddSelectColumns(&$script)
-	{
-		$script .= "
-	/**
-	 * Add all the columns needed to create a new object.
-	 *
-	 * Note: any columns that were marked with lazyLoad=\"true\" in the
-	 * XML schema will not be added to the select list and only loaded
-	 * on demand.
-	 *
-	 * @param Query \$query The query _to which_ we want to add select columns for this table.
-	 * @param QueryTable \$queryTable The query table that we are adding the select columns from. (If none
-	 *									is set, then assume that we are adding from \$query's table.)
-	 * @throws PropelException Any exceptions caught during processing will be
-	 *		 rethrown wrapped into a PropelException.
-	 */
-	public static function addSelectColumns(Query \$query, QueryTable \$queryTable = null)
-	{
-		if (\$queryTable === null) {
-			\$queryTable = \$query->getQueryTable();
-		}		 
-";
-		foreach ($this->getTable()->getColumns() as $col) {
-			if (!$col->isLazyLoad()) {
-				$script .= "
-		\$query->addSelectColumn(\$queryTable->createQueryColumn(".$this->getPeerClassname()."::".$this->getColumnName($col)."));
-";
-			} // if !col->isLazyLoad
-		} // foreach
-		$script .="
 	}
-";
-	} // addAddSelectColumns()
-
-
 
 	/**
 	 * Adds the COUNT constants.

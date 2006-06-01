@@ -190,10 +190,10 @@ class ColumnMap {
     }
 
     /**
-     * Whether this is a BLOB or CLOB.
+     * Whether this is a BLOB or CLOB column.
      * @return boolean
      */
-    public function isLob()
+    public function isLobType()
     {
 		return ($this->type == PropelColumnTypes::BLOB || $this->type == PropelColumnTypes::CLOB);
 	}
@@ -206,16 +206,16 @@ class ColumnMap {
 	 *
      * @return boolean
      */
-    public function isEpochTemporal()
+    public function isEpochTemporalType()
     {
 		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME);
 	}
 
 	/**
-	 * Whether this column is a text column (varchar, char, longvarchar).
+	 * Whether this column is a string-type column (varchar, char, longvarchar).
 	 * @return boolean
 	 */
-	public function isText()
+	public function isStringType()
 	{
 		return ($this->type == PropelColumnTypes::VARCHAR || $this->type == PropelColumnTypes::LONGVARCHAR || $this->type == PropelColumnTypes::CHAR);
 	}

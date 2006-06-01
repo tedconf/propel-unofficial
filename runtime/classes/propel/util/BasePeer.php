@@ -24,9 +24,10 @@ include_once 'propel/map/ColumnMap.php';
 include_once 'propel/map/DatabaseMap.php';
 include_once 'propel/map/TableMap.php';
 include_once 'propel/map/ValidatorMap.php';
-include_once 'propel/validator/ValidationFailed.php';
+include_once 'propel/util/Query.php';
 include_once 'propel/util/Transaction.php';
 include_once 'propel/util/PropelColumnTypes.php';
+include_once 'propel/validator/ValidationFailed.php';
 
 /**
  * This is a utility class for all generated Peer classes in the system.
@@ -225,7 +226,7 @@ class BasePeer
 			} catch (Exception $e) {
 				throw new PropelException("Unable to get sequence id.", $e);
 			}
-			$values->set($pk->getName(), $id);
+			$values->add($pk->getName(), $id);
 		}
 
 		try {
@@ -406,7 +407,7 @@ class BasePeer
 				$type = $cMap->getType();
 				$pdoType = $cMap->getPdoType();
 
-				if (is_numeric($value) && $cMap->isEpochTemporal()) { // it's a timestamp that needs to be formatted
+				if (is_numeric($value) && $cMap->isEpochTemporalType()) { // it's a timestamp that needs to be formatted
 					if ($type == PropelColumnTypes::TIMESTAMP) {
 						$value = date($db->getTimestampFormatter(), $value);
 					} else if ($type == PropelColumnTypes::DATE) {
@@ -579,7 +580,7 @@ class BasePeer
 
 			foreach($orderBy as $orderByColumn) {
 				$direction = $orderByColumn->getDirection();
-				if ($ignoreCase && ($orderByColumn instanceof ConcreteOrderByColumn) && $orderByColumn->getColumnMap()->isText()) {
+				if ($ignoreCase && ($orderByColumn instanceof ActualOrderByColumn) && $orderByColumn->getColumnMap()->isText()) {
 					$orderByClause[] = $db->ignoreCaseInOrderBy($orderByColumn->getQualifiedSql()) . ' ' . $direction;
 				} else {
 					$orderByClause[] = $orderByColumn->getQualifiedSql() . ' ' . $direction;

@@ -716,7 +716,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
-		if (\$this->isColumnModified(".$this->getColumnConstant($col).")) \$coll->set(".$this->getColumnConstant($col).", \$this->$clo);";
+		if (\$this->isColumnModified(".$this->getColumnConstant($col).")) \$coll->add(".$this->getColumnConstant($col).", \$this->$clo);";
 		}
 		$script .= "
 
