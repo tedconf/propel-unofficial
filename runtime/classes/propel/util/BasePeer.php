@@ -116,9 +116,8 @@ class BasePeer
 		
 		$tableName = $criteria->getQueryTable()->getName();
 
-		$whereClause = "";
-		$bindValues = array();
-		$criteria->buildSql($whereClause, $bindValues);
+		$bindParams = array();
+		$whereClause = $criteria->buildSql($bindParams);
 				
 		if (empty($whereClause)) {
 			throw new PropelException("Cowardly refusing to perform DELETE on table $tableName with empty WHERE clause.");
@@ -129,7 +128,7 @@ class BasePeer
 			$sql = "DELETE FROM " . $tableName . " WHERE " . $whereClause;
 			Propel::log($sql, Propel::LOG_DEBUG);
 			$stmt = $con->prepare($sql);
-			self::populateStmtValues($stmt, $bindValues, $db);
+			self::populateStmtValues($stmt, $bindParams, $db);
 			$stmt->execute();
 			$affectedRows = $stmt->rowCount();
 		} catch (Exception $e) {
@@ -287,10 +286,8 @@ class BasePeer
 		
 		$affectedRows = 0; // initialize this in case the next loop has no iterations.
 
-
-		$whereClause = "";
-		$bindValues = array();
-		$selectCriteria->buildSql($whereClause, $bindValues);
+		$bindParams = array();
+		$whereClause = $selectCriteria->buildSql($bindParams);
 		
 		if (empty($whereClause)) {
 			throw new PropelException("Cowardly refusing to perform UPDATE on table $tableName with empty WHERE clause.");
@@ -302,7 +299,7 @@ class BasePeer
 			$sql = "UPDATE " . $tableName . " SET ";
 			
 			
-			$updateValuseArray = array(); // need this Collection turned into an array so we can merge it with $bindValues later
+			$updateValuseArray = array(); // need this Collection turned into an array so we can merge it with $bindParams later
 			
 			foreach($updateValues as $colname => $cv) {
 				$sql .= $colname . " = ?,";
@@ -316,7 +313,7 @@ class BasePeer
 			$stmt = $con->prepare($sql);
 
 			// Replace '?' with the actual values
-			self::populateStmtValues($stmt, array_merge($updateValuesArray, $bindValues), $db);
+			self::populateStmtValues($stmt, array_merge($updateValuesArray, $bindParams), $db);
 
 			$stmt->execute();
 
@@ -465,7 +462,7 @@ class BasePeer
 	 * @return string
 	 * @throws PropelException Trouble creating the query string.
 	 */
-	public static function createSelectSql(Query $query, &$bindValues) {
+	public static function createSelectSql(Query $query, &$bindParams) {
 		
 		$criteria = $query->getCriteria();
 		$dbname = $criteria->getDbName();
@@ -512,11 +509,8 @@ class BasePeer
 		// For that, we want a $query->getUnjoinedTables() method.
 				
 		
-		// Add the criteria to WHERE clause
-		$whereClauseFromCriteria = "";
-		$criteria->buildSql($whereClauseFromCriteria, $bindValues);
-		
-		$whereClause[] = $whereClauseFromCriteria;
+		// Add the criteria to WHERE clause, adding any params to passed-in array
+		$whereClause[] = $criteria->buildSql($bindParams);
 		
 		// Loop through the joins,
 		// joins with a null join type will be added to the FROM clause and the condition added to the WHERE clause.
@@ -571,9 +565,8 @@ class BasePeer
 		$groupByClause = $groupBy;
 
 		$having = $query->getHaving();
-		$havingSql = "";
 		if ($having !== null) {
-			$having->buildSql($havingSql, $params);
+			$havingSql = $having->buildSql($bindParams);
 		}
 		
 		if (!empty($orderBy)) {

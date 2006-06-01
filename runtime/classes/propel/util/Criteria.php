@@ -76,9 +76,12 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 		return $this;
 	}
 
-	public function buildSql(&$sql, &$values)
+	/**
+	 * This builds the SQL for all expressions that have been added to this Criteria.
+	 */ 
+	public function buildSql(&$params)
 	{
-		return $this->container->buildSql($sql, $values);
+		return $this->container->buildSql($params);
 	}
 
 	/**

@@ -37,10 +37,10 @@ interface Expression {
 	/**
 	 * Builds out the SQL for this expression, adding it to the passed in $sql param
 	 * and adding any ColumnValue pairs to the passed-in $values array.
-	 * @param &$sql The SQL string that should be added to.
-	 * @param &$values ColumnValue[] The array of ColumnValue objects that any values should be added to.  
+	 * @param &$values ColumnValue[] The array of ColumnValue objects that any values should be added to.
+	 * @return string The built SQL  
 	 */
-	public function buildSql(&$sql, &$values);
+	public function buildSql(&$params);
 
 	/**
 	 * Set whether this expression is case-insensitive.
@@ -264,10 +264,10 @@ abstract class ColumnValueExpression extends ColumnExpression {
 	/**
 	 * @see Expression::buildSql()
 	 */
-	public function buildSql(&$sql, &$values)
+	public function buildSql(&$params)
 	{
 		$col = $this->createQueryColumn();
-
+		
 		if ($this->value !== null) {
 			
 			// are we dealing with a traditional value or a SqlExpr ?
@@ -275,30 +275,32 @@ abstract class ColumnValueExpression extends ColumnExpression {
 				// this is a SqlExpr, so the value is going to be the result of SqlExpr->getSql()
 				
 				// We're not going to honor the ignore-case setting for custom SQL							
-				$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ' . $this->value->getSql();
+				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ' . $this->value->getSql();
 				
 			} else {
 			
 				// default case, it is a normal col = value expression; value
 				// will be replaced w/ '?' and will be inserted later using PDO bindValue()
 				if ($this->getIgnoreCase() && $this->columnMap->isStringType()) {
-					$sql .= $this->getIgnoreCaseSql($col, $this->getAdapter());
+					$sql = $this->getIgnoreCaseSql($col, $this->getAdapter());
 			    } else {
-		        	$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ?';
+		        	$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ?';
 		    	}
 	
 				// need to track the field in params, because
 				// we'll need it to determine the correct setter
 				// method later on (e.g. field 'review.DATE' => setDate());
-				$values[] = new ColumnValue($col->getColumnMap(), $this->value);
+				$params[] = new ColumnValue($col->getColumnMap(), $this->value);
 			}
 						
 		} else {
 			// value is null, which means it was either not specified or specifically
             // set to null.
 
-			$sql .= $this->getNullValueSql($col);
+			$sql = $this->getNullValueSql($col);
 		}
+		
+		return $sql;
 	}
 	
 	/**
@@ -364,7 +366,7 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 	/**
 	 * @see Expression::buildSql()
 	 */
-	public function buildSql(&$sql, &$values)
+	public function buildSql(&$params)
 	{
 		$col = $this->createQueryColumn();
 
@@ -376,14 +378,14 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 				$sql .= $this->getEmptyValuesSql();
 			} else {
 
-				$sql .= $col->getQualifiedSql() . ' ' . $this->getOperator();
+				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator();
 
 				foreach($this->values as $value) {
-                    $values[] = new ColumnValue($col->getColumnMap(), $value);
+                    $params[] = new ColumnValue($col->getColumnMap(), $value);
                 }
 
                 $inString = '(' . substr(str_repeat("?,", count($this->values)), 0, -1) . ')';
-                $sql .= $inString;
+                $sql = $inString;
 			}
 
 		} else {
@@ -391,9 +393,10 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 			// value is null, which means it was either not specified or specifically
             // set to null.
 
-			$sql .= $this->getNullValueSql($col);
+			$sql = $this->getNullValueSql($col);
 		}
-
+		
+		return $sql;
 	}
 
 	/**
@@ -431,16 +434,17 @@ abstract class LogicExpression extends BaseExpressionContainer {
 	/**
 	 * @see Expression::buildSql()
 	 */
-	public function buildSql(&$sql, &$values)
+	public function buildSql(&$sql, &$params)
 	{
         // each expression gets nested in ()
-        $sql .= '(';
+        $sql = '(';
         $and = 0;
 		foreach($this->expressions as $expr) {
 			if ($and++) { $sql .= ' ' . $this->getOperator() . ' '; }
-			$expr->buildSql($sql, $values);
+			$sql .= $expr->buildSql($params);
 		}
 		$sql .= ')';
+		return $sql;
 	}
 	
 	/**
@@ -744,9 +748,9 @@ class SqlExpr extends BaseExpression implements Expression {
 	/**
 	 * @see Expression::buildSql()
 	 */
-	public function buildSql(&$sql, &$values)
+	public function buildSql(&$params)
 	{
-		$sql .= $this->sql;
+		return $this->sql;
 	}
 	
 	/**
