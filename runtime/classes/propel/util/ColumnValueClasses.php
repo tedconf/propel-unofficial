@@ -206,9 +206,9 @@ class ColumnValueCollection implements IteratorAggregate {
 class ColumnValueCollectionIterator implements Iterator {
 
     private $idx = 0;
-    private $criteria;
-    private $criteriaKeys;
-    private $criteriaSize;
+    private $coll;
+    private $keys;
+    private $size;
     
     public function __construct(ColumnValueCollection $coll)
 	{

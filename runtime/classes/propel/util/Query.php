@@ -36,6 +36,8 @@ class Query  {
 	private $criteria;
 	private $useTransaction = false;
 	private $selectModifiers = array();
+	private $orderByColumns = array();
+	private $groupByColumns = array();
 	private $selectColumns = array();
 	private $having;
 	private $joins = array();
@@ -195,7 +197,7 @@ class Query  {
 	 */
 	public function getSelectModifiers()
 	{
-		return $this->selectMOidifers;
+		return $this->selectModifiers;
 	}
 	
     /**

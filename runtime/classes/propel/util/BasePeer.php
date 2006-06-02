@@ -497,10 +497,8 @@ class BasePeer
 		foreach($selectColumns as $selCol) {
 			$selectClause[] = $selCol->getQualifiedSql();
 		}
-
-		// simple copy
-		//FIXME - implement: $selectModifiers = $query->getSelectModifiers();
-
+		
+		$selectModifiers = $query->getSelectModifiers();
 
 		// Add the primary table to FROM clause
 		
@@ -565,6 +563,7 @@ class BasePeer
 		$groupByClause = $groupBy;
 
 		$having = $query->getHaving();
+		$havingSql = null;
 		if ($having !== null) {
 			$havingSql = $having->buildSql($bindParams);
 		}
