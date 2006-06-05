@@ -84,7 +84,6 @@ CREATE TABLE ".$table->getName()."
 );
 ";
 		$this->addPrimaryKey($script);
-		$this->addIndices($script);
 		$this->addSequences($script);
 
 	}
@@ -109,7 +108,7 @@ CREATE TABLE ".$table->getName()."
 	PRIMARY KEY (";
 			$delim = "";
 			foreach ($table->getPrimaryKey() as $col) {
-				echo $delim . $col->getName();
+				$script .= $delim . $platform->quoteIdentifier($col->getName());
 				$delim = ",";
 			}
 	$script .= ");
