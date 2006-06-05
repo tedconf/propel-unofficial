@@ -296,7 +296,7 @@ class BasePeer
 		$stmt = null;
 		try {
 
-			$sql = "UPDATE " . $tableName . " SET ";
+			$sql = "UPDATE " . $tableMap->getName() . " SET ";
 			
 			
 			$updateValuseArray = array(); // need this Collection turned into an array so we can merge it with $bindParams later
