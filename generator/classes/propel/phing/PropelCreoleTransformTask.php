@@ -323,6 +323,9 @@ class PropelCreoleTransformTask extends Task {
         if ($this->dbPassword) {
             $this->dsn["password"] = $this->dbPassword;
         }
+      	if ($this->dbSchema) {
+      	    $this->dsn['schema'] = $this->dbSchema;
+      	}
         if ($this->dbDriver) {
             Creole::registerDriver($this->dsn['phptype'], $this->dbDriver);
         }
