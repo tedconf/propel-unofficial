@@ -39,36 +39,7 @@ class PgsqlDDLBuilder extends DDLBuilder {
      * @var Array of schema names
      */
     protected static $addedSchemas = array();
-	
-	/**
-	 * Queue of constraint SQL that will be added to script at the end.
-	 * 
-	 * PostgreSQL seems (now?) to not like constraints for tables that don't exist,
-	 * so the solution is to queue up the statements and execute it at the end.
-	 * 
-	 * @var array
-	 */
-	protected static $queuedConstraints = array(); 
-	
-	/**
-	 * Reset static vars between db iterations.
-	 */
-	public static function reset()
-	{
-		self::$addedSchemas = array();
-		self::$queuedConstraints = array();
-	}
 
-	/**
-	 * Returns all the ALTER TABLE ADD CONSTRAINT lines for inclusion at end of file.
-	 * @return string DDL
-	 */
-	public static function getDatabaseEndDDL()
-	{
-		$ddl = implode("", self::$queuedConstraints);
-		return $ddl;
-	}
-	
     /**
      * Get the schema for the current table
      *
@@ -261,17 +232,16 @@ CREATE ";
 		$platform = $this->getPlatform();
 
 		foreach ($table->getForeignKeys() as $fk) {
-			$privscript .= "
+			$script .= "
 ALTER TABLE ".$this->quoteIdentifier($table->getName())." ADD CONSTRAINT ".$this->quoteIdentifier($fk->getName())." FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()) .") REFERENCES ".$this->quoteIdentifier($fk->getForeignTableName())." (".$this->getColumnList($fk->getForeignColumns()).")";
 			if ($fk->hasOnUpdate()) {
-				$privscript .= " ON UPDATE ".$fk->getOnUpdate();
+				$script .= " ON UPDATE ".$fk->getOnUpdate();
 			}
 			if ($fk->hasOnDelete()) {
-				$privscript .= " ON DELETE ".$fk->getOnDelete();
+				$script .= " ON DELETE ".$fk->getOnDelete();
 			}
-			$privscript .= ";
+			$script .= ";
 ";
-			self::$queuedConstraints[] = $privscript;
 		}
 	}
 
