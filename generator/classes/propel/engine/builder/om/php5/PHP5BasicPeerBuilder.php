@@ -1293,7 +1293,7 @@ abstract class ".$this->getClassname()." {
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
-		\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();";
+		\$criteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
