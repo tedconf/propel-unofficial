@@ -496,17 +496,24 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Method to select one object from the DB.
 	 *
-	 * @param Criteria \$criteria object used to create the SELECT statement.
-	 * @param Connection \$con
+	 * @param object \$queryOrCriteria Query or Criteria object used to create the SELECT statement.
+	 * @param PDO \$con
 	 * @return ".$this->getTable()->getPhpName()."
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectOne(Query \$query, PDO \$con = null)
+	public static function doSelectOne(\$queryOrCriteria, PDO \$con = null)
 	{
-		\$qcopy = clone \$query;
-		\$qcopy->setLimit(1);
-		\$objects = ".$this->getPeerClassname()."::doSelect(\$qcopy, \$con);
+		\$copy = clone \$queryOrCriteria;
+		
+		if (\$copy instanceof Criteria) {
+			\$q = ".$this->getPeerClassname()."::createQuery(\$copy);
+		} else {
+			\$q = \$copy; // rename for clarity
+		}
+		
+		\$q->setLimit(1);
+		\$objects = ".$this->getPeerClassname()."::doSelect(\$q, \$con);
 		if (\$objects) {
 			return \$objects[0];
 		}
@@ -524,15 +531,15 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Method to do selects.
 	 *
-	 * @param Criteria \$criteria The Criteria object used to build the SELECT statement.
-	 * @param Connection \$con
+	 * @param object \$queryOrCriteria Query or Criteria object used to create the SELECT statement.
+	 * @param PDO \$con
 	 * @return array Array of selected Objects
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelect(Query \$query, PDO \$con = null)
+	public static function doSelect(\$queryOrCriteria, PDO \$con = null)
 	{
-		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$query, \$con));
+		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$queryOrCriteria, \$con));
 	}";
 	}
 
@@ -551,19 +558,25 @@ abstract class ".$this->getClassname()." {
 	 * Use this method directly if you want to just get the PDOStatement result set
 	 * (instead of an array of objects).
 	 *
-	 * @param Query \$query The Query object used to build the SELECT statement.
+	 * @param object \$queryOrCriteria The Query or Criteria object used to build the SELECT statement.
 	 * @param PDO \$con the connection to use
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 * @return PDOStatement The resultset object with numerically-indexed fields.
 	 * @see ".$this->basePeerClassname."::doSelect()
 	 */
-	public static function doSelectStmt(Query \$query, PDO \$con = null)
+	public static function doSelectStmt(\$queryOrCriteria, PDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
-		  
+		
+		if (\$queryOrCriteria instanceof Criteria) {
+			\$query = ".$this->getPeerClassname()."::createQuery(\$queryOrCriteria);
+		} else {
+			\$query = \$queryOrCriteria; // rename for clarity
+		}
+		
 		if (!\$query->getSelectColumns()) {
 			\$query = clone \$query;
 			\$query->addDefaultSelectColumns();
