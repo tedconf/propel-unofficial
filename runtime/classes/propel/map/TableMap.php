@@ -213,7 +213,7 @@ class TableMap {
     public function getColumn($name)
     {
         if (!isset($this->columns[$name])) {
-            throw new PropelException("Cannot fetch ColumnMap for undefined column: " . $name);
+            throw new PropelException("Cannot fetch ColumnMap for undefined column [" . $name . "] in table [" . $this->getName() . "]");
         }
         return $this->columns[$name];
     }

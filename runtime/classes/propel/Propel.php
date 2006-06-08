@@ -314,6 +314,20 @@ class Propel {
 	}
 	
 	/**
+	 * Registers a DatabaseMap with Propel.
+	 * 
+	 * This can be used for testing or for otherwise performing runtime configuration
+	 * of Propel.
+	 * 
+	 * @param string $name The database name key to register this DatabaseMap under.
+	 * @param DatabaseMap $dbMap The database map object.
+	 */
+	public static function registerDatabaseMap($name, DatabaseMap $dbMap)
+	{
+		self::$dbMaps[$name] = $dbMap;
+	}
+	
+	/**
 	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
 	 * 
 	 * @param string $name The name that is used to look up the DSN from the runtime properties file. 
@@ -348,7 +362,21 @@ class Propel {
 
 		return self::$connectionMap[$name];
 	}
-
+	
+	/**
+	 * Registers a PDO connection with Propel.
+	 * 
+	 * This can be used for testing or for otherwise performing runtime configuration
+	 * of Propel.
+	 * 
+	 * @param string $name The database name key to register this connection under.
+	 * @param PDO $con The PDO database connection.
+	 */
+	public static function registerConnection($name, PDO $con)
+	{
+		self::$connectionMap[$name] = $con;
+	}
+	
 	/**
 	 * Returns database adapter for a specific connection pool.
 	 *
@@ -356,7 +384,7 @@ class Propel {
 	 * @return DBAdapter The corresponding database adapter.
 	 * @throws PropelException - if unable to find DBdapter for specified db.
 	 */
-	public static function getDB($name = null)
+	public static function getAdapter($name = null)
 	{
 		if ($name === null) {
 			$name = self::getDefaultDB();
@@ -374,7 +402,21 @@ class Propel {
 		
 		return self::$adapterMap[$name];
 	}
-
+	
+	/**
+	 * Registers a database adapter with Propel.
+	 * 
+	 * This can be used for testing or for otherwise performing runtime configuration
+	 * of Propel.
+	 * 
+	 * @param string $name The database name key to register this adapter under.
+	 * @param DBAdapter $adapter The database adapter.
+	 */
+	public static function registerAdapter($name, DBAdapter $adapter)
+	{
+		self::$adapterMap[$name] = $adapter;
+	}
+	
 	/**
 	 * Returns the name of the default database.
 	 *

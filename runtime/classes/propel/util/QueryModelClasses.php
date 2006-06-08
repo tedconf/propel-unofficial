@@ -134,11 +134,7 @@ class QueryTable {
 	 */
 	public function createQueryColumn($colname)
 	{
-		$col = $this->tableMap->getColumn($colname);
-		if (!$col) {
-			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
-		}
-		return new ActualQueryColumn($col, $this);
+		return new ActualQueryColumn($this->tableMap->getColumn($colname), $this);
 	}
 
 	/**
@@ -153,11 +149,7 @@ class QueryTable {
 	 */
 	public function createOrderByColumn($colname, $order)
 	{
-		$col = $this->tableMap->getColumn($colname);
-		if (!$col) {
-			throw new PropelException("Cannot load ".$colname." column from " . $this->getName() . " table.");
-		}
-		return new ActualOrderByColumn($col, $this, $order);
+		return new ActualOrderByColumn($this->tableMap->getColumn($colname), $this, $order);
 	}
 	
 	/**

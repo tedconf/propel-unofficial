@@ -99,4 +99,10 @@ class DBNone extends DBAdapter {
         return strlen($s);
     }
     
+    /**
+     * @see DBAdapter::applyLimit()
+     */
+    public function applyLimit(&$sql, $offset, $limit)
+    {
+	}
 }

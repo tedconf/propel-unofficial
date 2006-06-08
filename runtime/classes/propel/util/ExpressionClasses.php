@@ -45,6 +45,7 @@ interface Expression {
 	/**
 	 * Set whether this expression is case-insensitive.
 	 * @param boolean $bit
+	 * @return Expression This modified Expression object.
 	 */
 	public function setIgnoreCase($bit);
 
@@ -61,6 +62,7 @@ interface Expression {
 	 * prefixes (aliases), etc.
 	 * 
 	 * @param QueryTable $table
+	 * @return Expression This modified Expression object.
 	 */
 	public function setQueryTable(QueryTable $table);
 
@@ -105,10 +107,12 @@ abstract class BaseExpression implements Expression {
 	/**
 	 * Sets the QueryTable for this expression.
 	 * @param $table QueryTable
+	 * @return Expression This modified Expression object.
 	 */
 	public function setQueryTable(QueryTable $table)
 	{
 		$this->queryTable = $table;
+		return $this;
 	}
 
 	/**
@@ -124,7 +128,7 @@ abstract class BaseExpression implements Expression {
      * Sets ignore case.
      *
      * @param boolean $b True if case should be ignored.
-     * @return A modified Criteria object.
+     * @return Expression This modified Expression object.
      */
     public function setIgnoreCase($b)
     {
@@ -150,29 +154,35 @@ abstract class BaseExpression implements Expression {
 abstract class BaseExpressionContainer extends BaseExpression implements ExpressionContainer {
 
 	/**
-	 * Sets the QueryTable for this expression and all children (overriding any previous value they may have had).
+	 * Sets the QueryTable for this expression and optionally all children (overriding any previous value they may have had).
 	 * @param QueryTable $table
+	 * @return ExpressionContainer This modified ExpressionContainer object.
 	 */
 	public function setQueryTable(QueryTable $table)
 	{
 		parent::setQueryTable($table);
 		foreach($this as $expr) {
-			$expr->setQueryTable($table);
+			if ($expr->getQueryTable() === null) {
+				$expr->setQueryTable($table);
+			}
 		}
+		return $this;
 	}
 
 	/**
-     * Sets ignore case for this expression and all children (overriding any previous value they may have had).
+     * Sets ignore case for this expression and optionally all children (overriding any previous value they may have had).
      *
      * @param boolean $b True if case should be ignored.
-     * @return A modified ExpressionContainer object.
+     * @return ExpressionContainer A modified ExpressionContainer object.
      */
     public function setIgnoreCase($b)
     {
     	$b = (boolean) $b;
         parent::setIgnoreCase($b);
         foreach($this as $expr) {
-        	$expr->setIgnoreCase($b);
+        	if ($expr->getIgnoreCase() === null) {
+        		$expr->setIgnoreCase($b);
+        	}
 		}
         return $this;
     }
@@ -207,7 +217,7 @@ abstract class ColumnExpression extends BaseExpression {
 		if ($qt === null) {
 			throw new PropelException("QueryTable must be set in Expression (setQueryTable(QueryTable)) before you can call getAdapter()");
 		}
-		return Propel::getDB($qt->getDbName());
+		return Propel::getAdapter($qt->getDbName());
 	}
 
 	/**
@@ -281,7 +291,7 @@ abstract class ColumnValueExpression extends ColumnExpression {
 			
 				// default case, it is a normal col = value expression; value
 				// will be replaced w/ '?' and will be inserted later using PDO bindValue()
-				if ($this->getIgnoreCase() && $this->columnMap->isStringType()) {
+				if ($this->getIgnoreCase() && $col->getColumnMap()->isStringType()) {
 					$sql = $this->getIgnoreCaseSql($col, $this->getAdapter());
 			    } else {
 		        	$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ?';
@@ -375,17 +385,16 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 			if (empty($this->values)) {
 			    // a SQL error will result if we have COLUMN IN (), so replace it with an expression
 			    // that will always evaluate to FALSE for Criteria::IN and TRUE for Criteria::NOT_IN
-				$sql .= $this->getEmptyValuesSql();
+				$sql = $this->getEmptyValuesSql();
 			} else {
-
-				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator();
+				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ';
 
 				foreach($this->values as $value) {
                     $params[] = new ColumnValue($col->getColumnMap(), $value);
                 }
 
                 $inString = '(' . substr(str_repeat("?,", count($this->values)), 0, -1) . ')';
-                $sql = $inString;
+                $sql .= $inString;
 			}
 
 		} else {
@@ -436,14 +445,16 @@ abstract class LogicExpression extends BaseExpressionContainer {
 	 */
 	public function buildSql(&$params)
 	{
-        // each expression gets nested in ()
-        $sql = '(';
+        // each expression gets nested in () if there is more than one expression contained
+        $sql = '';
+        $size = count($this->expressions);
+        if ($size > 1) $sql = '(';
         $and = 0;
 		foreach($this->expressions as $expr) {
 			if ($and++) { $sql .= ' ' . $this->getOperator() . ' '; }
 			$sql .= $expr->buildSql($params);
 		}
-		$sql .= ')';
+		if ($size > 1) $sql .= ')';
 		return $sql;
 	}
 	
@@ -589,9 +600,14 @@ class LikeExpr extends ColumnValueExpression {
 	{
 		$op = $this->getOperator();
 		if ($db instanceof DBPostgres) {
+			// Postgres has a special case-insensitive opearator
 			$op = "ILIKE";
 			return $col->getQualifiedSql() . " " . $op . " ?";
+		} elseif ($db instanceof DBMySQL) { 
+			// some databases are not case-sensitive at all in LIKE
+			return $col->getQualifiedSql() . " " . $op . " ?";
 		} else {
+			// the default tends to be something like "UPPER(table.col) LIKE UPPER(?)"
 			return $db->ignoreCase($col->getQualifiedSql()) . ' ' . $op . ' ' . $db->ignoreCase("?");
 		}
 	}
@@ -617,9 +633,14 @@ class NotLikeExpr extends ColumnValueExpression {
 	{
 		$op = $this->getOperator();
 		if ($db instanceof DBPostgres) {
+			// Postgres has a special case-insensitive opearator
 			$op = "NOT ILIKE";
 			return $col->getQualifiedSql() . " " . $op . " ?";
+		} elseif ($db instanceof DBMySQL) { 
+			// some databases are not case-sensitive at all in LIKE
+			return $col->getQualifiedSql() . " " . $op . " ?";
 		} else {
+			// the default tends to be something like "UPPER(table.col) LIKE UPPER(?)"
 			return $db->ignoreCase($col->getQualifiedSql()) . ' ' . $op . ' ' . $db->ignoreCase("?");
 		}
 	}

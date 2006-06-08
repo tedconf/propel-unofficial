@@ -111,7 +111,7 @@ class BasePeer
 	{
 		$dbname = $criteria->getDbName();
 		
-		$db = Propel::getDB($dbname);
+		$db = Propel::getAdapter($dbname);
 		$dbMap = Propel::getDatabaseMap($dbname);
 		
 		$tableName = $criteria->getQueryTable()->getName();
@@ -473,7 +473,7 @@ class BasePeer
 		
 		// FIXME - these methods should be re-thought, since there's a more efficient
 		// way to get the map directly from Criteria
-		$db = Propel::getDB($dbname);		
+		$db = Propel::getAdapter($dbname);		
 		$dbMap = Propel::getDatabaseMap($dbname);
 
 
