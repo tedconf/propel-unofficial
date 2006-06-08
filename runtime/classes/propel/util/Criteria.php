@@ -56,6 +56,7 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
     public function __construct(QueryTable $table)
     {
 		$this->setQueryTable($table);
+		$this->container = new AndExpr();
 	}
 
     /**
@@ -69,15 +70,13 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 		if ($expr->getQueryTable() === null) {
 			$expr->setQueryTable($this->getQueryTable());
 		}
-    	if ($this->container === null) {
-    		$this->container = new AndExpr();
-    	}
 		$this->container->add($expr);
 		return $this;
 	}
 
 	/**
 	 * This builds the SQL for all expressions that have been added to this Criteria.
+	 * @return string The SQL from expressions in this Criteria or NULL if no expressions have been added.
 	 */ 
 	public function buildSql(&$params)
 	{

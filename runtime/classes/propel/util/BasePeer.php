@@ -331,13 +331,13 @@ class BasePeer
 	}
 
 	/**
-	 * Executes query built by createSelectSql() and returns PDOStatement.
+	 * Executes query built by Query#buildSql() and returns PDOStatement.
 	 *
 	 * @param Criteria $criteria A Criteria.
 	 * @param PDO $con A PDO connection to use.
 	 * @return PDOStatement The result statement.
 	 * @throws PropelException
-	 * @see createSelectSql()
+	 * @see Query#buildSql()
 	 */
 	public static function doSelect(Query $query, PDO $con)
 	{
@@ -354,13 +354,11 @@ class BasePeer
 			if ($query->isUseTransaction()) Transaction::begin($con);
 
 			$params = array();
-			$sql = self::createSelectSql($query, $params);
+			$sql = $query->buildSql($params); 
+			
+			Propel::log($sql . ' [LIMIT: ' . $query->getLimit() . ', OFFSET: ' . $query->getOffset() . ']', Propel::LOG_DEBUG);
 
  			$stmt = $con->prepare($sql);
-
- 			// FIXME - add SQL-modification for LIMIT/OFFSET into DBAdapters & createSelectSql method.
-			// $stmt->setLimit($criteria->getLimit());
-			// $stmt->setOffset($criteria->getOffset());
 
 			self::populateStmtValues($stmt, $params, $db);
 
@@ -447,158 +445,6 @@ class BasePeer
 			}
 		}
 		return (!empty($failureMap) ? $failureMap : true);
-	}
-
-	/**
-	 * Method to create an SQL query based on values in a Criteria.
-	 *
-	 * This method creates only prepared statement SQL (using ? where values
-	 * will go).  The second parameter ($params) stores the values that need
-	 * to be set before the statement is executed.  The reason we do it this way
-	 * is to let the PDO layer handle all escaping & value formatting.
-	 *
-	 * @param Criteria $criteria Criteria for the SELECT query.
-	 * @param array &$params Parameters that are to be replaced in prepared statement.
-	 * @return string
-	 * @throws PropelException Trouble creating the query string.
-	 */
-	public static function createSelectSql(Query $query, &$bindParams) {
-		
-		$criteria = $query->getCriteria();
-		$dbname = $criteria->getDbName();
-		
-		// we don't need to use DATABASE_NAME constants anymore, but clearly
-		// it involves a little less dereferencing ....
-		// $dbMap = $criteria->getQueryTable()->getTableMap()->getDatabase();
-		
-		// FIXME - these methods should be re-thought, since there's a more efficient
-		// way to get the map directly from Criteria
-		$db = Propel::getAdapter($dbname);		
-		$dbMap = Propel::getDatabaseMap($dbname);
-
-
-		// redundant definition $selectModifiers = array();
-		$selectClause = array();
-		$fromClause = array();
-		$joinClause = array();
-		$joinTables = array();
-		$whereClause = array();
-		$orderByClause = array();
-		// redundant definition $groupByClause = array();
-
-		$orderBy = $query->getOrderByColumns();
-		$groupBy = $query->getGroupByColumns();
-		
-		// FIXME ... we should try to handle this on a Criteria-by-Criteria basis 
-		$ignoreCase = $criteria->getIgnoreCase();
-		
-		$selectColumns = $query->getSelectColumns();
-		
-		foreach($selectColumns as $selCol) {
-			$selectClause[] = $selCol->getQualifiedSql();
-		}
-		
-		$selectModifiers = $query->getSelectModifiers();
-
-		// Add the primary table to FROM clause
-		
-		$fromClause[] = $criteria->getQueryTable()->getFromClauseSql();		
-		// FIXME - we need to also add any tables that aren't represented by JOINS
-		// For that, we want a $query->getUnjoinedTables() method.
-				
-		
-		// Add the criteria to WHERE clause, adding any params to passed-in array
-		$whereClause[] = $criteria->buildSql($bindParams);
-		
-		// Loop through the joins,
-		// joins with a null join type will be added to the FROM clause and the condition added to the WHERE clause.
-		// joins of a specified type: the LEFT side will be added to the fromClause and the RIGHT to the joinClause
-		// New Code.
-		
-		foreach ($query->getJoins() as $join) { // we'll only loop if there's actually something here
-			
-			// FIXME - most of this stuff could be moved into the Join class.  There's no 
-			// reason that I can see why it needs to be in BasePeer ...
-			
-			// The join might have been established using an alias name
-			$leftCol = $join->getLeftColumn();
-			$rightCol = $join->getRightColumn();
-
-			$leftTable = $join->getLeftTable();
-			$rightTable = $join->getRightTable();
-
-			// build the condition
-			// TODO - consider allowing more complex conditions here.  We get into some trouble when we actully
-			// want to use an Expression interface, however, because Expressions are inherently single-table. 
-			if ($ignoreCase) {
-				$condition = $leftCol->ignoreCase($leftCol->getQualifiedSql()) . '=' . $rightCol->ignoreCase($rightCol->getQualifiedSql());
-			} else {
-				$condition = $leftCol->getQualifiedSql() . '=' . $rightCol->getQualifiedSql();
-			}
-
-			// add 'em to the queues..
-			if ( $join->getJoinType() !== Join::IMPLICIT ) {
-				$joinTables[] = $rightTable->getFromClauseSql();
-				$joinClause[] = $join->getJoinType() . ' ' . $rightTable->getFromClauseSql() . " ON (".$condition.")";
-			} else {
-				$fromClause[] = $leftTable->getFromClauseSql();
-				$fromClause[] = $rightTable->getFromClauseSql();
-				$whereClause[] = $condition;
-			}
-		}
-
-		// Unique from clause elements
-		$fromClause = array_unique($fromClause);
-
-		// tables should not exist in both the from and join clauses
-		if ($joinTables && $fromClause) {
-			foreach ($fromClause as $fi => $ftableAndAlias) {
-				if (in_array($ftableAndAlias, $joinTables)) {
-					unset($fromClause[$fi]);
-				}
-			}
-		}
-
-		// Add the GROUP BY columns
-		$groupByClause = $groupBy;
-
-		$having = $query->getHaving();
-		$havingSql = null;
-		if ($having !== null) {
-			$havingSql = $having->buildSql($bindParams);
-		}
-		
-		if (!empty($orderBy)) {
-
-			foreach($orderBy as $orderByColumn) {
-				$direction = $orderByColumn->getDirection();
-				if ($ignoreCase && ($orderByColumn instanceof ActualOrderByColumn) && $orderByColumn->getColumnMap()->isText()) {
-					$orderByClause[] = $db->ignoreCaseInOrderBy($orderByColumn->getQualifiedSql()) . ' ' . $direction;
-				} else {
-					$orderByClause[] = $orderByColumn->getQualifiedSql() . ' ' . $direction;
-				}
-			}
-		}
-
-		// Build the SQL from the arrays we compiled
-		$sql =  "SELECT "
-				.($selectModifiers ? implode(" ", $selectModifiers) . " " : "")
-				.implode(", ", $selectClause)
-				." FROM ".implode(", ", $fromClause)
-								.($joinClause ? ' ' . implode(' ', $joinClause) : '')
-				.($whereClause ? " WHERE ".implode(" AND ", $whereClause) : "")
-				.($groupByClause ? " GROUP BY ".implode(",", $groupByClause) : "")
-				.($havingSql ? " HAVING ".$havingSql : "")
-				.($orderByClause ? " ORDER BY ".implode(",", $orderByClause) : "");
-		
-		// APPLY OFFSET & LIMIT to the query.
-		if ($query->getLimit() || $query->getOffset()) {
-			$db->applyLimit($sql, $query->getOffset(), $query->getLimit());
-		}
-		
-		Propel::log($sql . ' [LIMIT: ' . $query->getLimit() . ', OFFSET: ' . $query->getOffset() . ']', Propel::LOG_DEBUG);
-
-		return $sql;
 	}
 
 	/**

@@ -271,6 +271,48 @@ class CriteriaTest extends BaseTestCase {
 
     }
     
+    /**
+     * Test that null is evaluated correctly with EqualExpr.
+     */
+    public function testNull()
+    {
+        $c = $this->createCriteria("test1");
+        
+        $c->add(new EqualExpr("active", null));
+        
+
+        $expect = "test1.active IS NULL";
+        $expect_params = array();
+        
+    
+    	$params = array();
+        $result = $c->buildSql($params);
+        
+        $this->assertEquals($expect, $result);
+        $this->assertEquals($expect_params, $this->getSimplifiedBindParams($params));
+
+    }
+    
+    /**
+     * Test that null is evaluated correctly with NotEqualExpr.
+     */
+    public function testNotNull()
+    {
+        $c = $this->createCriteria("test1");
+        
+        $c->add(new NotEqualExpr("active", null));
+        
+        $expect = "test1.active IS NOT NULL";
+        $expect_params = array();
+        
+    	$params = array();
+        $result = $c->buildSql($params);
+        
+        $this->assertEquals($expect, $result);
+        $this->assertEquals($expect_params, $this->getSimplifiedBindParams($params));
+
+    }
+    
 	public function testIn()
 	{	
 		$params = array();
@@ -316,9 +358,6 @@ class CriteriaTest extends BaseTestCase {
 		$expect = "(1=1 AND invoice.id NOT IN (?,?,?) AND invoice.id IS NOT NULL)";
 		$params = array();
 		$result = $c->buildSql($params);
-        
-//        var_dump($expect);
-//        var_dump($result);
         
 		$this->assertEquals($expect, $result);
 
