@@ -78,11 +78,21 @@ class Query implements StatementBuilder {
 		$this->criteria = $c;
 	}
 	
+	/**
+	 * Get the QueryTable for this Query.
+	 * This is equivalent to getting the QueryTable for the primary Criteria class in this Query.
+	 * @return QueryTable
+	 */
 	public function getQueryTable()
 	{
 		return $this->criteria->getQueryTable();
 	}
 	
+	/**
+	 * Gets the database name key for this Query.
+	 * This is equivalent to getting the database name key from the primary Criteria for this Query.
+	 * @return string
+	 */
 	public function getDbName()
 	{
 		return $this->criteria->getDbName();
@@ -138,11 +148,14 @@ class Query implements StatementBuilder {
 	
 	/**
 	 * Adds a specific column to the SELECT query.
-	 * @param QueryColumn $qc 
+	 * @param mixed $col QueryColumn or string column name (assumed to be in primary Criteria's QueryTable).
 	 * @return Query This modified Query object.
 	 */
-	public function addSelectColumn(QueryColumn $qc)
+	public function addSelectColumn($col)
 	{
+		if (!$col instanceof QueryColumn) {
+			$col = $this->getQueryTable()->createQueryColumn($col);
+		}
 		$this->selectColumns[] = $qc;
 		return $this;
 	}
@@ -240,11 +253,14 @@ class Query implements StatementBuilder {
 	
 	/**
 	 * Adds a group-by column to this Query.
-	 * @param QueryColumn $qc
+	 * @param mixed $col QueryColumn or string column name (assumed to be in primary Criteria's QueryTable).
 	 */
-	public function addGroupByColumn(QueryColumn $qc)
+	public function addGroupByColumn($col)
 	{
-		$htis->groupByColumns[] = $qc;
+		if (!$col instanceof QueryColumn) {
+			$col = $this->getQueryTable()->createQueryColumn($col);
+		}
+		$htis->groupByColumns[] = $col;
 	}
 	
     /**
@@ -373,41 +389,61 @@ class Query implements StatementBuilder {
 		$db = Propel::getAdapter($dbname);		
 		$dbMap = Propel::getDatabaseMap($dbname);
 
-
-		// redundant definition $selectModifiers = array();
+		$selectModifiers = array();
 		$selectClause = array();
 		$fromClause = array();
 		$joinClause = array();
 		$joinTables = array();
 		$whereClause = array();
 		$orderByClause = array();
-		// redundant definition $groupByClause = array();
+		$groupByClause = array();
 
-		$orderBy = $this->getOrderByColumns();
-		$groupBy = $this->getGroupByColumns();
 		
 		// FIXME ... we should try to handle this on a Criteria-by-Criteria basis 
 		$ignoreCase = $this->criteria->getIgnoreCase();
 		
+		// -------------------------------------
+		// (1) SELECT MODIFIERS
+		// -------------------------------------
+		$selectModifiers = $this->getSelectModifiers();
+
+		// -------------------------------------
+		// (2) SELECT COLUMNS
+		// -------------------------------------		
 		$selectColumns = $this->getSelectColumns();
 		
 		foreach($selectColumns as $selCol) {
 			$selectClause[] = $selCol->getQualifiedSql();
 		}
-		
-		$selectModifiers = $this->getSelectModifiers();
 
-		// Add the primary table to FROM clause
+
+		// -------------------------------------
+		// (3) FROM TABLES
+		// -------------------------------------
 		
 		$fromClause[] = $this->criteria->getQueryTable()->getFromClauseSql();		
+		
 		// FIXME - we need to also add any tables that aren't represented by JOINS
 		// For that, we want a $this->getUnjoinedTables() method.
-				
+		//
+		// Specifically, we need to support the fact that some expression values may be 
+		// columns of other tables.
+		
+
+		// -------------------------------------
+		// (1) WHERE CLAUSE 
+		// -------------------------------------
+		
 		// Add the criteria to WHERE clause, adding any params to passed-in array
 		$whereFromCriteria = $this->criteria->buildSql($bindParams);
 		if ($whereFromCriteria) {
 			$whereClause[] = $whereFromCriteria;
 		}
+		
+		// -------------------------------------
+		// (4) JOINS (FROM CLAUSE, WHERE CLAUSE)
+		// -------------------------------------
+
 		
 		// Loop through the joins,
 		// joins with a null join type will be added to the FROM clause and the condition added to the WHERE clause.
@@ -459,8 +495,19 @@ class Query implements StatementBuilder {
 			}
 		}
 
+		// -------------------------------------
+		// (5) GROUP BY COLUMNS
+		// -------------------------------------
+
 		// Add the GROUP BY columns
-		$groupByClause = $groupBy;
+		$groupByColumns = $this->getGroupByColumns();
+		foreach($groupByColumns as $groupByCol) {
+			$groupByClause[] = $groupByCol->getQualifiedSql();
+		}
+
+		// -------------------------------------
+		// (6) HAVING CLAUSE
+		// -------------------------------------
 
 		$having = $this->getHaving();
 		$havingSql = null;
@@ -468,9 +515,13 @@ class Query implements StatementBuilder {
 			$havingSql = $having->buildSql($bindParams);
 		}
 		
-		if (!empty($orderBy)) {
-
-			foreach($orderBy as $orderByColumn) {
+		// -------------------------------------
+		// (7) ORDER BY COLUMNS
+		// -------------------------------------
+		
+		$orderByColumns = $this->getOrderByColumns();
+		if (!empty($orderByColumns)) {
+			foreach($orderByColumns as $orderByColumn) {
 				$direction = $orderByColumn->getDirection();
 				if ($ignoreCase && ($orderByColumn instanceof ActualOrderByColumn) && $orderByColumn->getColumnMap()->isText()) {
 					$orderByClause[] = $db->ignoreCaseInOrderBy($orderByColumn->getQualifiedSql()) . ' ' . $direction;
@@ -479,6 +530,10 @@ class Query implements StatementBuilder {
 				}
 			}
 		}
+		
+		// -------------------------------------
+		// (8) CREATING THE QUERY SQL
+		// -------------------------------------
 
 		// Build the SQL from the arrays we compiled
 		$sql =  "SELECT "
@@ -497,6 +552,27 @@ class Query implements StatementBuilder {
 		}
 		
 		return $sql;
+	}
+	
+	/**
+	 * Adds deep copy support.
+	 * @todo -c In order for this to work, we need to implement __clone in all the related classes too.
+	 */
+	public function __cloneTODO()
+	{
+		$this->criteria = clone($this->criteria);
+		foreach ($this->orderByColumns as $k => $v) {
+			$this->orderByColumns[$k] = clone($v);
+		}
+		foreach ($this->groupByColumns as $k => $v) {
+			$this->groupByColumns[$k] = clone($v);
+		}
+		foreach ($this->selectColumns as $k => $v) {
+			$this->selectColumns[$k] = clone($v);
+		}
+		foreach ($this->joins as $k => $v) {
+			$this->joins[$k] = clone($v);
+		}
 	}
 
 }
