@@ -763,22 +763,22 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 * an empty collection or the current collection, the criteria
 	 * is ignored on a new object.
 	 *
-	 * @param Connection \$con
-	 * @param Criteria \$criteria
+	 * @param Query \$query An optional Query object to filter results.
+	 * @param PDO \$con
 	 * @throws PropelException
 	 */
-	public function get$relCol(\$criteria = null, \$con = null)
+	public function get$relCol(Query \$query = null, PDO \$con = null)
 	{
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
-		if (\$criteria === null) {
-			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
+		if (\$query === null) {
+			\$query = ".$fkPeerBuilder->getPeerClassname()."::createQuery();
+		} else {
+			\$query = clone \$query;
 		}
-		elseif (\$criteria instanceof Criteria)
-		{
-			\$criteria = clone \$criteria;
-		}
-
+		
+		\$criteria = \$query->getCriteria();
+		
 		if (\$this->$collName === null) {
 			if (\$this->isNew()) {
 			   \$this->$collName = array();
@@ -791,12 +791,13 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 			$colFK = $refFK->getTable()->getColumn($colFKName);
 
 			$script .= "
-				\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$localColumn->getPhpName()."());
+				\$criteria->add(new EqualExpr(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$localColumn->getPhpName()."()));
 ";
 		} // end foreach ($fk->getForeignColumns()
 
 		$script .= "
-				".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
+				\$query->addSelectColumnsForTable(".$fkPeerBuilder->getPeerClassname()."::createQueryTable());
+				// ".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
 				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$criteria, \$con);
 			}
 		} else {
@@ -813,13 +814,15 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 			$colFK = $refFK->getTable()->getColumn($colFKName);
 			$script .= "
 
-				\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$localColumn->getPhpName()."());
+				\$criteria->add(new EqualExpr(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$localColumn->getPhpName()."()));
 ";
 	} // foreach ($fk->getForeignColumns()
 $script .= "
-				".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
-				if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName."->equals(\$criteria)) {
-					\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$criteria, \$con);
+
+				\$query->addSelectColumnsForTable(".$fkPeerBuilder->getPeerClassname()."::createQueryTable());
+				// ".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
+				if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName." == \$query) { // FIXME <- implement equals()
+					\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$query, \$con);
 				}
 			}
 		}
