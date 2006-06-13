@@ -798,7 +798,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		$script .= "
 				\$query->addSelectColumnsForTable(".$fkPeerBuilder->getPeerClassname()."::createQueryTable());
 				// ".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
-				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$criteria, \$con);
+				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$query, \$con);
 			}
 		} else {
 			// criteria has no effect for a new object
@@ -821,7 +821,7 @@ $script .= "
 
 				\$query->addSelectColumnsForTable(".$fkPeerBuilder->getPeerClassname()."::createQueryTable());
 				// ".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
-				if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName." == \$query) { // FIXME <- implement equals()
+				if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName." == \$criteria) { // FIXME <- implement equals()
 					\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$query, \$con);
 				}
 			}
