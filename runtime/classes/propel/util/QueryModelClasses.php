@@ -282,6 +282,19 @@ class ActualOrderByColumn extends ActualQueryColumn {
 	private $direction;
 	
 	/**
+	 * Construct a new OrderByColumn for a QueryTable and from a ColumnMap and direction.
+	 * @param ColumnMap $columnMap
+	 * @param QueryTable $queryTable
+	 * @param string $direction OrderByColumn::ASC or OrderByColumn::DESC 
+	 * @see QueryTable#createQueryColumn()
+	 */
+	public function __construct(ColumnMap $columnMap, QueryTable $queryTable, $direction)
+	{
+		parent::__construct($columnMap, $queryTable);
+		$this->direction = $direction;		
+	}
+	
+	/**
 	 * @see OrderByColumn#setDirection()
 	 */
 	public function setDirection($direction)
