@@ -106,7 +106,7 @@ interface Persistent {
      * @return void
      * @throws Exception
      */
-    public function delete($con = null);
+    public function delete(PDO $con = null);
 
     /**
      * Saves the object.
@@ -114,5 +114,5 @@ interface Persistent {
      * @return void
      * @throws Exception
      */
-    public function save($con = null);
+    public function save(PDO $con = null);
 }
