@@ -183,36 +183,51 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 		\$results = array();
 
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHash(\$row, 0);
+			if (isset(self::\$instances[\$key1])) {
+				\$obj1 = self::\$instances[\$key1];
+			} else {
 ";
 						if ($table->getChildrenColumn()) {
 							$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
+				\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
 ";
 						} else {
 							$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass();
+				\$omClass = ".$this->getPeerClassname()."::getOMClass();
 ";
 						} 
 						$script .= "
-			\$cls = Propel::import(\$omClass);
-			\$obj1 = new \$cls();
-			\$obj1->hydrate(\$row);
+				\$cls = Propel::import(\$omClass);
+				\$obj1 = new \$cls();
+				\$obj1->hydrate(\$row);
+				self::\$instances[\$key1] = \$obj1;
+			} // if obj1 already loaded
+			
+			\$key2 = ".$joinedTablePeerBuilder->getPeerClassname()."::getPrimaryKeyHash(\$row, \$startcol);
+			if (isset(".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key2])) {
+				\$obj2 = ".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key2];
+			} else {
 ";
 						if ($joinTable->getChildrenColumn()) {
 							$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol);
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol);
 ";
 						} else { 
 							$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
 ";
 						}
 						
 						$script .= "
-			\$cls = Propel::import(\$omClass);
-			\$obj2 = new \$cls();
-			\$obj2->hydrate(\$row, \$startcol);
-
+				\$cls = Propel::import(\$omClass);
+				\$obj2 = new \$cls();
+				\$obj2->hydrate(\$row, \$startcol);
+				".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key2] = \$obj2;
+			} // if obj2 already loaded
+			
+			// FIXME -- this needs to be updated for identity map
+			// 
 			\$newObject = true;
 			foreach(\$results as \$temp_obj1) {
 				\$temp_obj2 = \$temp_obj1->get".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(); //CHECKME
@@ -337,7 +352,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAll(Criteria \$c, \$con = null)
+	public static function doSelectJoinAll(Criteria \$c, PDO \$con = null)
 	{
 		\$c = clone \$c;
 
@@ -393,23 +408,29 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 		\$results = array();
 		
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHash(\$row, 0);
+			if (isset(self::\$instances[\$key1])) {
+				\$obj1 = self::\$instances[\$key1];
+			} else {
 ";
 
 		if ($table->getChildrenColumn()) { 
 			$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
+				\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
 ";
 		} else {
 			$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass();
+				\$omClass = ".$this->getPeerClassname()."::getOMClass();
 ";
 		}
 	
 		$script .= "
-			
-			\$cls = Propel::import(\$omClass);
-			\$obj1 = new \$cls();
-			\$obj1->hydrate(\$row);
+				
+				\$cls = Propel::import(\$omClass);
+				\$obj1 = new \$cls();
+				\$obj1->hydrate(\$row);
+				self::\$instances[\$key1] = \$obj1;
+			} // if obj1 already loaded
 ";
 
 		$index = 1;
@@ -454,25 +475,32 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 				$index++;
 				
 				$script .= "
-				
-				// Add objects for joined $joinClassName rows
+			// Add objects for joined $joinClassName rows
+								
+			\$key$index = ".$joinedTablePeerBuilder->getPeerClassname()."::getPrimaryKeyHash(\$row, \$startcol$index);
+			if (isset(".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index])) {
+				\$obj$index = ".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index];
+			} else {									
 	";
 				if ($joinTable->getChildrenColumn()) {
 					$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol$index);
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol$index);
 ";
 				} else {
 					$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
 ";
 				} /* $joinTable->getChildrenColumn() */
 			
 				$script .= "
-	
-			\$cls = Propel::import(\$omClass);
-			\$obj".$index." = new \$cls();
-			\$obj".$index."->hydrate(\$row, \$startcol$index);
+
+				\$cls = Propel::import(\$omClass);
+				\$obj".$index." = new \$cls();
+				\$obj".$index."->hydrate(\$row, \$startcol$index);
+				".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index] = \$obj$index;
+			} // if obj$index loaded
 			
+			// FIXME - Fix this for new identity map system
 			\$newObject = true;
 			for (\$j=0, \$resCount=count(\$results); \$j < \$resCount; \$j++) {
 				\$temp_obj1 = \$results[\$j];
@@ -521,7 +549,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @param Connection \$con
 	 * @return int Number of matching rows.
 	 */
-	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, \$con = null)
+	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, PDO \$con = null)
 	{
 		\$criteria = clone \$criteria;
 
@@ -627,7 +655,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null)
+	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, PDO \$con = null)
 	{
 		\$c = clone \$c;
 
@@ -687,21 +715,27 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 		\$results = array();
 		
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHash(\$row, 0);
+			if (isset(self::\$instances[\$key1])) {
+				\$obj1 = self::\$instances[\$key1];
+			} else {
 ";
 			if ($table->getChildrenColumn()) {
 				$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
+				\$omClass = ".$this->getPeerClassname()."::getOMClass(\$row, 0);
 ";
 			} else {
 				$script .= "
-			\$omClass = ".$this->getPeerClassname()."::getOMClass();
+				\$omClass = ".$this->getPeerClassname()."::getOMClass();
 ";
 			}
 			
 			$script .= "
-			\$cls = Propel::import(\$omClass);
-			\$obj1 = new \$cls();
-			\$obj1->hydrate(\$row);		
+				\$cls = Propel::import(\$omClass);
+				\$obj1 = new \$cls();
+				\$obj1->hydrate(\$row);
+				self::\$instances[\$key1] = \$obj1;
+			} // if obj1 already loaded
 ";
 	
 		$index = 1;
@@ -742,23 +776,34 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 					$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
 					
 					$index++;
-				
+
+				$script .= "
+			// Add objects for joined $joinClassName rows
+								
+			\$key$index = ".$joinedTablePeerBuilder->getPeerClassname()."::getPrimaryKeyHash(\$row, \$startcol$index);
+			if (isset(".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index])) {
+				\$obj$index = ".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index];
+			} else {									
+";
 					if ($joinTable->getChildrenColumn()) {
 						$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol$index);
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass(\$row, \$startcol$index);
 ";
 					} else {
 						$script .= "
-			\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
+				\$omClass = ".$joinedTablePeerBuilder->getPeerClassname()."::getOMClass();
 ";
 					} /* $joinTable->getChildrenColumn() */
 	
 					$script .= "
-	
-			\$cls = Propel::import(\$omClass);
-			\$obj$index  = new \$cls();
-			\$obj".$index."->hydrate(\$row, \$startcol$index);
+		
+				\$cls = Propel::import(\$omClass);
+				\$obj$index  = new \$cls();
+				\$obj".$index."->hydrate(\$row, \$startcol$index);
+				".$joinedTablePeerBuilder->getPeerClassname()."::\$instances[\$key$index] = \$obj$index;
+			} // if \$obj$index already loaded
 			
+			// FIXME - Fix this for new identity map system
 			\$newObject = true;
 			for (\$j=0, \$resCount=count(\$results); \$j < \$resCount; \$j++) {
 				\$temp_obj1 = \$results[\$j];
@@ -819,7 +864,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @param Connection \$con
 	 * @return int Number of matching rows.
 	 */
-	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, \$con = null)
+	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PDO \$con = null)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;

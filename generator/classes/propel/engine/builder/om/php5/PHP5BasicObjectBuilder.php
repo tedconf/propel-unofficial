@@ -320,7 +320,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @throws PropelException - if unable to convert the date/time to timestamp.
 	 */
 	public function get$cfc(\$format = ".var_export($defaultfmt, true)."";
-		if ($col->isLazyLoad()) $script .= ", \$con = null";
+		if ($col->isLazyLoad()) $script .= ", PDO \$con = null";
 		$script .= ")
 	{
 ";
@@ -372,7 +372,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return ".$col->getPhpNative()."
 	 */
 	public function get$cfc(";
-		if ($col->isLazyLoad()) $script .= "\$con = null";
+		if ($col->isLazyLoad()) $script .= "PDO \$con = null";
 		$script .= ")
 	{
 ";
@@ -412,7 +412,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return void
 	 * @throws PropelException - any underlying error will be wrapped and re-thrown.
 	 */
-	protected function load$cfc(\$con = null)
+	protected function load$cfc(PDO \$con = null)
 	{
 		\$c = \$this->buildPkeyCriteria();
 		\$c->addSelectColumn(".$this->getColumnConstant($col).");
@@ -908,7 +908,7 @@ $script .= "
 	 * @see BaseObject::setDeleted()
 	 * @see BaseObject::isDeleted()
 	 */
-	public function delete(\$con = null)
+	public function delete(PDO \$con = null)
 	{
 		if (\$this->isDeleted()) {
 			throw new PropelException(\"This object has already been deleted.\");
@@ -969,7 +969,7 @@ $script .= "
 	 * @return int The number of rows affected by this insert/update operation (for non-complex OM this will be at most 1).
 	 * @throws PropelException
 	 */
-	public function save(\$con = null)
+	public function save(PDO \$con = null)
 	{
 		\$affectedRows = 0; // initialize var to track total num of affected rows
 

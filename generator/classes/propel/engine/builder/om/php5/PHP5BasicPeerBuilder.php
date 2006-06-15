@@ -150,12 +150,21 @@ abstract class ".$this->getClassname()." {
 
 		$script .= "
 	/**
+	 * An identiy map to hold any loaded instances of ".$this->getObjectClassname()." objects.
+	 * This must be public so that other peer classes can access this when hydrating from JOIN
+	 * queries.
+	 * @var array ".$this->getObjectClassname()."[]
+	 */
+	public static \$instances = array();
+	
+	/**
 	 * The MapBuilder instance for this peer.
 	 * @var MapBuilder
 	 */
-	private static \$mapBuilder = null; 
+	private static \$mapBuilder = null;
+	
 ";
-
+		
 		$this->addFieldNamesAttribute($script);
 		$this->addFieldKeysAttribute($script);
 		
@@ -498,7 +507,7 @@ abstract class ".$this->getClassname()." {
 	 *
 	 * @param object \$queryOrCriteria Query or Criteria object used to create the SELECT statement.
 	 * @param PDO \$con
-	 * @return ".$this->getTable()->getPhpName()."
+	 * @return ".$this->getObjectClassname()."
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
@@ -585,9 +594,56 @@ abstract class ".$this->getClassname()." {
 		
 		// BasePeer returns a PDOStatement
 		return ".$this->basePeerClassname."::doSelect(\$query, \$con);
-	}";
 	}
-
+";
+	}
+	
+	/**
+	 * Adds method to get a version of the primary key that can be used as a unique key for identifier map.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addGetPrimaryKeyHash(&$script)
+	{
+		$script .= "
+	/**
+	 * Retrieves a string version of the primary key that can be used to uniquely identify a row in this table.
+	 * 
+	 * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
+	 * a multi-column primary key, a serialize()d version of the primary key will be returned.
+	 * 
+	 * @param array \$row PDO resultset row.
+	 * @param int \$startcol The 0-based offset for reading from the resultset row.
+	 * @return string
+	 */
+	public static function getPrimaryKeyHash(\$row, \$startcol = 0)
+	{";
+		
+		// We have to iterate through all the columns so that we know the offset of the primary 
+		// key columns.
+		$n = 0;
+		foreach($this->getTable()->getColumns() as $col) {
+			if(!$col->isLazyLoad()) {
+				if ($col->isPrimaryKey()) {
+					$pk[] = "\$row[\$startcol + $n]";
+				}
+				$n++;
+			}
+		}
+		
+		// the general case is a single column		
+		if (count($pk) == 1) {					
+			$script .= "
+		return (string) ".$pk[0].";";
+		} else {
+			$script .= "
+		return serialize(".implode(',', $pk).");";			
+		}
+		
+		$script .= "
+	}
+";
+	} // addGetPrimaryKeyHash
+	
 	/**
 	 * Adds the populateObjects() method.
 	 * @param string &$script The script will be modified in this method.
@@ -617,23 +673,28 @@ abstract class ".$this->getClassname()." {
 		$script .= "
 		// populate the object(s)
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key = ".$this->getPeerClassname()."::getPrimaryKeyHash(\$row, 0);
+			if (isset(self::\$instances[\$key])) {
+				\$results[] = self::\$instances[\$key];
+			} else {
 		";
 		if ($table->getChildrenColumn()) {
 			$script .= "
-			// class must be set each time from the record row
-			\$cls = Propel::import(".$this->getPeerClassname()."::getOMClass(\$row, 0));
-			\$obj = new \$cls();
-			\$obj->hydrate(\$row);
-			\$results[] = \$obj;
-			";
+				// class must be set each time from the record row
+				\$cls = Propel::import(".$this->getPeerClassname()."::getOMClass(\$row, 0));
+				\$obj = new \$cls();
+				\$obj->hydrate(\$row);
+				\$results[] = \$obj;
+				self::\$instances[\$key] = \$obj;";
 		} else {
 			$script .= "
-			\$obj = new \$cls();
-			\$obj->hydrate(\$row);
-			\$results[] = \$obj;
-			";
+				\$obj = new \$cls();
+				\$obj->hydrate(\$row);
+				\$results[] = \$obj;
+				self::\$instances[\$key] = \$obj;";
 		}
 		$script .= "
+			} // if key exists
 		}
 		return \$results;
 	}";
@@ -1215,22 +1276,30 @@ abstract class ".$this->getClassname()." {
 	 */
 	public static function ".$this->getRetrieveMethodName()."(\$pk, PDO \$con = null)
 	{
-		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
-		}
-
-		\$criteria = " .$this->getPeerClassname()."::createCriteria();
+		// shortcut to avoid calling doSelect() when we already know it's in the identity map
+		\$key = (string) \$pk;
+		if (isset(self::\$instances[\$key])) {
+			return self::\$instances[\$key];
+		} else {
+			if (\$con === null) {
+				\$con = Propel::getConnection(self::DATABASE_NAME);
+			}
+	
+			\$criteria = " .$this->getPeerClassname()."::createCriteria();
 ";
 		$pkey = $table->getPrimaryKey();
 		$col = array_shift($pkey);
 		$script .= "
-		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$pk));
+			\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$pk));
 ";
 		$script .= "
-
-		\$v = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
-
-		return !empty(\$v) > 0 ? \$v[0] : null;
+	
+			\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
+			if (\$v) { // only set the map, if it's an actual object
+				self::\$instances[\$key] = \$v;
+			}
+			return \$v;
+		}
 	}
 ";
 	}
@@ -1297,25 +1366,37 @@ abstract class ".$this->getClassname()." {
 	 * @return ".$table->getPhpName()."
 	 */
 	public static function ".$this->getRetrieveMethodName()."(";
-		$co = 0;
+		
+		$params = array();
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
-			$script .= ($co++ ? "," : "") . " $".$clo;
+			$params[] = "\$".$clo;
 		} /* foreach */
-		$script .= ", \$con = null) {
-		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
-		}
-		\$criteria = ".$this->getPeerClassname()."::createCriteria();";
+		
+		$script .= implode(', ', $params);
+		
+		$script .= ", PDO \$con = null)
+	{
+		\$key = serialize(".implode(',',$params).");
+		if (isset(self::\$instances[\$key])) {
+			return self::\$instances[\$key];
+		} else {
+			if (\$con === null) {
+				\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
+			}
+			\$criteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
-		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
+			\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
 		}
 		$script .= "
-		\$v = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
-
-		return !empty(\$v) ? \$v[0] : null;
+			\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
+			if (\$v) { // only set the map, if it's an actual object
+				self::\$instances[\$key] = \$v;
+			}
+			return \$v;
+		}
 	}";
 	}
 
@@ -1335,7 +1416,7 @@ abstract class ".$this->getClassname()." {
 	 */
 	public static function getTableMap()
 	{
-		return Propel::getDatabaseMap(self::DATABASE_NAME)->getTable(self::TABLE_NAME);
+		return Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME)->getTable(".$this->getPeerClassname()."::TABLE_NAME);
 	}
 ";
 

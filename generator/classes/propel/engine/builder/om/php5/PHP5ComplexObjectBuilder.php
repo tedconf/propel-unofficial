@@ -374,7 +374,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 * @return $className The associated $className object.
 	 * @throws PropelException
 	 */
-	public function get".$this->getFKPhpNameAffix($fk, $plural = false)."(\$con = null)
+	public function get".$this->getFKPhpNameAffix($fk, $plural = false)."(PDO \$con = null)
 	{
 		// include the related Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
@@ -523,7 +523,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 * api reasonable.  You can provide public methods for those you
 	 * actually need in ".$table->getPhpName().".
 	 */
-	public function get".$relCol."Join".$relCol2."(\$criteria = null, \$con = null)
+	public function get".$relCol."Join".$relCol2."(Query \$query = null, PDO \$con = null)
 	{
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
@@ -629,12 +629,16 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	protected function addRefFKMethods(&$script)
 	{
 		foreach($this->getTable()->getReferrers() as $refFK) {
-			// if ( $refFK->getTable()->getName() != $this->getTable()->getName() ) {
+			// if ( $refFK->getTable()->getName() != $this->getTable()->getName() ) 
+			if ($refFK->isLocalPrimaryKey()) {
+				$this->addPKRefFKGet($script, $refFK);
+			} else {
 				$this->addRefFKInit($script, $refFK);
 				$this->addRefFKGet($script, $refFK);
 				$this->addRefFKCount($script, $refFK);
 				$this->addRefFKAdd($script, $refFK);
 				$this->addRefFKGetJoinMethods($script, $refFK);
+			}
 			// }
 		}
 	}
@@ -711,7 +715,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 * @param Connection \$con
 	 * @throws PropelException
 	 */
-	public function count$relCol(\$criteria = null, \$distinct = false, \$con = null)
+	public function count$relCol(Query \$query = null, \$distinct = false, \$con = null)
 	{
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
@@ -832,6 +836,59 @@ $script .= "
 ";
 	} // addRefererGet()
 
+	/**
+	 * Adds the special-case method that returns a single referrer-related object, for cases
+	 * where the foreign key columns are also the primary key of the foreign table.
+	 * 
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addPKRefFKGet(&$script, ForeignKey $refFK)
+	{
+		$table = $this->getTable();
+		$tblFK = $refFK->getTable();
+
+		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($refFK->getTable());
+		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural = false);
+
+		$collName = $this->getRefFKCollVarName($refFK);
+		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
+
+		$script .= "
+	/**
+	 * Gets a single ".$tblFK->getName()." object, which is related in a one-to-one relationship to this object.
+	 * @param PDO \$con
+	 * @throws PropelException
+	 */
+	public function get$relCol(PDO \$con = null)
+	{
+		// include the Peer class
+		include_once '".$fkPeerBuilder->getStubPeerBuilder()->getClassFilePath()."';
+";		
+
+		$lfmap = $refFK->getLocalForeignMapping();
+		
+		// remember: this object represents the foreign table,
+		// so we need foreign columns of the reffk to know the local columns
+		// that we need to set :) 
+		 
+		$localcols = $refFK->getForeignColumns();
+		
+		// we know that at least every column in the primary key of the foreign table
+		// is represented in this foreign key
+		
+		$params = array();
+		foreach ($tblFK->getPrimaryKey() as $col) {
+			
+			$localColumn = $table->getColumn($lfmap[$col->getName()]);
+			$params[] = "\$this->get".$localColumn->getPhpName()."()";
+		}
+			
+		$script .= "
+		return ".$fkPeerBuilder->getPeerClassname()."::retrieveByPK(".implode(", ", $params).", \$con);
+	}
+";
+			
+	} // addPKRefFKGet()
 
 
 	// ----------------------------------------------------------------
@@ -993,7 +1050,7 @@ $script .= "
 	 * @throws PropelException
 	 * @see doSave()
 	 */
-	public function save(\$con = null)
+	public function save(PDO \$con = null)
 	{
 		if (\$this->isDeleted()) {
 			throw new PropelException(\"You cannot save an object that has been deleted.\");

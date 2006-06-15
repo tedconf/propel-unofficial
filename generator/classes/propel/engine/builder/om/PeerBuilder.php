@@ -55,13 +55,12 @@ abstract class PeerBuilder extends OMBuilder {
 		$this->addCountConstants($script);
 		$this->addDoCount($script);
 
-		// consider refactoring the doSelect stuff
-		// into a top-level method
+		// TODO - consider refactoring the doSelect stuff into a top-level method
 		$this->addDoSelectOne($script);
 		$this->addDoSelect($script);
-		$this->addDoSelectRS($script);	 // <-- there's Creole code in here
-		$this->addPopulateObjects($script); // <-- there's Creole code in here
-
+		$this->addDoSelectRS($script);
+		$this->addGetPrimaryKeyHash($script);
+		$this->addPopulateObjects($script);
 	}
 
 	/**
