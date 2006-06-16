@@ -468,7 +468,7 @@ abstract class ".$this->getClassname()." {
 	public static function doCount(Query \$query, PDO \$con = null)
 	{
 		// we're going to modify criteria, so copy it first
-		\$query = clone \$query;
+		\$query = clone(\$query);
 
 		// clear out anything that might confuse the ORDER BY clause
 		\$query->clearSelectColumns()->clearOrderByColumns();
@@ -505,24 +505,18 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Method to select one object from the DB.
 	 *
-	 * @param object \$queryOrCriteria Query or Criteria object used to create the SELECT statement.
+	 * @param Query \$query Query object used to create the SELECT statement.
 	 * @param PDO \$con
 	 * @return ".$this->getObjectClassname()."
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectOne(\$queryOrCriteria, PDO \$con = null)
+	public static function doSelectOne(Query \$query, PDO \$con = null)
 	{
-		\$copy = clone \$queryOrCriteria;
-		
-		if (\$copy instanceof Criteria) {
-			\$q = ".$this->getPeerClassname()."::createQuery(\$copy);
-		} else {
-			\$q = \$copy; // rename for clarity
-		}
-		
-		\$q->setLimit(1);
-		\$objects = ".$this->getPeerClassname()."::doSelect(\$q, \$con);
+		\$query = clone(\$query); // A shallow clone is actually OK here, because we're only
+								  // changing the limit (a scalar)
+		\$query->setLimit(1);
+		\$objects = ".$this->getPeerClassname()."::doSelect(\$query, \$con);
 		if (\$objects) {
 			return \$objects[0];
 		}
@@ -540,15 +534,15 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Method to do selects.
 	 *
-	 * @param object \$queryOrCriteria Query or Criteria object used to create the SELECT statement.
+	 * @param Query \$query Query object used to create the SELECT statement.
 	 * @param PDO \$con
 	 * @return array Array of selected Objects
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelect(\$queryOrCriteria, PDO \$con = null)
+	public static function doSelect(Query \$query, PDO \$con = null)
 	{
-		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$queryOrCriteria, \$con));
+		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$query, \$con));
 	}";
 	}
 
@@ -567,29 +561,24 @@ abstract class ".$this->getClassname()." {
 	 * Use this method directly if you want to just get the PDOStatement result set
 	 * (instead of an array of objects).
 	 *
-	 * @param object \$queryOrCriteria The Query or Criteria object used to build the SELECT statement.
+	 * @param Query \$query The Query object used to build the SELECT statement.
 	 * @param PDO \$con the connection to use
 	 * @throws PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
-	 * @return PDOStatement The resultset object with numerically-indexed fields.
+	 * @return PDOStatement The PDO resultset object.
 	 * @see ".$this->basePeerClassname."::doSelect()
 	 */
-	public static function doSelectStmt(\$queryOrCriteria, PDO \$con = null)
+	public static function doSelectStmt(Query \$query, PDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
 		
-		if (\$queryOrCriteria instanceof Criteria) {
-			\$query = ".$this->getPeerClassname()."::createQuery(\$queryOrCriteria);
-		} else {
-			\$query = \$queryOrCriteria; // rename for clarity
-		}
-		
 		if (!\$query->getSelectColumns()) {
-			\$query = clone \$query;
+			\$query = clone(\$query);	// Here a shallow copy is OK, because we're not changing any
+										// of the embedded objects themselves; we're just adding references 
+										// to the Query objec.
 			\$query->addDefaultSelectColumns();
-			// ".$this->getPeerClassname()."::addSelectColumns(\$query);
 		}
 		
 		// BasePeer returns a PDOStatement
@@ -636,7 +625,7 @@ abstract class ".$this->getClassname()." {
 		return (string) ".$pk[0].";";
 		} else {
 			$script .= "
-		return serialize(".implode(',', $pk).");";			
+		return serialize(array(".implode(',', $pk)."));";			
 		}
 		
 		$script .= "
@@ -843,7 +832,7 @@ abstract class ".$this->getClassname()." {
 		}
 
 		if (\$values instanceof ColumnValueCollection) {
-			\$values = clone \$values; // clone, because we're modifying it below
+			\$values = clone \$values; // FIXME - here we need a deep copy() because we are going to change embedded objects
 		} else {
 			\$values = \$values->buildColumnValueCollection();
 		}
@@ -895,10 +884,8 @@ abstract class ".$this->getClassname()." {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
 		
-		
-
 		if (\$obj instanceof ColumnValueCollection) {
-			\$values = clone \$obj; // rename for clarity
+			\$values = clone \$obj; // FIXME - here we need a deep copy, because we are modifying internal objects 
 			\$selectCriteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getColumns() as $col) {
 			if($col->isPrimaryKey()) {
@@ -988,7 +975,7 @@ abstract class ".$this->getClassname()." {
 		}
 
 		if (\$obj instanceof Criteria) {
-			\$criteria = clone \$obj; // rename for clarity
+			\$criteria = clone \$obj; // FIXME - here we need a deep copy because internal objects are being changed
 		} elseif (\$obj instanceof ".$table->getPhpName().") {
 ";
 		if (count($table->getPrimaryKey()) > 0) {
@@ -1354,15 +1341,14 @@ abstract class ".$this->getClassname()." {
 		$script .= "
 	/**
 	 * Retrieve object using using composite pkey values.
-	 * ";
+	";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$cptype = $col->getPhpNative();
-			$script .= "@param $cptype $".$clo."
-	   ";
+			$script .= " * @param $cptype $".$clo."
+	";
 	   }
-	   $script .= "
-	 * @param Connection \$con
+	   $script .= " * @param Connection \$con
 	 * @return ".$table->getPhpName()."
 	 */
 	public static function ".$this->getRetrieveMethodName()."(";
@@ -1377,7 +1363,7 @@ abstract class ".$this->getClassname()." {
 		
 		$script .= ", PDO \$con = null)
 	{
-		\$key = serialize(".implode(',',$params).");
+		\$key = serialize(array(".implode(',',$params)."));
 		if (isset(self::\$instances[\$key])) {
 			return self::\$instances[\$key];
 		} else {
