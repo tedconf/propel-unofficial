@@ -1363,9 +1363,9 @@ abstract class ".$this->getClassname()." {
 		
 		$script .= ", PDO \$con = null)
 	{
-		\$key = serialize(array(".implode(',',$params)."));
-		if (isset(self::\$instances[\$key])) {
-			return self::\$instances[\$key];
+		\$instanceKey = serialize(array(".implode(',',$params)."));
+		if (isset(self::\$instances[\$instanceKey])) {
+			return self::\$instances[\$instanceKey];
 		} else {
 			if (\$con === null) {
 				\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
@@ -1379,7 +1379,7 @@ abstract class ".$this->getClassname()." {
 		$script .= "
 			\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
 			if (\$v) { // only set the map, if it's an actual object
-				self::\$instances[\$key] = \$v;
+				self::\$instances[\$instanceKey] = \$v;
 			}
 			return \$v;
 		}
