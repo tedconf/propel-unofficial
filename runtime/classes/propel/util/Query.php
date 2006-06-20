@@ -156,7 +156,7 @@ class Query implements StatementBuilder {
 		if (!$col instanceof QueryColumn) {
 			$col = $this->getQueryTable()->createQueryColumn($col);
 		}
-		$this->selectColumns[] = $qc;
+		$this->selectColumns[] = $col;
 		return $this;
 	}
 	
@@ -191,6 +191,15 @@ class Query implements StatementBuilder {
 	public function getSelectColumns()
 	{
 		return $this->selectColumns;
+	}
+	
+	/**
+	 * 
+	 */
+	public function clearSelectColumns()
+	{
+		$this->selectColumns = array();
+		return $this;
 	}
 	
 	/**
@@ -307,7 +316,16 @@ class Query implements StatementBuilder {
     	$this->orderByColumns[] = $orderBy;
     	return $this;
     }
-
+	
+	/**
+	 * 
+	 */
+	public function clearOrderByColumns()
+	{
+		$this->orderByColumns = array();
+		return $this;
+	}
+	
     /**
      * Get "having" expression.
      *
@@ -413,6 +431,7 @@ class Query implements StatementBuilder {
 		$selectColumns = $this->getSelectColumns();
 		
 		foreach($selectColumns as $selCol) {
+			if (!is_object($selCol)) print new DDException(count($selectColumns));
 			$selectClause[] = $selCol->getQualifiedSql();
 		}
 

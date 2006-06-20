@@ -248,3 +248,25 @@ class ColumnValueCollectionIterator implements Iterator {
     }
 
 }
+
+/**
+ * Utility class for ColumnValue objects and collections.
+ */
+class ColumnValueUtil {
+
+	/**
+	 * Debug method to get a an array containing map of column name to value.
+	 * @param mixed $values Array or Collection.
+	 * @return array
+	 */
+	public static function getValuesArray($values)
+	{
+		$map = array();
+		$i = 0;
+		foreach($values as $cv) {
+			$map[$i++] = array('column'=>$cv->getColumnMap()->getFullyQualifiedName(), 'value'=>$cv->getValue());
+		}
+		return $map;
+	}
+	
+}
