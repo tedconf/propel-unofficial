@@ -439,15 +439,20 @@ abstract class ".$this->getClassname()." {
 		* (HL) wanted to remove this because AFAIK count(*) is generally
 		* optimized in databases, and furthermore the code below isn't correct
 		* (multi-pkey needs to be accounted for)....
-		*/
+		*
 		if ($table->hasPrimaryKey()) {
 			$pk = $table->getPrimaryKey();
-			$count_col = $table->getName().".".strtoupper($pk[0]->getName());
+			$count_cols = array();
+			foreach($pk as $col) {
+				$count_cols[] = $col->getName();
+			}
+			$count_col = implode(",", $count_cols);
 		}
-
+		*/
+		
 		$script .= "
-	const COUNT = 'COUNT(\$1%s.$count_col)';
-	const COUNT_DISTINCT = 'COUNT(DISTINCT \$1%s.$count_col)';
+	const COUNT = 'COUNT(%1\$s.$count_col)';
+	const COUNT_DISTINCT = 'COUNT(DISTINCT %1\$s.$count_col)';
 ";
 	}
 
@@ -474,18 +479,17 @@ abstract class ".$this->getClassname()." {
 		\$query->clearSelectColumns()->clearOrderByColumns();
 		
 		if (in_array(Query::DISTINCT, \$query->getSelectModifiers())) {
-			\$criteria->addSelectColumn(new VirtualQueryColumn(".$this->getPeerClassname()."::COUNT_DISTINCT));
+			\$query->addSelectColumn(\$query->getQueryTable()->createCustomQueryColumn(".$this->getPeerClassname()."::COUNT_DISTINCT));
 		} else {
-			\$criteria->addSelectColumn(new VirtualQueryColumn(".$this->getPeerClassname()."::COUNT));
+			\$query->addSelectColumn(\$query->getQueryTable()->createCustomQueryColumn(".$this->getPeerClassname()."::COUNT));
 		}
 
 		// just in case we're grouping: add those columns to the select statement
-		foreach(\$criteria->getGroupByColumns() as \$column)
-		{
-			\$criteria->addSelectColumn(\$column);
+		foreach(\$query->getGroupByColumns() as \$column) {
+			\$query->addSelectColumn(\$column);
 		}
 
-		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$query, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$query, \$con);
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			return \$row[0];
 		} else {
