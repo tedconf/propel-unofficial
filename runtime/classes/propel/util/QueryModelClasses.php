@@ -277,7 +277,7 @@ class ActualQueryColumn implements QueryColumn {
  * An OrderByColumn that corresponds to an actual column in the database (as opposed
  * to, e.g., a SQL expression serving column).
  */
-class ActualOrderByColumn extends ActualQueryColumn {
+class ActualOrderByColumn extends ActualQueryColumn implements OrderByColumn {
 	
 	private $direction;
 	
