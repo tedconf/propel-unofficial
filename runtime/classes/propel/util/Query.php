@@ -241,6 +241,15 @@ class Query implements StatementBuilder {
     {
         return $this->limit;
     }
+    
+    /**
+     * Set the offset (0-based) for which to start retrieving rows.
+     * @param int $offset
+     */
+    public function setOffset($offset)
+    {
+    	$this->offset = $offset;
+    }
 
     /**
      * Get offset.
