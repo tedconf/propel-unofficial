@@ -179,7 +179,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 "; 
 						}
 						$script .= "
-		\$stmt = ".$this->basePeerClassname."::doSelect(\$q, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$q, \$con);
 		\$results = array();
 
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
@@ -292,6 +292,8 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 */
 	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, \$con = null)
 	{
+		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0.\");
+		
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 		
@@ -318,7 +320,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 ";
 						}
 						$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			return \$row[0];
 		} else {
@@ -354,6 +356,8 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 */
 	public static function doSelectJoinAll(Criteria \$c, PDO \$con = null)
 	{
+		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0.\");
+		
 		\$c = clone \$c;
 
 		// Set the correct dbName if it has not been overridden
@@ -404,7 +408,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 		}
 		
 		$script .= "
-		\$stmt = ".$this->basePeerClassname."::doSelect(\$c, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$c, \$con);
 		\$results = array();
 		
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
@@ -549,22 +553,26 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @param Connection \$con
 	 * @return int Number of matching rows.
 	 */
-	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, PDO \$con = null)
+	public static function doCountJoinAll(Query \$query, \$distinct = false, PDO \$con = null)
 	{
-		\$criteria = clone \$criteria;
+	
+		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0.\");
+		
+		\$query = clone(\$query);
 
 		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
+		\$query->clearSelectColumns()->clearOrderByColumns();
+		
 		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
+			\$query->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
 		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+			\$query->addSelectColumn(".$this->getPeerClassname()."::COUNT);
 		}
 		
 		// just in case we're grouping: add those columns to the select statement
 		foreach(\$criteria->getGroupByColumns() as \$column)
 		{
-			\$criteria->addSelectColumn(\$column);
+			\$query->addSelectColumn(\$column);
 		}
 ";
 
@@ -580,14 +588,14 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 					$column = $table->getColumn($columnName);
 					$columnFk = $joinTable->getColumn( $lfMap[$columnName]);
 					$script .= "
-		\$criteria->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).");
+		\$query->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).");
 ";
 				}
 			} // if fk->getForeignTableName != table->getName		
 		} // foreach [sub] foreign keys
 
 		$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectRS(\$criteria, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$query, \$con);
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			return \$row[0];
 		} else {
@@ -657,6 +665,9 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 */
 	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, PDO \$con = null)
 	{
+	
+		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0\");
+		
 		\$c = clone \$c;
 
 		// Set the correct dbName if it has not been overridden
@@ -711,7 +722,7 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 			} // foreach fkeys 
 			$script .= "
 
-		\$stmt = ".$this->basePeerClassname ."::doSelect(\$c, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$c, \$con);
 		\$results = array();
 		
 		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
