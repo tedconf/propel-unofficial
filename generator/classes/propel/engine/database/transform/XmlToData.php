@@ -110,9 +110,9 @@ class XmlToData extends AbstractHandler {
                 $this->columnValues = array();
                 foreach($attributes as $name => $value) {
                     $col = $table->getColumnByPhpName($name);
-                    $this->columnValues[] = new ColumnValue($col, iconv('utf-8',$this->encoding, $value));
+                    $this->columnValues[] = new XmlToData_ColumnValue($col, iconv('utf-8',$this->encoding, $value));
                 }
-                $this->data[] = new DataRow($table, $this->columnValues);
+                $this->data[] = new XmlToData_DataRow($table, $this->columnValues);
             }
         } catch (Exception $e) {
             print $e;
@@ -140,7 +140,7 @@ class XmlToData extends AbstractHandler {
      * "inner class"
      * @package propel.engine.database.transform
      */
-    class DataRow
+    class XmlToData_DataRow
     {
         private $table;
         private $columnValues;
@@ -166,7 +166,7 @@ class XmlToData extends AbstractHandler {
      * "inner" class
      * @package propel.engine.database.transform
      */
-    class ColumnValue {
+    class XmlToData_ColumnValue {
 
         private $col;
         private $val;

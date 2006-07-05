@@ -20,82 +20,16 @@
  */
 
 /**
- *  PropelPager
+ * Provides paging support for Propel Query objects.
  *
- *  Example Usage:
- *
- *  require_once 'propel/util/PropelPager.php';
- *  require_once 'PEACH/Propel/Poem/poemPeer.php';
- *
- *  $c = new Criteria();
- *  $c->addDescendingOrderByColumn(poemPeer::SID);
- *
- *  // with join
- *  $pager = new PropelPager($c, 'poemPeer', 'doSelectJoinPoemUsers', 1, 50);
- *
- *  // without Join 
- *
- *  $pager = new PropelPager($c, 'poemPeer', 'doSelect', 1, 50);
- *
- * Some template:
- *
- * <p>
- * Total Pages: <?=$pager->getTotalPages()?>  Total Records: <?=$pager->getTotalRecordCount()?>
- * </p>
- * <table>
- * <tr>
- * <td>
- * <?if($link = $pager->getFirstPage):?>
- * <a href="somescript?page=<?=$link?>"><?=$link?></a>|
- * <?endif?>
- * </td>
- * <td>
- * <?if($link = $pager->getPrev()):?>
- * <a href="somescript?page=<?=$link?>">Previous</a>|
- * <?endif?>
- * </td>
- * <td>
- * <?foreach($pager->getPrevLinks() as $link):?>
- * <a href="somescript?page=<?=$link?>"><?=$link?></a>|
- * <?endforeach?>
- * </td>
- * <td><?=$pager->getPage()?></td>
- * <td>
- * <?foreach($pager->getNextLinks() as $link):?>
- * | <a href="somescript?page=<?=$link?>"><?=$link?></a>
- * <?endforeach?>
- * </td>
- * <td>
- * <?if($link = $pager->getNext()):?>
- * <a href="somescript?page=<?=$link?>">Last</a>|
- * <?endif?>
- * </td>
- * <td>
- * <?if($link = $pager->getLastPage()):?>
- * <a href="somescript?page=<?=$link?>"><?=$link?></a>|
- * <?endif?>
- * </td>
- * </tr>
- * </table>
- * <table id="latestPoems">
- * <tr>
- * <th>Title</th>
- * <th>Auteur</th>
- * <th>Date</th>
- * <th>comments</th>
- * </tr>
- * <?foreach($pager->getResult() as $poem):?>
- * <tr>
- * <td><?=$poem->getTitle()?></td>
- * <td><?=$poem->getPoemUsers()->getUname()?></td>
- * <td><?=$poem->getTime()?></td>
- * <td><?=$poem->getComments()?></td>
- * </tr>
- * <?endforeach?>
- * </table>
- *
+ * Example Usage:
+ * 
+ * <code>
+ *  
+ * </code>
  * 
  * @author	Rob Halff <info@rhalff.com>
+ * @author Hans Lellelid <hans@xmpl.org>
  * @version   $Revision$
  * @copyright Copyright (c) 2004 Rob Halff: LGPL - See LICENCE
  * @package   propel.util 
@@ -107,8 +41,8 @@ class PropelPager {
 	private $peerClass;
 	private $peerSelectMethod;
 	private $peerCountMethod;
-	private $criteria;
-	private $countCriteria;
+	private $query;
+	private $countQuery;
 	private $page;
 	private $rs = null;
 	
@@ -120,18 +54,15 @@ class PropelPager {
 	
 	/**
 	 * Create a new Propel Pager.
-	 * @param Criteria $c
+	 * @param Query $c
 	 * @param string $peerClass The name of the static Peer class.
 	 * @param string $peerSelectMethod The name of the static method for selecting content from the Peer class.
 	 * @param int $page The current page (1-based).
 	 * @param int $rowsPerPage The number of rows that should be displayed per page.
 	 */
-	public function __construct($c = null, $peerClass = null, $peerSelectMethod = null, $page = 1, $rowsPerPage = 25)
+	public function __construct(Query $q, $peerClass = null, $peerSelectMethod = null, $page = 1, $rowsPerPage = 25)
 	{
-        if(!isset($c)) {
-            $c = new Criteria();
-        }
-        $this->setCriteria($c);
+        $this->setQuery($q);
 		$this->setPeerClass($peerClass);
 		$this->setPeerSelectMethod($peerSelectMethod);
 		$this->guessPeerCountMethod();
@@ -140,22 +71,22 @@ class PropelPager {
 	}
 	
 	/**
-	 * Set the criteria for this pager.
-	 * @param Criteria $c
+	 * Set the Query for this pager.
+	 * @param Query $c
 	 * @return void
 	 */
-	public function setCriteria(Criteria $c)
+	public function setQuery(Query $q)
 	{
-		$this->criteria = $c;
+		$this->query = $q;
 	}
 	
 	/**
-	 * Return the Criteria object for this pager.
-	 * @return Criteria
+	 * Return the Query object for this pager.
+	 * @return Query
 	 */
-	public function getCriteria()
+	public function getQuery()
 	{
-		return $this->criteria;
+		return $this->query;
 	}
 	
 	/**
@@ -278,15 +209,15 @@ class PropelPager {
 	/**
 	 * Get the paged resultset 
 	 * 
-	 * Main method which creates a paged result set based on the criteria 
+	 * Main method which creates a paged result set based on the query 
 	 * and the requested peer select method.
 	 * 
 	 */
 	private function doRs()
 	{   
-		$this->criteria->setOffset($this->start);
-		$this->criteria->setLimit($this->max);
-		$this->rs = call_user_func(array($this->getPeerClass(), $this->getPeerSelectMethod()), $this->criteria);
+		$this->query->setOffset($this->start);
+		$this->query->setLimit($this->max);
+		$this->rs = call_user_func(array($this->getPeerClass(), $this->getPeerSelectMethod()), $this->query);
 	}
 	
 	/**
@@ -503,16 +434,16 @@ class PropelPager {
                 }
 
                 if(empty($this->recordCount)) {
-                        $this->countCriteria = clone $this->criteria;
-                        $this->countCriteria->setLimit(0);
-                        $this->countCriteria->setOffset(0);
+                        $this->countQuery = clone $this->query;
+                        $this->countQuery->setLimit(0);
+                        $this->countQuery->setOffset(0);
 
                         $this->recordCount = call_user_func(
                                         array(
                                                 $this->getPeerClass(),
 												$this->getPeerCountMethod()
                                              ),
-                                        $this->countCriteria
+                                        $this->countQuery
                                         );
 
                 }
@@ -541,4 +472,4 @@ class PropelPager {
 	}
 
 } 
-?>
+

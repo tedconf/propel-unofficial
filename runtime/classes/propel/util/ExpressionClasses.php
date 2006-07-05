@@ -638,6 +638,37 @@ class LiteralSql extends BaseExpression implements Expression {
 
 
 /**
+ * A generic "column op value" expr.
+ */
+class OpExpr extends ColumnValueExpression {
+	
+	/**
+	 * @var string The operator.
+	 */
+	private $op;
+	
+	/**
+	 * Construct a new ColValExpr with column name, value, and operator.
+	 * @param string $colname
+	 * @param mixed $value
+	 * @param string $op The operator (e.g. '=').
+	 */
+	public function __construct($colname, $value, $op)
+	{
+		parent::__construct($colname, $value);
+		$this->op = $op;
+	}
+	
+	/**
+	 * @see ColumnValueExpression::getOperator()
+	 */
+	public function getOperator()
+	{
+		return $this->op;
+	}
+}
+
+/**
  * A "column = value" expression.
  */
 class EqualExpr extends ColumnValueExpression {

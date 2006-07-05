@@ -32,10 +32,10 @@ abstract class DataSQLBuilder extends DataModelBuilder {
 
 	/**
 	 * The main method in this class, returns the SQL for INSERTing data into a row.
-	 * @param DataRow $row The row to process.
+	 * @param XmlToData_DataRow $row The row to process.
 	 * @return string
 	 */
-	public function buildRowSql(DataRow $row)
+	public function buildRowSql(XmlToData_DataRow $row)
 	{
 		$sql = "";
 		$platform = $this->getPlatform();
@@ -67,10 +67,10 @@ abstract class DataSQLBuilder extends DataModelBuilder {
 
 	/**
 	 * Gets the propertly escaped (and quoted) value for a column.
-	 * @param ColumnValue $colValue
+	 * @param XmlToData_ColumnValue $colValue
 	 * @return mixed The proper value to be added to the string.
 	 */
-	protected function getColumnValueSql(ColumnValue $colValue)
+	protected function getColumnValueSql(XmlToData_ColumnValue $colValue)
 	{
 		$column = $colValue->getColumn();
 		$creoleTypeString = PropelTypes::getCreoleType($column->getPropelType());
