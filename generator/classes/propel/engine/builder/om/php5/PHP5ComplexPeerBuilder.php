@@ -877,6 +877,9 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 */
 	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PDO \$con = null)
 	{
+		
+		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0.\");
+		
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 		

@@ -235,7 +235,12 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	{
 		return 'a' . $this->getFKPhpNameAffix($fk, $plural = false);
 	}
-
+	
+	protected function getPKRefFKVarName(ForeignKey $refFK)
+	{
+		return 'a' . $this->getRefFKPhpNameAffix($refFK, $plural = false);
+	}
+	
 	protected function getRefFKCollVarName(ForeignKey $fk)
 	{
 		return 'coll' . $this->getRefFKPhpNameAffix($fk, $plural = true);
@@ -458,137 +463,8 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	}
 ";
 	} // addFKByKeyMutator()
-
-	/**
-	 * Adds the method that fetches fkey-related (referencing) objects but also joins in data from another table.
-	 * @param string &$script The script will be modified in this method.
-	 */
-	protected function addRefFKGetJoinMethods(&$script, ForeignKey $refFK)
-	{
-		$table = $this->getTable();
-		$tblFK = $refFK->getTable();
-
-		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural=true);
-		$collName = $this->getRefFKCollVarName($refFK);
-		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
-
-		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($tblFK);
-
-		$lastTable = "";
-		foreach ($tblFK->getForeignKeys() as $fk2) {
-
-			// Add join methods if the fk2 table is not this table or
-			// the fk2 table references this table multiple times.
-
-			$doJoinGet = true;
-
-			if ( $fk2->getForeignTableName() == $table->getName() ) {
-				$doJoinGet = false;
-			}
-
-			foreach ($fk2->getLocalColumns() as $columnName) {
-				$column = $tblFK->getColumn($columnName);
-				if ($column->isMultipleFK()) {
-					$doJoinGet = true;
-				}
-			}
-
-			$tblFK2 = $this->getForeignTable($fk2);
-			$doJoinGet = !$tblFK2->isForReferenceOnly();
-
-			// it doesn't make sense to join in rows from the curent table, since we are fetching
-			// objects related to *this* table (i.e. the joined rows will all be the same row as current object)
-			if ($this->getTable()->getPhpName() == $tblFK2->getPhpName()) {
-				$doJoinGet = false;
-			}
-
-			$relCol2 = $this->getFKPhpNameAffix($fk2, $plural = false);
-
-			if ( $this->getRelatedBySuffix($refFK) != "" &&
-							($this->getRelatedBySuffix($refFK) == $this->getRelatedBySuffix($fk2))) {
-				$doJoinGet = false;
-			}
-
-			if ($doJoinGet) {
-				$script .= "
-
-	/**
-	 * If this collection has already been initialized with
-	 * an identical criteria, it returns the collection.
-	 * Otherwise if this ".$table->getPhpName()." is new, it will return
-	 * an empty collection; or if this ".$table->getPhpName()." has previously
-	 * been saved, it will retrieve related $relCol from storage.
-	 *
-	 * This method is protected by default in order to keep the public
-	 * api reasonable.  You can provide public methods for those you
-	 * actually need in ".$table->getPhpName().".
-	 */
-	public function get".$relCol."Join".$relCol2."(Query \$query = null, PDO \$con = null)
-	{
-		// include the Peer class
-		include_once '".$fkPeerBuilder->getClassFilePath()."';
-		if (\$criteria === null) {
-			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
-		}
-		elseif (\$criteria instanceof Criteria)
-		{
-			\$criteria = clone \$criteria;
-		}
-
-		if (\$this->$collName === null) {
-			if (\$this->isNew()) {
-				\$this->$collName = array();
-			} else {
-";
-				foreach ($refFK->getForeignColumns() as $columnName) {
-					$column = $table->getColumn($columnName);
-					$flMap = $refFK->getForeignLocalMapping();
-					$colFKName = $flMap[$columnName];
-					$colFK = $tblFK->getColumn($colFKName);
-					if ($colFK === null) {
-					    $e = new Exception("Column $colFKName not found in " . $tblFK->getName());
-						print $e;
-						throw $e;
-					}
-					$script .= "
-				\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."());
-";
-				} // end foreach ($fk->getForeignColumns()
-
-				$script .= "
-				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
-			}
-		} else {
-			// the following code is to determine if a new query is
-			// called for.  If the criteria is the same as the last
-			// one, just return the collection.
-";
-				foreach ($refFK->getForeignColumns() as $columnName) {
-					$column = $table->getColumn($columnName);
-					$flMap = $refFK->getForeignLocalMapping();
-					$colFKName = $flMap[$columnName];
-					$colFK = $tblFK->getColumn($colFKName);
-					$script .= "
-			\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."());
-";
-				} /* end foreach ($fk->getForeignColumns() */
-
-				$script .= "
-			if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName."->equals(\$criteria)) {
-				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
-			}
-		}
-		\$this->$lastCriteriaName = \$criteria;
-
-		return \$this->$collName;
-	}
-";
-			} /* end if($doJoinGet) */
-
-		} /* end foreach ($tblFK->getForeignKeys() as $fk2) { */
-
-	} // function
-
+	
+	
 
 	// ----------------------------------------------------------------
 	//
@@ -604,22 +480,35 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 */
 	protected function addRefFKAttributes(&$script, ForeignKey $refFK)
 	{
-		$collName = $this->getRefFKCollVarName($refFK);
-		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
-
-		$script .= "
+		$className = $refFK->getTable()->getPhpName();
+		
+		if ($refFK->isLocalPrimaryKey()) {
+			$aName = $this->getPKRefFKVarName($refFK);
+			$script .= "
 	/**
-	 * Collection to store aggregation of $collName.
-	 * @var array
+	 * Variable to store one-to-one related $className object.
+	 * @var $className
+	 */
+	protected $".$aName.";
+";
+		} else {
+			$collName = $this->getRefFKCollVarName($refFK);
+			$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
+	
+			$script .= "
+	/**
+	 * Collection of $className objects.
+	 * @var array ".$className."[]
 	 */
 	protected $".$collName.";
 
 	/**
-	 * The criteria used to select the current contents of $collName.
+	 * The criteria used to select the current contents of \$".$collName.".
 	 * @var Criteria
 	 */
 	protected \$".$lastCriteriaName." = null;
 ";
+		}
 	}
 
 	/**
@@ -632,6 +521,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 			// if ( $refFK->getTable()->getName() != $this->getTable()->getName() ) 
 			if ($refFK->isLocalPrimaryKey()) {
 				$this->addPKRefFKGet($script, $refFK);
+				$this->addPKRefFKSet($script, $refFK);
 			} else {
 				$this->addRefFKInit($script, $refFK);
 				$this->addRefFKGet($script, $refFK);
@@ -825,7 +715,7 @@ $script .= "
 
 				\$query->addSelectColumnsForTable(".$fkPeerBuilder->getPeerClassname()."::createQueryTable());
 				// ".$fkPeerBuilder->getPeerClassname()."::addSelectColumns(\$criteria);
-				if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName." == \$criteria) { // FIXME <- implement equals()
+				if (!isset(\$this->$lastCriteriaName) || \$this->".$lastCriteriaName." != \$criteria) { // FIXME <- implement equals()
 					\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelect(\$query, \$con);
 				}
 			}
@@ -837,6 +727,136 @@ $script .= "
 	} // addRefererGet()
 
 	/**
+	 * Adds the method that fetches fkey-related (referencing) objects but also joins in data from another table.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addRefFKGetJoinMethods(&$script, ForeignKey $refFK)
+	{
+		$table = $this->getTable();
+		$tblFK = $refFK->getTable();
+
+		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural=true);
+		$collName = $this->getRefFKCollVarName($refFK);
+		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
+
+		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($tblFK);
+
+		$lastTable = "";
+		foreach ($tblFK->getForeignKeys() as $fk2) {
+
+			// Add join methods if the fk2 table is not this table or
+			// the fk2 table references this table multiple times.
+
+			$doJoinGet = true;
+
+			if ( $fk2->getForeignTableName() == $table->getName() ) {
+				$doJoinGet = false;
+			}
+
+			foreach ($fk2->getLocalColumns() as $columnName) {
+				$column = $tblFK->getColumn($columnName);
+				if ($column->isMultipleFK()) {
+					$doJoinGet = true;
+				}
+			}
+
+			$tblFK2 = $this->getForeignTable($fk2);
+			$doJoinGet = !$tblFK2->isForReferenceOnly();
+
+			// it doesn't make sense to join in rows from the curent table, since we are fetching
+			// objects related to *this* table (i.e. the joined rows will all be the same row as current object)
+			if ($this->getTable()->getPhpName() == $tblFK2->getPhpName()) {
+				$doJoinGet = false;
+			}
+
+			$relCol2 = $this->getFKPhpNameAffix($fk2, $plural = false);
+
+			if ( $this->getRelatedBySuffix($refFK) != "" &&
+							($this->getRelatedBySuffix($refFK) == $this->getRelatedBySuffix($fk2))) {
+				$doJoinGet = false;
+			}
+
+			if ($doJoinGet) {
+				$script .= "
+
+	/**
+	 * If this collection has already been initialized with
+	 * an identical criteria, it returns the collection.
+	 * Otherwise if this ".$table->getPhpName()." is new, it will return
+	 * an empty collection; or if this ".$table->getPhpName()." has previously
+	 * been saved, it will retrieve related $relCol from storage.
+	 *
+	 * This method is protected by default in order to keep the public
+	 * api reasonable.  You can provide public methods for those you
+	 * actually need in ".$table->getPhpName().".
+	 */
+	public function get".$relCol."Join".$relCol2."(Query \$query = null, PDO \$con = null)
+	{
+		// include the Peer class
+		include_once '".$fkPeerBuilder->getClassFilePath()."';
+		if (\$criteria === null) {
+			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
+		}
+		elseif (\$criteria instanceof Criteria)
+		{
+			\$criteria = clone \$criteria;
+		}
+
+		if (\$this->$collName === null) {
+			if (\$this->isNew()) {
+				\$this->$collName = array();
+			} else {
+";
+				foreach ($refFK->getForeignColumns() as $columnName) {
+					$column = $table->getColumn($columnName);
+					$flMap = $refFK->getForeignLocalMapping();
+					$colFKName = $flMap[$columnName];
+					$colFK = $tblFK->getColumn($colFKName);
+					if ($colFK === null) {
+					    $e = new Exception("Column $colFKName not found in " . $tblFK->getName());
+						print $e;
+						throw $e;
+					}
+					$script .= "
+				\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."());
+";
+				} // end foreach ($fk->getForeignColumns()
+
+				$script .= "
+				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
+			}
+		} else {
+			// the following code is to determine if a new query is
+			// called for.  If the criteria is the same as the last
+			// one, just return the collection.
+";
+				foreach ($refFK->getForeignColumns() as $columnName) {
+					$column = $table->getColumn($columnName);
+					$flMap = $refFK->getForeignLocalMapping();
+					$colFKName = $flMap[$columnName];
+					$colFK = $tblFK->getColumn($colFKName);
+					$script .= "
+			\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."());
+";
+				} /* end foreach ($fk->getForeignColumns() */
+
+				$script .= "
+			if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName."->equals(\$criteria)) {
+				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
+			}
+		}
+		\$this->$lastCriteriaName = \$criteria;
+
+		return \$this->$collName;
+	}
+";
+			} /* end if($doJoinGet) */
+
+		} /* end foreach ($tblFK->getForeignKeys() as $fk2) { */
+
+	} // function
+
+	/**
 	 * Adds the special-case method that returns a single referrer-related object, for cases
 	 * where the foreign key columns are also the primary key of the foreign table.
 	 * 
@@ -846,17 +866,23 @@ $script .= "
 	{
 		$table = $this->getTable();
 		$tblFK = $refFK->getTable();
-
+		
+		$className = $tblFK->getPhpName();
+		
 		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($refFK->getTable());
 		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural = false);
 
 		$collName = $this->getRefFKCollVarName($refFK);
 		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
-
+		
+		$varName = $this->getPKRefFKVarName($refFK);
+		
 		$script .= "
 	/**
-	 * Gets a single ".$tblFK->getName()." object, which is related in a one-to-one relationship to this object.
+	 * Gets a single $className object, which is related in a one-to-one relationship to this object.
+	 * 
 	 * @param PDO \$con
+	 * @return $className
 	 * @throws PropelException
 	 */
 	public function get$relCol(PDO \$con = null)
@@ -884,12 +910,58 @@ $script .= "
 		}
 			
 		$script .= "
-		return ".$fkPeerBuilder->getPeerClassname()."::retrieveByPK(".implode(", ", $params).", \$con);
+		if (\$this->$varName === null) {
+			\$this->$varName = ".$fkPeerBuilder->getPeerClassname()."::retrieveByPK(".implode(", ", $params).", \$con);
+		}
+		return \$this->$varName;
 	}
 ";
 			
 	} // addPKRefFKGet()
 
+	/**
+	 * Adds the mutator (setter) method for setting an fkey related object.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addPKRefFKSet(&$script, ForeignKey $refFK)
+	{				
+		$table = $this->getTable();
+		$tblFK = $refFK->getTable();
+
+		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($refFK->getTable());
+		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural = false);
+		
+		$className = $tblFK->getPhpName();
+		$varName = $this->getPKRefFKVarName($refFK);
+		
+		$script .= "
+	/**
+	 * Declares an association between this object and a $className object.
+	 *
+	 * @param $className \$v
+	 * @return void
+	 * @throws PropelException
+	 */
+	public function set$relCol(\$v)
+	{	
+";
+			// there's a method in the foreign object that will take care of setting
+			// the foreign key columns, so we just call that method.
+			 
+			$foreignFKSetter = $this->getFKPhpNameAffix($refFK, $plural = false);
+				
+				$script .= "
+		if (\$v !== null) {
+			\$v->set".$foreignFKSetter."(\$this);
+		}
+";
+
+			$script .= "
+
+		\$this->$varName = \$v;
+	}
+";
+	}
 
 	// ----------------------------------------------------------------
 	//
@@ -947,7 +1019,7 @@ $script .= "
 ";
 			} // foreach foreign k
 		} // if (count(foreign keys))
-
+	
 		$script .= "
 
 			// If this object has been modified, then save it to the database.
@@ -992,11 +1064,18 @@ $script .= "
 ";
 
 		foreach ($table->getReferrers() as $fk) {
-			$collName = $this->getRefFKCollVarName($fk);
-			//HL: commenting out self-referrential check below
-			//		it seems to work as expected and is desireable since we are also enabling the copy()ing of these related rows
-			//if ( $fk->getTable()->getName() != $table->getName() ) {
+			if ($fk->isLocalPrimaryKey()) {
+				$aVarName = $this->getPKRefFKVarName($fk);
 				$script .= "
+			if (\$this->$aVarName !== null) {
+				if (!\$this->".$aVarName."->isDeleted()) {
+					\$affectedRows += \$this->".$aVarName."->save(\$con);
+				}
+			}
+";
+			} else {
+				$collName = $this->getRefFKCollVarName($fk);
+					$script .= "
 			if (\$this->$collName !== null) {
 				foreach(\$this->$collName as \$referrerFK) {
 					if (!\$referrerFK->isDeleted()) {
@@ -1004,9 +1083,8 @@ $script .= "
 					}
 				}
 			}
-";
-			//HL: commenting out close of self-referrential check
-			//} /* if tableFK != table */
+	";
+			}
 		} /* foreach getReferrers() */
 		$script .= "
 			\$this->alreadyInSave = false;
@@ -1178,19 +1256,30 @@ $script .= "
 ";
 
 		foreach ($table->getReferrers() as $fk) {
-			$tblFK = $fk->getTable();
-			if ( $tblFK->getName() != $table->getName() ) {
-				$collName = $this->getRefFKCollVarName($fk);
+			if ($fk->isLocalPrimaryKey()) {
+				$aVarName = $this->getPKRefFKVarName($fk);
 				$script .= "
-				if (\$this->$collName !== null) {
-					foreach(\$this->$collName as \$referrerFK) {
-						if (!\$referrerFK->validate(\$columns)) {
-							\$failureMap = array_merge(\$failureMap, \$referrerFK->getValidationFailures());
-						}
+			if (\$this->$aVarName !== null) {
+				if (!\$this->".$aVarName."->validate(\$columns)) {
+					\$failureMap = array_merge(\$failureMap, !\$this->".$aVarName."->getValidationFailures());
+				}
+			}
+";
+			} else {
+				$tblFK = $fk->getTable();
+				if ( $tblFK->getName() != $table->getName() ) {
+					$collName = $this->getRefFKCollVarName($fk);
+					$script .= "
+			if (\$this->$collName !== null) {
+				foreach(\$this->$collName as \$referrerFK) {
+					if (!\$referrerFK->validate(\$columns)) {
+						\$failureMap = array_merge(\$failureMap, \$referrerFK->getValidationFailures());
 					}
 				}
-";
-			} /* if tableFK !+ table */
+			}
+	";
+				} /* if tableFK !+ table */
+			} // if ($fk->isLocalPrimaryKey()) 
 		} /* foreach getReferrers() */
 
 		$script .= "
