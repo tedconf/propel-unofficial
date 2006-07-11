@@ -117,7 +117,33 @@ abstract class ".$this->getClassname()." {
 		$script .= "
 } // " . $this->getClassname() . "
 ";
+		$this->addStaticMapBuilderRegistration($script);
 	}
+
+	/**
+	 * Adds the static map builder registration code.
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addStaticMapBuilderRegistration(&$script)
+	{
+		$table = $this->getTable();
+		$mapBuilderFile = $this->getMapBuilderBuilder()->getClassFilePath();
+
+		$script .= "
+// This is the static code needed to register the MapBuilder for this table with the main Propel class.
+//
+// NOTE: This static code cannot call methods on the ".$this->getPeerClassname()." class, because it is not defined yet.
+// If you need to use overridden methods, you can add this code to the bottom of the ".$this->getPeerClassname()." class:
+// 
+// Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getPeerClassname()."::TABLE_NAME, ".$this->getPeerClassname()."::getMapBuilder());
+// 
+// Doing so will effectively overwrite the registration below.
+
+Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getClassname()."::TABLE_NAME, ".$this->getClassname()."::getMapBuilder());
+
+";
+	}
+
 
 	/**
 	 * Adds constant and variable declarations that go at the top of the class.
@@ -207,7 +233,7 @@ abstract class ".$this->getClassname()." {
 		$script .= "),
 		BasePeer::TYPE_COLNAME => array (";
 		foreach ($tableColumns as $col) {
-			$script .= $this->getColumnConstant($col).", ";
+			$script .= $this->getColumnConstant($col, 'self').", ";
 		}
 		$script .= "),
 		BasePeer::TYPE_FIELDNAME => array (";
@@ -246,7 +272,7 @@ abstract class ".$this->getClassname()." {
 		$script .= "),
 		BasePeer::TYPE_COLNAME => array (";
 		foreach ($tableColumns as $num => $col) {
-			$script .= $this->getColumnConstant($col)." => $num, ";
+			$script .= $this->getColumnConstant($col, 'self')." => $num, ";
 		}
 		$script .= "),
 		BasePeer::TYPE_FIELDNAME => array (";
