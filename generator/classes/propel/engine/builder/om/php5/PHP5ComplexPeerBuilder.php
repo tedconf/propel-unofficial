@@ -290,25 +290,26 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 	 * @param Connection \$con
 	 * @return int Number of matching rows.
 	 */
-	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, \$con = null)
-	{
-		throw new PropelException(\"This is not yet finished being implemented in Propel 2.0.\");
-		
-		// we're going to modify criteria, so copy it first
-		\$criteria = clone \$criteria;
+	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Query \$query, PDO \$con = null)
+	{		
+		// we're going to modify Query, so copy it first
+		\$query = clone(\$query);
+
+		\$myQueryTable = \$query->getQueryTable();
+		\$joinedQueryTable = ".$joinedTablePeerBuilder->getPeerClassname()."::createQueryTable();
 		
 		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
+		\$query->clearSelectColumns()->clearOrderByColumns();
+		if (in_array(Query::DISTINCT, \$query->getSelectModifiers())) {
+			\$query->addSelectColumn(\$myQueryTable->createCustomQueryColumn(".$this->getPeerClassname()."::COUNT_DISTINCT));
 		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
-		}
-		
+			\$query->addSelectColumn(\$myQueryTable->createCustomQueryColumn(".$this->getPeerClassname()."::COUNT));
+		}		
+
 		// just in case we're grouping: add those columns to the select statement
-		foreach(\$criteria->getGroupByColumns() as \$column)
+		foreach(\$query->getGroupByColumns() as \$column)
 		{
-			\$criteria->addSelectColumn(\$column);
+			\$query->addSelectColumn(\$column);
 		}
 ";
 						$lfMap = $fk->getLocalForeignMapping();
@@ -316,11 +317,11 @@ class PHP5ComplexPeerBuilder extends PHP5BasicPeerBuilder {
 							$column = $table->getColumn($columnName);
 							$columnFk = $joinTable->getColumn( $lfMap[$columnName] );
 							$script .= "
-		\$criteria->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).");
+		\$query->addJoin(\$myQueryTable->createQueryColumn(".$this->getColumnConstant($column)."), \$joinedQueryTable->createQueryColumn(".$joinedTablePeerBuilder->getColumnConstant($columnFk).")); //CHECKME
 ";
 						}
 						$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$query, \$con);
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			return \$row[0];
 		} else {

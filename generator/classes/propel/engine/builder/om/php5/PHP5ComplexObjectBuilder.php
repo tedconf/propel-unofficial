@@ -794,14 +794,14 @@ $script .= "
 	{
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getClassFilePath()."';
-		if (\$criteria === null) {
-			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."();
+		if (\$query === null) {
+			\$query = ".$fkPeerBuilder->getPeerClassname()."::createQuery();
+		} else {
+			\$query = clone(\$query);
 		}
-		elseif (\$criteria instanceof Criteria)
-		{
-			\$criteria = clone \$criteria;
-		}
-
+		
+		\$criteria = \$query->getCriteria();
+				
 		if (\$this->$collName === null) {
 			if (\$this->isNew()) {
 				\$this->$collName = array();
@@ -818,12 +818,12 @@ $script .= "
 						throw $e;
 					}
 					$script .= "
-				\$criteria->add(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."());
+				\$criteria->add(new EqualExpr(".$fkPeerBuilder->getColumnConstant($colFK).", \$this->get".$column->getPhpName()."()));
 ";
 				} // end foreach ($fk->getForeignColumns()
 
 				$script .= "
-				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
+				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$query, \$con);
 			}
 		} else {
 			// the following code is to determine if a new query is
@@ -841,8 +841,8 @@ $script .= "
 				} /* end foreach ($fk->getForeignColumns() */
 
 				$script .= "
-			if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName."->equals(\$criteria)) {
-				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$criteria, \$con);
+			if (!isset(\$this->$lastCriteriaName) || !\$this->".$lastCriteriaName." == \$criteria) { // FIXME - implement equals()
+				\$this->$collName = ".$fkPeerBuilder->getPeerClassname()."::doSelectJoin$relCol2(\$query, \$con);
 			}
 		}
 		\$this->$lastCriteriaName = \$criteria;
