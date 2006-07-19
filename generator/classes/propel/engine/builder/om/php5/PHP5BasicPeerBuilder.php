@@ -1293,16 +1293,11 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	public static function ".$this->getRetrieveMethodName()."(\$pk, PDO \$con = null)
 	{
-		// shortcut to avoid calling doSelect() when we already know it's in the identity map
-		\$key = (string) \$pk;
-		if (isset(self::\$instances[\$key])) {
-			return self::\$instances[\$key];
-		} else {
-			if (\$con === null) {
-				\$con = Propel::getConnection(self::DATABASE_NAME);
-			}
-	
-			\$criteria = " .$this->getPeerClassname()."::createCriteria();
+		if (\$con === null) {
+			\$con = Propel::getConnection(self::DATABASE_NAME);
+		}
+
+		\$criteria = " .$this->getPeerClassname()."::createCriteria();
 ";
 		$pkey = $table->getPrimaryKey();
 		$col = array_shift($pkey);
@@ -1311,12 +1306,11 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 		$script .= "
 	
-			\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
-			if (\$v) { // only set the map, if it's an actual object
-				self::\$instances[\$key] = \$v;
-			}
-			return \$v;
+		\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
+		if (\$v) { // only set the map, if it's an actual object
+			self::\$instances[\$key] = \$v;
 		}
+		return \$v;
 	}
 ";
 	}
@@ -1393,26 +1387,21 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		
 		$script .= ", PDO \$con = null)
 	{
-		\$instanceKey = serialize(array(".implode(',',$params)."));
-		if (isset(self::\$instances[\$instanceKey])) {
-			return self::\$instances[\$instanceKey];
-		} else {
-			if (\$con === null) {
-				\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
-			}
-			\$criteria = ".$this->getPeerClassname()."::createCriteria();";
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
+		}
+		\$criteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
-			\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
+		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
 		}
 		$script .= "
-			\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
-			if (\$v) { // only set the map, if it's an actual object
-				self::\$instances[\$instanceKey] = \$v;
-			}
-			return \$v;
+		\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
+		if (\$v) { // only set the map, if it's an actual object
+			self::\$instances[\$instanceKey] = \$v;
 		}
+		return \$v;
 	}";
 	}
 
