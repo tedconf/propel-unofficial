@@ -1306,11 +1306,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 		$script .= "
 	
-		\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
-		if (\$v) { // only set the map, if it's an actual object
-			self::\$instances[\$key] = \$v;
-		}
-		return \$v;
+		return ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
 	}
 ";
 	}
@@ -1397,11 +1393,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", $".$clo."));";
 		}
 		$script .= "
-		\$v = ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
-		if (\$v) { // only set the map, if it's an actual object
-			self::\$instances[\$instanceKey] = \$v;
-		}
-		return \$v;
+		return ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
 	}";
 	}
 
