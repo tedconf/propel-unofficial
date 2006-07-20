@@ -222,6 +222,15 @@ class Query implements StatementBuilder {
 		return $this->selectModifiers;
 	}
 	
+	/**
+	 * Clears the select modifiers.
+	 */
+	public function clearSelectModifiers()
+	{
+		$this->selectModifiers = array();
+		return $this;
+	}
+	
     /**
      * Set max number of rows to return.
      * @param int $limit The number of rows to return.

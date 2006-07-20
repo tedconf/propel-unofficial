@@ -400,9 +400,9 @@ class CustomOrderByColumn extends CustomQueryColumn implements OrderByColumn {
 class Join {
 
 	const IMPLICIT = "IMPLICIT";
-	const LEFT = "LEFT";
-	const RIGHT = "RIGHT";
-	const INNER = "INNER";
+	const LEFT = "LEFT JOIN";
+	const RIGHT = "RIGHT JOIN";
+	const INNER = "INNER JOIN";
 
     /** the left column of the join condition */
     private $leftColumn = null;
