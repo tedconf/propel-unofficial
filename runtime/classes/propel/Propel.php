@@ -342,16 +342,48 @@ class Propel {
 		
 		if (!isset(self::$connectionMap[$name])) {
 					
-			$key = $name.'.dsn';
+			$key = $name . '.dsn';
 			
-			if (!isset(self::$configuration['datasources'][$key])) {
+			if ( ! isset ( self::$configuration['datasources'][$key] ) ) {
 				throw new PropelException("Unable to find " . $key . " in the [datasources] section of your configuration file.");
 			}
-			
+
+			$user_key = $name . '.user';
+			$password_key = $name . '.password';
+
+			if ( isset ( self::$configuration['datasources'][$user_key] ) ) {
+				$user = self::$configuration['datasources'][$user_key];
+			} else {
+				$user = NULL;
+			}
+
+			if ( isset ( self::$configuration['datasources'][$password_key] ) ) {
+				$password = self::$configuration['datasources'][$password_key];
+			} else {
+				$password = NULL;
+			}
+
 			$dsn = self::$configuration['datasources'][$key];			
 
+			$driver_options = array();
+			$options_key = $name . '_options';
+			if ( isset ( self::$configuration['global_options'] ) && is_array ( self::$configuration['global_options'] ) ) {
+				try {
+					self::_process_driver_options ( self::$configuration['global_options'], $driver_options );
+				} catch (PropelException $e) {
+					throw new PropelException('Error processing driver options in [global_options]',$e);
+				}
+			}
+			if ( isset ( self::$configuration[$options_key] ) ) {
+				try {
+					self::_process_driver_options ( self::$configuration[$options_key], $driver_options );
+				} catch (PropelException $e) {
+					throw new PropelException('Error processing driver options in ['.$options_key.']',$e);
+				}
+			}
+
 			try {
-				$con = new PDO($dsn);
+				$con = new PDO($dsn, $user, $password, $driver_options);
 				$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				self::$connectionMap[$name] = $con; 
 			} catch (PDOException $e) {
@@ -363,6 +395,34 @@ class Propel {
 		return self::$connectionMap[$name];
 	}
 	
+	/**
+	 * Internal function to handle driver_options in PDO
+	 *
+	 * Process the INI file flags to be passed to each connection.
+	 *
+	 * @param array $source Where to find the list of constant flags and their new setting.
+	 * @param array $write_to Put the data into here
+	 */
+	private static function _process_driver_options ( &$source, &$write_to ) {
+
+		foreach ( $source as $option_key=>$option_value ) {
+
+			$option_key = 'PDO::'.$option_key;
+			if ( defined ( $option_key ) && $option_key_value = constant ( $option_key ) ) {
+				if ( $option_value == 'true' ) {
+					$option_value = true;
+				} elseif ( $option_value == 'false' ) {
+					$option_value = false;
+				}
+				$write_to[$option_key_value] = $option_value;
+			} else {
+				throw new PropelException("Invalid PDO option ".$option_key.", value was ".$option_value);
+			}
+
+		}
+
+	}
+
 	/**
 	 * Registers a PDO connection with Propel.
 	 * 
