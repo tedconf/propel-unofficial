@@ -287,6 +287,8 @@ class BasePeer
 
 		try {
 
+			$adapter = Propel::getDB($criteria->getDBName());
+
 			$qualifiedCols = $criteria->keys(); // we need table.column cols when populating values
 			$columns = array(); // but just 'column' cols for the SQL
 			foreach($qualifiedCols as $qualifiedCol) {
@@ -294,7 +296,7 @@ class BasePeer
 			}
 
 			$sql = "INSERT INTO " . $tableName
-				. " (" . implode(",", $columns) . ")"
+				. " (" . implode(",", array_map(array($adapter, 'quoteIdentifier'), $columns)) . ")"
 				. " VALUES (" . substr(str_repeat("?,", count($columns)), 0, -1) . ")";
 
 			Propel::log($sql, Propel::LOG_DEBUG);
@@ -386,9 +388,12 @@ class BasePeer
 					$rs->close();
 				}
 
+				#var_dump($db);
+
 				$sql = "UPDATE " . $tableName . " SET ";
+
 				foreach($updateTablesColumns[$tableName] as $col) {
-					$sql .= substr($col, strpos($col, '.') + 1) . " = ?,";
+					$sql .= $db->quoteIdentifier(substr($col, strpos($col, '.') + 1)) . " = ?,";
 				}
 
 				$sql = substr($sql, 0, -1) . " WHERE " . $sqlSnippet;
