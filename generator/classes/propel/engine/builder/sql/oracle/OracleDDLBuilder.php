@@ -109,7 +109,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 	PRIMARY KEY (";
 			$delim = "";
 			foreach ($table->getPrimaryKey() as $col) {
-				echo $delim . $this->quoteIdentifier($col->getName());
+				$script .= $delim . $this->quoteIdentifier($col->getName());
 				$delim = ",";
 			}
 	$script .= ");
