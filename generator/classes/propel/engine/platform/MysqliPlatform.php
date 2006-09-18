@@ -50,9 +50,14 @@ class MysqliPlatform extends MysqlPlatform {
      * @return string
      */
     public function escapeText($text) {
-		// Because mysqli requires open connection, we are using addslashes() here.
-		// This needs to be fixed in a better way ...
-        return addslashes($text);
+		// Because mysqli requires open connection, we were using addslashes() here.
+		// Lets hope the user also has mysql extension installed and active
+		// It's at least somewhat better than addslashes
+	if ( function_exists ( 'mysql_escape_string' ) ) {
+		return mysql_escape_string ( $text );
+	} else {
+		return addslashes ( $text );
+	}
     }
 	
 }
