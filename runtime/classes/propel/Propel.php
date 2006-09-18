@@ -383,7 +383,7 @@ class Propel {
 			}
 
 			try {
-				$con = new PDO($dsn, $user, $password, $driver_options);
+				$con = @new PDO($dsn, $user, $password, $driver_options);
 				$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				self::$connectionMap[$name] = $con; 
 			} catch (PDOException $e) {
