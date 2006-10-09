@@ -88,6 +88,11 @@ class Propel {
 	const LOG_DEBUG = 7;
 
 	/**
+	 * The Propel version.
+	 */
+	const VERSION = '1.2.1-dev';
+	
+	/**
 	 * The db name that is specified as the default in the property file
 	 */
 	private static $defaultDBName;
