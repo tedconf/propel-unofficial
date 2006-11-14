@@ -185,7 +185,7 @@ if (Propel::isInit()) {
 
 		$this->addFieldNamesAttribute($script);
 		$this->addFieldKeysAttribute($script);
-		
+
 	}
 
 	/**
@@ -721,7 +721,7 @@ if (Propel::isInit()) {
 ";
 			foreach ($col->getChildren() as $child) {
 				$script .= "
-				case self::CLASSKEY_".$child->getKey().":
+				case self::CLASSKEY_".strtoupper($child->getKey()).":
 					\$omClass = self::CLASSNAME_".strtoupper($child->getKey()).";
 					break;
 ";
