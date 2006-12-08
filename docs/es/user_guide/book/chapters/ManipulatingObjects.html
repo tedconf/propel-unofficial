@@ -1,0 +1,120 @@
+<!--
+-File         $Id: ManipulatingObjects.html,v 1.1 2004/07/08 01:17:06 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Propel Guide</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
+</head>
+<body>
+
+<h1>Objetos persistentes</h1>
+
+<p>En este cap&iacute;tulo  veremos detalles sobre adici&oacute;n, actulazaci&oacute;n, y eliminaci&oacute;n de objetos 
+  desde el almacenamiento de datos.</p>
+
+<h2><a name="ManipulatingObjects.Inserting"></a>Adicionando Objetos</h2>
+
+<h3>Inserci&oacute;n simple</h3>
+<p>Adicionar objetos a su almacenamiento de datos es en efecto insertar filas destro de su tabla. 
+  Esto es f&aacute;cilmente hecho por Propel, simplemente hay que crear un nueva instancia de 
+  la clase aporiada e invocarn el m&eacute;todo <strong>save()</strong>.</p>
+
+<pre title="retrieveByPk() simple key">// Crear un nuevo autor
+$author = new Author();
+$author-&gt;setFirstName(&quot;Leo&quot;);
+$author-&gt;setLastName(&quot;Tolstoy&quot;);
+ 
+$author-&gt;save();
+// ahora ajustamos la llave primaria
+$author_id = $author-&gt;getId();</pre>
+
+<h3>Inserci&oacute;n en &quot;cascada&quot; </h3>
+<p>En ejemplo anterior una simple columna fu&eacute; insertada en la base de datos. En muchos 
+  casos, o como sea, usted necesitar&aacute; trabajar con registros inter-relacionados, y un simple llamado 
+  al m&eacute;todo <strong>save()</strong> puede resultar en escribir m&aacute;s de un registro a la base de datos.</p>
+<pre title="retrieveByPk() simple key">
+// Crear autor
+$author = new Author();
+$author-&gt;setFirstName(&quot;John&quot;);
+$author-&gt;setLastName(&quot;Smith&quot;);
+ 
+// Crear publisista
+$publisher = new Publisher();
+$publisher-&gt;setName(&quot;Penguin&quot;);
+
+// Crear el libro de J.Smith
+$book = new Book();
+$book-&gt;setISBN(&quot;111-2222-3333&quot;);
+$book-&gt;setTitle(&quot;Fake Title&quot;);
+$book-&gt;setPublisher($publisher);
+$book-&gt;setAuthor($author);
+
+// guardar el libro (book) har&aacute; que se almacenen tambi&eacute;n
+// los registros autor y publisista 
+$book-&gt;save(); // adicionar&aacute; 3 registros a la base de datos</pre>
+<p>Esa es la forma m&aacute;s f&aacute;cil de adicionar objetos y tenerlos autom&aacute;ticamente cuando el 
+  item relacionado es guardado. Usted puede tambi&eacute;n manualmente especificar las llaves foraneass, lo que significa 
+  que necesitar&oacute; adicionar unas cuantas l&iacute;neas m&aacute;s de c&oacute;digo:</p>
+<pre title="INSERT: manual fkey setting">
+// Crear Autor
+$author = new Author();
+$author-&gt;setFirstName(&quot;John&quot;);
+$author-&gt;setLastName(&quot;Smith&quot;);
+$author-&gt;save();
+ .
+ .
+$book = new Book();
+$book-&gt;setAuthorId($author-&gt;getId());
+ .
+ .</pre>
+<h2><a name="ManipulatingObjects.Updating"></a>Actualizando Objetos</h2>
+
+<p>Una simple actualizaci&oacute;n de datos es completada cuando un objeto es modificado(usando los m&eacute;todos set*()) 
+  y el m&eacute;todo <strong>save()</strong> es invocado. En su c&oacute;digo esto luce 
+  igual al c&oacute;digo para insertar un nuevo registro la &uacute;nica diferencia es que el objeto 
+  a modificar posee una llave primaria asignada previamente.</p>
+
+<pre title="Criteria: simple">
+$obj = AuthorPeer::retrieveByPK(1); // get Author where pkey is 1
+$obj-&gt;setFirstName($obj-&gt;getFirstName() . &quot;-modiified&quot;);
+$obj-&gt;save();  // performs UPDATE
+ 
+// UPDATE Author 
+//        SET author.FIRST_NAME = '&quot;.$obj-&gt;getFirstName().&quot;-modified' 
+//        WHERE author.AUTHOR_ID = 1
+</pre>
+<h2><a name="ManipulatingObjects.Deleting"></a>Eliminando Objetos</h2>
+
+<p>Para eliminar registros usted puede llamar al m&eacute;todo <strong>delete()</strong> 
+  del objeto o usar el m&eacute;todo <strong>doDelete()</strong> de peer. </p>
+<p>El m&eacute;todo <strong>delete()</strong> elimina el objeto de la base de datos 
+  (por llave primaria). Tmbi&eacute;n ajusta el estado del objeto a &quot;aliminado&quot;. Usted puede 
+  todavia recuperar las propiedades de objetos eliminados, pero no puede guardar objetos eliminados.</p>
+<pre title="Using Object->delete()">$author = AuthorPeer::retrieveByPk(1);
+$author-&gt;delete();
+
+// DELETE FROM author WHERE author.AUTHOR_ID = 1</pre>
+
+<p>Cuando usa el m&eacute;todo <strong>doDelete()</strong> de peer, usted puede especificar cualquier 
+  criterio que desee cuando el rendimiento es eliminado; en este ejemplo hemos eliminado 
+  un simple registro de la tabla <em>author</em>.</p>
+
+<pre title="Using Peer::doDelete()">$crit = new Criteria();
+$crit-&gt;add(AuthorPeer::AUTHOR_ID, 1);
+AuthorPeer::doDelete($crit);
+// DELETE FROM author WHERE author.AUTHOR_ID = 1</pre>
+ 
+
+<p>Propel incluso soporta eliminaci&oacute;n en cascada (incluyendo emulaci&oacute;n para bases de datos que 
+  no lo soportan nativamente), el cual es descrito con m&aacute;s detalle en el capitulo de relaciones 
+  [<a href="Relationships.html#Relationships.CascadingDelete">eliminaci&oacute;n en 
+  cascada</a>].</p>
+<p>&nbsp;</p>
+</body>
+</html>

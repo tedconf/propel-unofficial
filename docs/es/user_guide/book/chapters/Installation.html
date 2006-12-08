@@ -1,0 +1,201 @@
+<!--
+-File         $Id: Installation.html,v 1.8 2004/11/04 01:46:06 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2002, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Gu&iacute; Propel</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" media="All" charset="iso-8859-1" />
+</head>
+<body>
+<h1>Instalaci&oacute;n</h1>
+<h2><a name="Installation.Prerequisites"></a>Prerrequisitos</h2>
+<p>En orden de instalar Propel usted necesita:</p>
+<ul>
+  <li> PHP &gt;= 5.0.0 con soporte XSLT (--con-xsl en *nix, o habilitada la librer&iacute;a php_xsl.dll 
+    en Windows)</li>
+  <li>Soporte RDBMS (MySQL, MS SQL Server, PostgreSQL, SQLite, Oracle)</li>
+  <li><a href="Bibliography.html#bib.phing">Phing 2.0</a></li>
+  <li><a href="Bibliography.html#bib.creole">Creole</a> &gt;= 1.0.0</li>
+  <li>El paquete PEAR Log(opcional)</li>
+</ul>
+<p>Propel puede ser usado en ambas plataformas Unix y Windows.</p>
+<p>Propel est&aacute; disponible en formato &quot;tradicional&quot; tarball y desde la version 
+  1.0.0 est&aacute; tambi&eacute;n disponible como in paquete instalable PEAR. La opci&oacute;n tarball da 
+  m&aacute;s flexibilidad, pero es m&aacute;s es m&aacute;s dif&iacute;cil de instalar. La opci&oacute;n PEAR es perfecta 
+  si desea tomarlo y hacerlo funcionar rapidamente, pero es m&aacute;s &quot;magico&quot; 
+  y desde aqu&iacute; curva de aprendizaje para personalizaciones es m&aacute;s paso a paso.</p>
+<h2><a name="Installation.PEAR"></a>Instalaci&oacute;n PEAR </h2>
+<p>Ahora es posible instalar ambos el generador Propel y el ejecutor de componentes 
+  como paquetes PEAR. Esta es lejanamente la forma m&aacute;s f&aacute;cil de poner a correr Propel, pero 
+  puede no ser completamente tan f&aacute;cil de configurar como con la instalaci&oacute;n tradicional. Estos 
+  paquetes actualmente no dependen uno del otro, por ello usted puede instalar s&oacute;lo el generador 
+  o s&oacute;lo el ejecutor de clases. Note que el ejecutor de clases depende del 
+  paquete Creole. </p>
+<h3>Generador</h3>
+<pre title="pear install generator">
+$&gt; instalaci&oacute;n pear http://propel.phpdb.org/pear/propel_generator-current.tgz</pre>
+<p>El paquete generador viene con un conveniente script propel-gen shell el cual 
+  actualmente puede usar para automaticamente construir el proyecto.
+<pre title="pear run propel-gen">
+$&gt; propel-gen /direcci&oacute;n/de/su/directorio/proyecto  [objetivo]</pre>
+<p> Como puede ver en el ejemplo, usted debe crear un directorio proyecto. Usted puede 
+  hechar un vistazo al ejemplo provisto <em>bookstore</em> directorio del proyecto (en su 
+  directorio de datos PEAR). Este t&oacute;pico est&aacute; tambi&eacute;n cubierto con m&aacute;s detalle en el siguiente 
+  capitulo, <a href="GettingStarted.html">Iniciandose</a>. </p>
+<h3>Runtime</h3>
+<p>Las clases de ejecuci&oacute;n son instaladas de la misma manera como las clases generador.</p>
+<pre title="pear install runtime">
+$&gt; pear install http://propel.phpdb.org/pear/propel_runtime-current.tgz</pre>
+<p>Configuraciones nuevas no son necesarias (asumiendo que su directorio PEAR php este 
+  en su <em>include_path</em>).</p>
+<p><strong>Lo ha hecho.</strong> leyendo la instalaci&oacute;n tradicional es probablemente 
+  una buena idea de cualquier forma, especialmente como la mayor&iacute;a de los ejemplos fueron escritos para propel instalado 
+  de la forma tradicional.</p>
+<h2><a name="Installation.Conventional"></a>Instalaci&oacute;n conventional </h2>
+<p>Con el fin de simplificar este capitulo haremos algunas suposiciones acerca de la localizaci&oacute;n 
+  de los archivos. Asumiremos que su inmstalaci&oacute;n probablemente difiera, entonces estos dever&iacute;an servir s&oacute;lo 
+  como una referencia para las siguientes instrucciones</p>
+<table>
+  <caption>
+  Algunas suposiciones para simplificar el ejemplo 
+  </caption>
+  <thead>
+    <tr> 
+      <th>ruta </th>
+      <th>Unix (Linux, FreeBSD, etc.)</th>
+      <th>Windows</th>
+    </tr>
+    <tr> 
+      <td>ejecutor Propel</td>
+      <td>/usr/local/propel/runtime</td>
+      <td>C:\PHP\apps\propel\runtime</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr> 
+      <td>generador Propel</td>
+      <td>/usr/local/propel/generator</td>
+      <td>C:\PHP\apps\propel\generator</td>
+    </tr>
+    <tr> 
+      <td>librer&iacute;as PEAR</td>
+      <td>/usr/local/lib/php</td>
+      <td>C:\PHP\PEAR </td>
+    </tr>
+  </tbody>
+</table>
+<h3>Obtenci&oacute;n</h3>
+<p>Usted puede instalar Propel desde un paquete liberado (distribuci&oacute;n imagen) o 
+  desde un CVS. Instalando desde una liberaci&oacute;n o imagen siempre sera m&aacute;s simple, pero 
+   si quiere mantener y (esperamos que sea asi!) ayudar a los desarrolladores de Propel, 
+  entonces deber&iacute;a revisar una copia de las funetes desde un CVS.</p>
+<h4>Paquete</h4>
+<p>Si usted obtiene un tar.gz o .zip de Propel, entonces simplemente descomprima 
+  el archivo y mueva la carpeta resultante a la posici&oacute;n correcta. Por ejemplo:</p>
+<pre title="unix unpacking">
+$&gt; cd /usr/local
+
+$&gt; tar zxvf propel-x.x.x.tar.gz
+
+$&gt; ln -s propel-x.x.x propel
+</pre>
+<h4>CVS</h4>
+<p>Instalando desde un CVS lo asegura de tener el c&oacute;digo fuente m&aacute;s actualizado. 
+  (desde luego el c&oacute;digo desde CVS no es estable y no deber&iacute;a ser utilizado en producci&oacute;n.) </p>
+<p>Nota: el modulo <em>propel</em> en CVS tiene una lijera diferencia estructura 
+  de directorios debido a consideraciones legales y limitaciones impuestas por tigris.org. 
+  Notablemente, todos los &quot;modulos&quot; se encuentran actualmente en un nivel alto de directorios <tt>propel;</tt> 
+  tambi&eacute;n las clases de ejecuci&oacute;n estan en los subdirectorios de <tt>propel</tt>, 
+  mientras el componente generados est&aacute; en el directorio <tt>generador-propel</tt>. 
+  Revise el siguiente ejemplo (Unix) usando las suposiciones de ruta que definimos 
+  a continuaci&oacute;n:</p>
+
+<pre title="CVS checkout instructions">
+$&gt; cvs -d :pserver:guest@cvs.tigris.org:/cvs login
+  Password: [guest]
+
+$&gt; cvs -d :pserver:guest@cvs.tigris.org:/cvs checkout propel
+$&gt; mkdir /usr/local/propel
+
+$&gt; mv propel/propel /usr/local/propel/runtime
+
+$&gt; mv propel/propel-generator /usr/local/propel/generator</pre>
+
+<p> Para los usuarios de Windows, hay un n&uacute;mero gr&aacute;fico de clientes CVS disponibles como 
+  el muy capaz y f&aacute;cil de usar<a href="http://www.tortoisecvs.org" target="_blank">TortoiseCVS</a>.</p>
+<h3>Ambiente de instalaci&oacute;n</h3>
+<p>Una vez ha desempacado su distribuci&oacute;n Propel, necesitara configurar su 
+  ambiente PHP.</p>
+<h4>PHP include_path</h4>
+<p>Necesita adicionar el directorio <tt>propel/runtime/classes</tt> a su PHP include 
+  path. Note que usted solamente necesita adicionar las clases de <em>ejecuci&oacute;n</em> a su <em>include_path</em>, 
+  como el proceso de construcci&oacute;n calcula el <em>include_path</em> para el generador 
+  de clases automaticamente. En ese orden de palabras, este paso no es requarido para construir su 
+  modelo de objeto, pero es requerido actualmente usa su c&oacute;digo generado desde un 
+  script PHP. El camino m&aacute; f&aacute;cil y m&aacute;s permanente  de ajustar su <em>include_path</em> 
+  es simplemente modificando su archivo <tt>php.ini</tt> y adicionando este directorio a la variable <em>include_path :</em> 
+  </p>
+<pre title="php.ini settings">
+# Unix
+include_path=&quot;/usr/local/lib/php:/usr/local/propel/classes&quot;
+
+; Windows
+include_path=&quot;C:\PHP\PEAR;C:\PHP\apps\propel\classes&quot;
+</pre>
+<p>Si no posee permisos sobre el archivo <tt>php.ini</tt> y no puede especificar el valor <em>include_path</em> 
+en su archivo <tt>.htaccess</tt> usted siempre podra hacer esto al ejecutor mediante scripts PHP:</p>
+<pre title="setting include_path at runtime">
+&lt;?php 
+
+set_include_path(&quot;/usr/local/propel/runtime/classes:&quot; . get_include_path());
+
+require_once 'propel/Propel.php';
+Propel::init( MY_CONF_DIR . '/propel/runtime-conf.php');</pre>
+<p>Ahora el ambiente de ejecuci&oacute;n de Propel esta listo para ser usado en su modelo objeto. 
+  como aprendera en las subsecuentes secciones, tambi&eacute;n necesitara el <em>include_path 
+  </em>para account para su modelo de objeto de clases PHP  ( ej. las clases que el 
+  generador de propel construye para usted).</p>
+<h4>Otras recomendaciones de la variable INI</h4>
+<p>Tambi&eacute;n deber&iacute;a revisar que los siguientes ajustes PHP INI settings sean corectos:</p>
+<table>
+  <caption>
+  ajuste de variables php.ini  
+  </caption>
+  <thead>
+    <tr> 
+      <th>Variable</th>
+      <th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr> 
+      <td>ze1_compatibility_mode</td>
+      <td>Off</td>
+    </tr>
+    <tr> 
+      <td><p>magic_quotes_gpc</p></td>
+      <td><p>Off</p></td>
+    </tr>
+    <tr> 
+      <td><p>magic_quotes_sybase</p></td>
+      <td><p>Off</p></td>
+    </tr>
+    <tr> 
+      <td><p>register_globals</p></td>
+      <td> <p>Off (esto actualmente no afecta a Propel, pero es importante 
+          anotar que en Propel no necesita estar activo 'On') </p></td>
+    </tr>
+  </tbody>
+</table>
+<p>Estos deben ser los valores por defecto para estas opciones. Tambi&eacute;n, no hay requerimientos 
+  que <em>registros globales</em> sean puestos en 'off', pero es una buena idea -- e importante, 
+  Propel no requiere que este en 'on'.</p>
+<p>Hasta este punto deber&iacute;a terminar la instalaci&oacute;n y ajuste de Propel. Para estar seguro 
+  de que todo funciona bien, continue con el capitulo <a href="GettingStarted.html">Inici&aacute;ndose/a>para caminar a trav&eacute;s de ejmplos.</p>
+</body>
+</html>

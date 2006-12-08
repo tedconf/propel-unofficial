@@ -1,0 +1,167 @@
+<!--
+-File         $Id: ColumnTypes.html,v 1.1 2004/07/08 01:17:06 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Propel Guide</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
+</head>
+<body>
+
+<h1>Tipos de columna en Propel</h1>
+
+<p>En este cap&iacute;tulo miraremos m&aacute;s de cerca los ipos de columnas disponibles para  
+  usted en Propel. Los tipos de columnas que eliga afectaran el SQL que es 
+  generado para su RDBMS y en algunos casos el comportamiento de la clase generada OM . 
+  Los tipos de columnas en Propel son mapeadas directamente en los tipos de columnas 
+  disponibles en Creole, La capa de abstracci&oacute;n de la base de datos usada por Propel,
+  y los tipos de columna de Creole est&aacute;n basados sobre una versi&oacute;n espec&iacute;fica de los tipos JDBC. </p>
+<p>El generador de clases de Propel traduce los tipos de columnas genericos en tipos 
+  de columnas nativos para su RDBMS, y las clases del generador OM y el framework de 
+  ejecuci&oacute;n de propel aseguran que esos datos son corre tamente transformados por ello que sus 
+  llamados de script no necesitan por si mismo tratar la implementaci&eacute;n de la base de datos.</p>
+<h2><a name="ColumnTypes.Boolean"></a>Columnas tipo boolean</h2>
+<p>Hay un tipo simple boolean en propel:</p>
+<ul>
+  <li>BOOLEAN</li>
+</ul>
+<p>Este tipo es usado para representar valore de False/Veradero. En bases de datos que no 
+  tienen columnas con tipos de datos nativo BOOLEAN/BIT, un INTEGER (o SMALLINT) ser&aacute;
+  en lugar de eso usa (0 = falso, 1 = verdadero).</p>
+<pre title="Boolean column XML declaration">&lt;table name=&quot;bool_test&quot;&gt;
+  &lt;column name=&quot;boolval&quot; type=&quot;BOOLEAN&quot; defaultValue=&quot;true&quot;/&gt;
+&lt;/table&gt;</pre>
+<p>En PostgreSQL, por ejemplo, esto generar&aacute;:</p>
+<pre title="Boolean column table creation SQL">CREATE TABLE bool_test (
+  boolval bit NOT NULL default 't'
+);</pre>
+
+<p>El m&eacute;todo accessor en la clase generada OM (ej. <strong>getBoolval()</strong>) 
+  siempre retornar&aacute; valores tipo boolean, indiferente de la implementaci&oacute;n de la base de datos.</p>
+<h2><a name="ColumnTypes.Numeric"></a>Columnas de tipo num&eacute;rico </h2>
+
+<p>Hay varios tipos num&eacute;ricos disponibles:</p>
+<ul>
+  <li>TINYINT</li>
+  <li>INTEGER</li>
+  <li>BIGINT</li>
+  <li>DOUBLE</li>
+  <li>DECIMAL</li>
+  <li>FLOAT</li>
+  <li>REAL</li>
+</ul>
+<p>Usted puede usar los atributos <strong>size</strong> y <strong>scale</strong> para 
+  aplicar a los tipos de soluna num&eacute;ricos. Si estos son incluidos en los archivos generados 
+  SQL depender&aacute; de su RDBMS.</p>
+<pre title="Numeric column XML declaration">&lt;table name=&quot;num_test&quot;&gt;
+  &lt;column name=&quot;num&quot; type=&quot;FLOAT&quot; size=&quot;10&quot; scale=&quot;2&quot;/&gt;
+&lt;/table&gt;</pre>
+<p>En MySQL, por ejemplo, esto generar&aacute;:</p>
+<pre title="Numeric column table creation SQL">CREATE TABLE num_test (
+  num FLOAT(10,2) NOT NULL
+) Type=MyISAM;</pre>
+
+<p>El tipo num&eacute;rico s&oacute;lo afecta el SQL generado y no la clase generada OM.</p>
+<p>Note que usted puede muy bien abilitar el almacenamiento de n&uacute;meros con gran precisi&oacute;n 
+  en su base de datos que puede introducir en PHP. revise  los ajustes de <em>precisi&oacute;n</em> en 
+  su archivo <tt>php.ini</tt> si encuentra truncaci&oacute;n.</p>
+  
+  
+<h2><a name="ColumnTypes.String"></a>Columnas Tipo String </h2>
+  
+<p>Hay varios tipos de string en Propel:</p>
+<ul>
+  <li>CHAR</li>
+  <li>VARCHAR</li>
+  <li>LONGVARCHAR</li>
+</ul>
+<p>Estas columnas son equivalentes para RDBMS. CHAR es para representar
+  longitud de strings ajustados, mientras los strings VARCHAR pueden varias en tamaño. Usted puede especificar 
+  un atributo <strong>size</strong> para ambos tipos. Generalmente el atributo <strong>size</strong> 
+  para LONGVARCHAR ser&aacute; ignorado. algunas bases de datos (ej. MySQL, PostgreSQL, 
+  Microsoft SQL Server) usa un tipo de dato TEXT para LONGVARCHAR.</p>
+<p>Las columnas de estos tipos siempre se almacenan como valores string y retornar&aacute;n 
+  valores tipo string. Note que los valores retornados siempre tendr&aacute;n alguna huella 
+  con espacio en blanco arreglado. Algunas RDBMS har&aacute;n esto automaticamente (ej. MySQL) mientras 
+  que otras no (ej. PostgreSQL).</p>
+<h2><a name="ColumnTypes.LOB"></a>Columnas de Tipo LOB</h2>
+<p>LOB <strong>L</strong>ocator <strong>OB</strong>ject.(Localizador de OBjeto) hay 2
+  tipos de columna LOB en Propel:</p>
+<ul>
+  <li>CLOB</li>
+  <li>BLOB</li>
+</ul>
+<p>Estos tipos de datosmerecen una atenci&oacute;n especial porque son manejadas lijeramente 
+  diferente desde otros tipos de datos en Propel. Los resultados para los tipos de datosr LOB son retornados 
+  como objetos de tipo <strong>creole.util.Blob</strong> o <strong>creole.util.Clob</strong>, 
+  dependiendo del tipo de columna. Estas clases proveen algunos m&eacute;todos &uacute;tiles (ej. 
+  para escribir a un archivo o descargado a un buffer); Ellos tambi&eacute;no proveen un m&eacute;todo <strong>__toString()</strong> 
+  con el que usted puede llamar c&oacute;digo, escoger o ignorar los objetos. <em>Nota: en PHP5.0.0RC1 
+  en el m&eacute;todo <strong>__toString()</strong> la invocaci&oacute;n autom&aacute;tica para el casting(string) 
+  ha sido desabiitado por ahora, usted debe expl&iacute;citamente invocar el m&eacute;todo <strong>__toString()</strong>sobre objetos.</em></p>
+<p>Mire el siguiente esquema de ejemplo:</p>
+<pre title="LOB column declaration">&lt;table name=&quot;lob_test&quot;&gt;
+  &lt;column name=&quot;photo&quot; type=&quot;BLOB&quot;/&gt;
+&lt;/table&gt;</pre>
+<p>El llamado a c&oacute;digo PHP necesita hacer uns casting de resultados de estas columnas a string 
+  expl&iacute;citamente (para llamar al m&eacute;todo <strong>__toString() </strong>) - <em>por ahora debe expl&iacute;citamente
+  llamar al m&eacute;todo <strong>__toString()</strong> en PHP.</em>:</p>
+<pre title="Retrieving contents of LOB column">$lob = LobTestPeer::doSelectOne(new Criteria());
+$bits = $lob-&gt;getPhoto()->__toString(); // yuk, we know; convince php devs to restore automatic __toString()</pre>
+<p>... o puede llamar el m&eacute;todo <strong>Lob::getContents()</strong>directamente:</p>
+<pre title="Explicitly retrieving LOB contents">$bits = $lob-&gt;getPhoto()-&gt;getContents();
+</pre>
+<p>... o puede usar el m&eacute;todo utilitario para guardarlo en un archivo:</p>
+<pre title="Writing LOB contents to file">$lob-&gt;getPhoto()-&gt;writeToFile('/tmp/photo.gif');
+</pre>
+<p>... o puede lanzar los contenidos al buffer:</p>
+<pre title="Dumping LOB contents">$lob-&gt;getPhoto()-&gt;dump();
+</pre>
+<h2><a name="ColumnTypes.DateTime"></a>Columnas de tipo fecha y hora</h2>
+<p>Los tipos de columna fecha y hora en Propel son:</p>
+<ul>
+  <li>DATE</li>
+  <li>TIME</li>
+  <li>TIMESTAMP</li>
+</ul>
+<p>La mayor&iacute;a de las bases de datos tiene equivalaencias directas para estos tipos en Propel. No tiene valor 
+  que para MySQL el tipo de dato TIMESTAMP actualmente mapee a DATETIME. La capa Creole 
+  actualmente transforma fechas y horas dentro de los valores por defecto para su pa&iacute;s, 
+  proporcionando consistencia a trav&eacute;s de terminaciones anteriores en bases de datos.</p>
+<pre title="numeric column declaration">&lt;table name=&quot;date_test&quot;&gt;
+  &lt;column name=&quot;birth_date&quot; type=&quot;DATE&quot;/&gt;
+  &lt;column name=&quot;birth_time&quot; type=&quot;TIME&quot;/&gt;
+  &lt;column name=&quot;updated&quot; type=&quot;TIMESTAMP&quot;/&gt;
+&lt;/table&gt;</pre>
+<p>El siguiente es un ejemplo de c&oacute;digo PHP:</p>
+<pre title="numeric column declaration">print $obj-&gt;getBirthDate() . &quot;\n&quot;;
+print $obj-&gt;getBirthTime() . &quot;\n&quot;;
+print $obj-&gt;getUpdate() . &quot;\n&quot;;</pre>
+<p>Deber&iacute;a tener la siguiente salida en un sistema con configuraci&oacute;n <strong>en_US</strong>:</p>
+<pre title="Output on system using en_US locale">03/02/1998
+12:34:23 AM
+2003-12-21 18:32:01
+</pre>
+<p>... pero la siguiente salida en un sistema con configuraci&oacute;n<strong> de_DE</strong>:</p>
+<pre title="Output on system using de_DE locale">02.03.1998
+00:34:23
+2003-12-21 18:32:01</pre>
+<p>Note que usando la funci&oacute;n de PHP <strong>setlocale()</strong> cambiar&aacute; 
+  el valor de retorno de accsesos para las columnas DATE o TIME . El valor TIMESTAMP 
+  es formateado usando ISO 8601 indiferente de la configuraci&oacute;n local.</p>
+<h4>Personalizar los formatos de fechas</h4>
+<p>Importantemente, usted puede ahora tambi&eacute;n passar una fecha en format string al m&eacute;todo asesor para las columnas fecha/hora columns. Incluso puede pasar NULL para tener los m&eacute;todos y retornar el integrador unix timestamp.</p>
+<pre title="passing date formatters">print $obj-&gt;getBirthDate('n/j') . &quot;\n&quot;;
+print $obj-&gt;getBirthTime('%X') . &quot;\n&quot;;
+print $obj-&gt;getUpdate(null) . &quot;\n&quot;;</pre>
+<p>Deber&iacute;a obtener la siguiente salida en un sistema con configuraci&oacute;n <strong>en_US</strong>(en este ejemplo, la configuraci&oacute;n local s&oacute;lo afecta el llamado <strong>getBirthTime()</strong> , el cual es usa un configuraci&eacute;n local sensitiva <strong>strftime()</strong>-tipo de formato string):</p>
+<pre title="Output using custom format strings">3/2
+12:34:23 AM
+1072049521</pre>
+</body>
+</html>

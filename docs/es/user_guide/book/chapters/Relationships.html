@@ -1,0 +1,134 @@
+<!--
+-File         $Id: Relationships.html,v 1.1 2004/07/08 01:17:06 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Propel Guide</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
+</head>
+<body>
+
+<h1>Relaciones</h1>
+
+<p>Propel soporta relaciones ba&aacute;sicas uno-a-uno. Relaciones m&aacute;s complejas como muchos-a-muchos 
+  son tambi&eacute;n posibles definiendo las tablas de referencia en su modelo de datos 
+  y expl&iacute;citamente usando estas tablas de referencia cuando se seleccionan registros. Este  
+  cap&iacute;tulo describe c&oacute;mo crear entidades inter-relacionadas y usar m&eacute;todos optimizados 
+  para retornar entidades relacionadas.</p>
+<h2><a name="Relationships.Defining"></a>Definiendo Relaciones de Entidad</h2>
+<p>La representaci&oacute;n de Propel de relaciones de entidades corresponde muy cercanamente 
+  a la forma en que las relaciones son representadas al nivel de la base de datos: llamado a trav&eacute;s de 
+  llaves foraneas. En el modelo de datos XML, usted puede usar el tag<strong>&lt;llave foranea&gt;</strong> 
+  para especificar una columna como llave foranea.</p>
+<pre title="example fkey schema">&lt;table name=&quot;book&quot;&gt;
+ &lt;column name=&quot;book_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
+ &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;100&quot; required=&quot;true&quot;/&gt;
+ &lt;column name=&quot;author_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot;/&gt;
+ &lt;foreign-key foreignTable=&quot;author&quot;&gt;
+   &lt;reference
+     local=&quot;author_id&quot;
+     foreign=&quot;author_id&quot;/&gt;
+ &lt;/foreign-key&gt;
+&lt;/table&gt;
+&lt;table name=&quot;author&quot;&gt;
+ &lt;column name=&quot;author_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
+ &lt;column name=&quot;fullname&quot; type=&quot;VARCHAR&quot; size=&quot;40&quot; required=&quot;true&quot;/&gt;
+&lt;/table&gt;</pre>
+<p>Propel generara definiciones SQL que usan llaves foraneas nativas si el controlador de su base de datos 
+  lo soporta. Propel usar&aacute; tambi&eacute;n informaci&oacute;n de llaves foraneas para generar
+  m&eacute;todos en sus clases objeto para traer objetos relacionados.</p>
+<h2><a name="Relationships.FetchingRelated"></a>Trayendo Objetos Relacionados</h2>
+<p>Usando el ejemplo anterior (basado sobre el esquema provisto bookstore (tienda de libro)), tendr&aacute; 
+  un <strong>Book-&gt;getAuthor()</strong> que retornar&aacute; un objeto Author usando 
+  la llave foranea espec&iacute;fica.</p>
+<pre title="example fetching fkey object">$books = BookPeer::doSelect(new Criteria());
+foreach($books as $book) {
+ $author = $book-&gt;getAuthor();
+}</pre>
+<p>El c&oacute;digo anterior resultar&aacute; en la ejecuci&oacute;n de 2 estamentos SQL:</p>
+<ol>
+  <li>SELECT * FROM book</li>
+  <li>SELECT * FROM author WHERE author_id = $book-&gt;getAuthorId()</li>
+</ol>
+<p>Aunque estos 2 m&eacute;toodos trabajan claramente, no son &oacute;ptimos -- especialmente si su base de datos 
+  posee un soporte nativo de llaves foraneas. Propel tambi&eacute;n genera metodos en su base de datos 
+  clase peer para traer informaci&eacute;n sobre book(libro) y author(autor) en una simple consulta. </p>
+<pre title="fetch fkey sql">$books = BookPeer::doSelectJoinAuthor(new Criteria());
+foreach($books as $book) {
+ $author = $book-&gt;getAuthor();
+}</pre>
+<p>En el caso anterior s&oacute;lo una simple consulta es mejorada en rendimiento:</p>
+<ol>
+  <li>SELECT * FROM book INNER JOIN author ON author.author_id = book.author_id</li>
+</ol>
+<p>Nota: En orden de limitar los m&eacute;todos en un API p&uacute;blico, <em>ambos m&eacute;todos 
+  son protejidos de la clase base peer</em>; en orden de usarlos ambos usted 
+  debe crear un m&eacute;todo p&uacute;blico en su clase peer que invoque el m&eacute;todo 
+  padre protejido.</p>
+  
+<pre title="example of invoking protected join method from stub class">class BookPeer {
+ public function doSelectJoinAuthor(Criteria $c) {
+  return parent::doSelectJoinAuthor($c);
+ }
+
+}</pre>
+<h2><a name="Relationships.ManyToMany"></a>Relacioes muchos-a-muchos</h2>
+<p>Como se mencion&oacute; en el cap&iacute;tulo de introducci&oacute;n, El soporte de Propel de relaciones de muchos-a-muchos 
+  involucra un paso medio: definiendo la tabla de referencia en su modelo de datos, 
+  y usando resultados para optimizar. </p>
+<p>Mire el siguiente ejemplo, una necesidad es relacionar libros con las personas que los leen -- muchas 
+  personas leyendo un solo libro, una persona leyendo muchos libros:</p>
+<pre title="example of invoking protected join method from stub class">&lt;table name=&quot;book_reader_ref&quot;&gt;
+ &lt;column name=&quot;book_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
+ &lt;column name=&quot;reader_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
+ &lt;foreign-key foreignTable=&quot;book&quot;&gt;
+   &lt;reference
+     local=&quot;book_id&quot;
+     foreign=&quot;book_id&quot;/&gt;
+ &lt;/foreign-key&gt;
+ &lt;foreign-key foreignTable=&quot;reader&quot;&gt;
+   &lt;reference
+     local=&quot;reader_id&quot;
+     foreign=&quot;reader_id&quot;/&gt;
+ &lt;/foreign-key&gt;
+&lt;/table&gt;</pre>
+<p>En su script PHP necesitara hacer uso de la tabla de referencia &quot;middleman&quot;  
+  para recuperar las entidades relacionadas:</p>
+  
+<pre title="Using middleman class from PHP">$books = BookPeer::doSelect(new Criteria());
+
+// for every book get all readers
+foreach($books as $book) {
+ $readers = $book-&gt;getBookReaderRefsJoinReader();
+}</pre>
+<p>El c&oacute;digo anterior ejecutar&aacute; 2 estamentos SQL:</p>
+<ol>
+  <li>SELECT * FROM book</li>
+  <li>SELECT * FROM book_reader_ref INNER JOIN reader ON reader.reader_id = book_reader_ref.reader_id 
+    WHERE book_reader_ref.book_id = $book-&gt;getBookId()</li>
+</ol>
+<p>Mientras este m&eacute;todo no es excesivamente gastado o utilizado -- como optimizando una simple selecci&oacute;n 
+  para recuperar resultados unidos de muchos-a-muchos usualmente no tienen sentido -- pero 
+  es tambi&eacute;n menos elegante que el soporte para los unidos uno-a-uno. Requiriendo la referencia 
+  expl&iacute;cita de la tabla de referencia es una desventaja para usar el muy literal 
+  modelando de datos aproximados adoptado por Propel(heredado de Torque). </p>
+<h2><a name="Relationships.CascadingDelete"></a>Borrado en cascada</h2>
+<p>Propel tambi&eacute;n soporta la eliminaci&oacute;n en cascada, que puede ser especificado usando la opci&oacute;n
+ <strong>onDelete=&quot;cascade&quot;</strong>  de la etiqueta <strong>&lt;foreign-key&gt;</strong>. Tambi&eacute;n soportado por torque 
+  una opci&oacute;n onUpdate=&quot;cascade&quot;, pero desde entonces Propel no permite actualizaciones 
+  para incluir cambios para la llave primaria, actualmente este nunca es invocado -- 
+  y algunas bases de datos simplemente no soporta este tipo de acci&oacute;n . Propel proporciona una nueva emulaci&oacute;n
+  de eliminaci&oacute;n en cascada que no soporta support este trigger (ej. MySQL).</p>
+<pre title="Example of cascade delete definition">&lt;table name=&quot;review&quot;&gt;
+ &lt;column name=&quot;review_id&quot; type=&quot;INTEGER&quot; primaryKey=&quot;true&quot; required=&quot;true&quot;/&gt;
+ &lt;column name=&quot;reviewer&quot; type=&quot;VARCHAR&quot; size=&quot;50&quot; required=&quot;true&quot;/&gt;
+ &lt;column name=&quot;book_id&quot; required=&quot;true&quot; type=&quot;INTEGER&quot;/&gt;<br />	&lt;foreign-key foreignTable=&quot;book&quot; onDelete=&quot;CASCADE&quot;&gt;<br />   &lt;reference local=&quot;book_id&quot; foreign=&quot;book_id&quot;/&gt;<br /> &lt;/foreign-key&gt;	  <br />&lt;/table&gt;</pre>
+<p>En el ejemplo anterior, las filas revisadas seran automaticamente removidas si la relacionada libro 
+  es eliminada.</p>
+</body>
+</html>

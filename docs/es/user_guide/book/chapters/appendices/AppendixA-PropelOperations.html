@@ -1,0 +1,73 @@
+<!--
+-File         $Id: AppendixA-PropelOperations.html,v 1.1 2004/07/08 01:17:06 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Propel Guide</title> 
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="Stylesheet" rev="Stylesheet" href="../../css/Documentation.css" type="text/css" media="All" charset="iso-8859-1" />
+</head>
+<body>
+<h1>Apendice A- Objetivos de construcci&oacute;n de Propel</h1>
+<p>Propel provee <a href="../Bibliography.html#bib.phing">Phing</a> tareas para 
+  optimizar soporte de base de datos y documentaci&oacute;n de operaciones. No todas estas son 
+  implementadas en la versi&oacute;n actual. Usted puede siempre usar Phing para ver una lista 
+  actualizada de objetivos con sus descripciones: </p>
+<pre title="Using Phing to view build targets.">$&gt; phing -f build-propel.xml -list</pre>
+<p>La siguiente tabla muestra objetivos con sus estados actuales.</p>
+<table>
+  <thead>
+    <tr> 
+      <th>Objetivo</th>
+      <th>Descripci&oacute;n</th>
+      <th>Completado?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr> 
+      <td>convertir-props</td>
+      <td> convierte archivos propiedades en areglos PHP</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>crear-db</td>
+      <td>genera la base de datos objetivo</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>datadtd</td>
+      <td> genera el DATA DTD para su proyecto</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>datadump</td>
+      <td>arroja datos desde la base de datos en un archivo xml</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>datasql</td>
+      <td>genera sql desde datos xml</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>insert-sql</td>
+      <td> inserta el sql generado</td>
+      <td>Si</td>
+    </tr>
+    <tr> 
+      <td>om</td>
+      <td>genera el objeto basado en el modelo Peer para su proyecto</td>
+      <td>Si</td>
+    </tr>
+  </tbody>
+</table>
+<p> Cualquiera de estos objetivos pueden ser invocados  especificando el nombre del objetivo cuando corra 
+  phing:</p>
+<pre title="Using Phing to view build targets.">$&gt; phing -f build-propel.xml targetname</pre>
+<p>&nbsp;</p>
+</body>
+</html>

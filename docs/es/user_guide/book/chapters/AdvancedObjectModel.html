@@ -1,0 +1,105 @@
+<!--
+-File         $Id: AdvancedObjectModel.html,v 1.2 2005/03/22 02:47:50 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Propel Guide</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
+</head>
+<body>
+
+<h1>Modelo Avanzado de Objetos</h1>
+
+<p>En este capitulo revisaremos algunas opciones avanzadas para el modelo de objetos de Propel.</p>
+<h2><a name="AdvancedOM.OverridingBaseClasses"></a>Overriding 
+  Base Classes</h2>
+<h3>Para Objectos</h3>
+<p>Por defecto todas las clases base objeto se extienden de la clase <strong>propel.om.BaseObject</strong>, 
+  la cual provee un juego compartido de m&eacute;todos y propiedades que los objetos usan 
+   para trazar sus estados de modificaci&oacute;n.En lugar de eso en algunos casos usted puede 
+  querer especificar una subclase <strong>BaseObject(objeto base)</strong> para usarla ; usted puede 
+  hacer esto desde los datos de definici&oacute;n en XML:</p>
+<pre title="Overriding base object class">&lt;table name=&quot;book&quot; idMethod=&quot;native&quot; baseClass=&quot;bookstore.BookstoreComponent&quot;&gt;</pre>
+<p>Note que usted debe usar la notaci&oacute;n de ruta con punto(en lugar de /) cuando especifica la nueva clase base, 
+  como la clase debe ser incluida antes de que sea referenciada. La notaci&oacute;n punto 
+  especifica una ruta relativa a una locaci&oacute;n en el <em>include_path</em> de PHP. Ahora 
+  la clase generada BaseBook extendera de BookstoreComponent. Note que <strong>BookstoreComponent</strong> 
+  debe extender a <strong>BaseObject</strong>, o PHP generara un error fatal cuando 
+  usted intente usar su objeto generado o clasee peer. </p>
+<pre title="overriding base object class PHP code">require_once 'bookstore/BookstoreComponent.php';
+ 
+class BaseBook extends BookstoreComponent {</pre>
+<h3>Para Peers</h3>
+<p>Por defecto todas las clases base peer no tienen una super clase. Usted puede querer especificar 
+  una clase base peer -- ej. proveer algunas funcionalidades adicionales compartidas usadas por su
+  modelo objeto.</p>
+<p>Como con la clase objeto base, cambiar la clase base peer es posible en el 
+  archivo de definicion XML:</p>
+<pre title="Overriding base object class">&lt;table name=&quot;book&quot; idMethod=&quot;native&quot; basePeer=&quot;BookstorePeer&quot;&gt;</pre>
+<p>como usted lo esperaba, la clase <strong>BaseBookPeer</strong> ahora extiende de <strong>BookstorePeer</strong> 
+  en lugar de <strong>BasePeer</strong>. Esta clase debe proveer todos los m&eacute;todos  publicos y protejidos 
+  de <strong>BasePeer</strong>.</p>
+<h2><a name="AdvancedOM.Inheritance"></a>Inheritance</h2>
+
+<p>Propel provee un soporte b&aacute;sico para implementar herencia orientada a onjetos 
+  (subclases) de su objeto de modelos. Hay varias opciones de implementaci&oacute;n para 
+  mapear clases entidades y subclases para las tablas de bases de datos. Propel usa la mayoria 
+  de modelos eficientes desde SQL y perspectivas optimas de consulta: una tabla es usada 
+  para todas las subclases. Esto tiene la implementaci&oacute;n que su tabla debe tener en todas las columnas 
+  necesitadas  por la calse principal y las subclases. Propel crear&aacute; subclases tropiezo, pero 
+  usted debe adicionar logica a la clase peer si requiere que la subclases s&oacute;lo contenga 
+  un subjuego de la infomaci&oacute;n --  por dedfecto todas las subclases seran popularizadas 
+  con la entera columna fila.</p>
+<p>Usted debe definir un columna en su tabla que servir&aacute; para identificar que clase 
+  debe ser usada para representar la tabla fila; haga esto usando el atributo <strong>inheritance=&quot;single&quot; 
+  </strong> (actualmente &quot;single&quot; es la &uacute;nica otra opci&oacute;n aparte de la  
+  que es por defecto, &quot;false&quot;). Tambi&eacute;n el &aacute;rbol de herencia es conocido, usted 
+  debe usar la etiqueta <strong>&lt;inheritance&gt;</strong> para especificar la clase 
+  heredada. <em>Note que esta 'llave' columna debe ser una columna real en su tabla.</em></p>
+  
+<pre title="example of inheritance definition">&lt;table name=&quot;publication&quot;&gt;
+ &lt;column name=&quot;id&quot; type=&quot;INTEGER&quot; primaryKey=&quot;true&quot;/&gt;
+ &lt;column name=&quot;class_key&quot; type=&quot;INTEGER&quot; inheritance=&quot;single&quot;&gt;
+   &lt;inheritance key=&quot;1&quot; class=&quot;Journal&quot; extends=&quot;bookstore.Publication&quot;/&gt;
+   &lt;inheritance key=&quot;2&quot; class=&quot;Magazine&quot; extends=&quot;bookstore.Journal&quot;/&gt;
+ &lt;/column&gt;
+ &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;100&quot;/&gt;
+&lt;/table&gt;</pre>
+<p><em><strong>Importante:</strong> Usted debe especificar el paquete prefijo cuando la clase 
+  pariente  (extends=&quot;package.ClassName&quot;) para que esas clases 
+  puedan ser correctamente incluidas en loa lto de las definiciones de subclase; como sea, usted 
+  no puede especificar un paquete para las subclases, porque Propel s&oacute;lo construye un 
+  paquete a la vez (el unico especificado por la propiedad ${propel.targetPackage} 
+  en <tt>build.properties</tt>) y es requerido que la subclase sea parte
+  del paquete que usted esta construyendo actualmente. Concevible, las clases pariente 
+  pueden ser parte de un paquete separado.</em></p>
+<p>El c&oacute;digo anterior resultar&aacute; en la creaci&oacute;n de 2 clases base -- <strong>BasePublicationPeer</strong> 
+  y <strong>BasePublication</strong><em> </em>-- y 4 subclases stub -- <strong>PublicationPeer</strong>, 
+  <strong>Publication</strong>, <strong>Journal</strong><em> </em>(extiende de <strong>Publication</strong><em>)</em>, 
+  y <strong>Magazine</strong> (extiende de <strong>Journal</strong><em>).</em></p>
+<p align="center"><img src="../images/inheritance.gif" width="113" height="385" /></p>
+<p>Note que s&oacute;lo una clase base por clase es creada. Si usted quiere estar seguro que 
+  su subclase s&oacute;lo trabaja con un subjuegode columnas para cada fila, usted debe 
+  sobrepasar el m&eacute;todo<strong>BasePublicationPeer::populateObject()</strong> 
+  para proveer popularizaci&oacute;n personalizada basado en una clase objeto. en algunos casos, como sea, 
+  el hecho que objetos de la clase correcta es retornado puede ser suficiente
+  y de &eacute;l mismo para la necesidad de su aplicaci&oacute;n.</p>
+<p>Si el &aacute;rbol de herencia es din&aacute;mico -- o desconocido -- usted puede omitir la etiqueta <strong>&lt;inheritance&gt;</strong> 
+  y es asumido que la llave columna contendra un nombre clase -- usando 
+  la notaci&oacute;n punto (ej. &quot;bookstore.Journal&quot;, &quot;myapp.entity.MyClassName&quot;). 
+  Tambi&eacute;n, puede sobrepasar la base de peer <strong>getOMClass()</strong> para retornar 
+  el nombre clase para usar basado en una l&oacute;gica m&aacute;s compleja (o consulta).</p>
+<h3>Entidades Abstractas</h3>
+<p>Si usted desea imponer usando subclases de una entidad, usted puede declarar una tabla 
+  &quot;abstract&quot; en su modelo de datos XML.</p>
+<pre title="abstract table example">&lt;table name=&quot;publication&quot; abstract=&quot;true&quot;&gt;</pre>
+<p>Especificando que una tabla es abstracta generara clases objeto stub abstractas, 
+  y tambi&eacute;n requerir&aacute; que usted implemente el m&eacute;todo <strong>getOMClass()</strong> 
+  en  su clase peer stub(la ecepci&oacute;n sera thrown si usted no lo hace).</p>
+</body>
+</html>

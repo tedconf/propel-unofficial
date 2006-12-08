@@ -1,0 +1,259 @@
+<!--
+-File         $Id: Introduction.html,v 1.3 2004/07/15 02:57:48 hlellelid Exp $
+-License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
+-Copyright    2003, Propel project
+-Author       Hans Lellelid, hans@xmpl.org
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Gu&iacute;a Propel</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
+</head>
+<body>
+
+<h1>Introduction</h1>
+
+<h2><a name="Introducci&oacute;n.What"></a>Qu&eacute provee Propel</h2>
+<p>Propel es un servicio de objeto persistente y de consulta -- lo que significa que Propel 
+  provee un sistema para almacenar objetos en una base de datos y un sistema para  b&uacute;squeda 
+  y restauraci&oacute;n de objetos desde una base de datos. Propel le permite realizar 
+  consultas complejas y manipulaci&oacute;n de bases de datos sin escribir una sola cl&aacute;usula SQL. 
+  Propel hace m&aacute;s f&aacute;cil la escritura de aplicaciones, m&aacute;s f&aacute;cil de desplegar, y mucho m&aacute;s f&aacute;cil  
+  para migrar si alguna vez la situaci&oacute;n lo amerita.</p>
+<p>Propel puede ser descrito como un mapeado  objeto-relacional, una capa DAO, o una 
+  capa objeto persistente. Propel es un puerto de <a href="Bibliography.html#bib.torque">Apache torque 
+  </a>. Basado en acercamientos probados, desarrollado por el proyecto Torque y optimizado 
+  para PHP, Propel espera proporcionar un inteligente y comprensivo servicio de manejo de datos  
+  con un m&iacute;nimo costo de realizaci&oacuten para su aplicaci&oacute;n en PHP.</p>
+<p>Para esos familiares con patrones O/R, Propel inicialmente implementa el patron entrada de datos en fila, como <a href="Bibliography.html#bib.martinfowler">lo describe 
+  Martin Fowler</a>, para representar la base de datos. Por citar a Fowler:</p>
+<blockquote>Una entrada de datos de fila le da objetos que lucen exactamente como el registro 
+  en su estructura de registros pero puede ser accedido con los mecanismos regulares de 
+  su lenguaje de programaci&oacute;n habitual. Todos los detalles de acceso de fuentes de datos estan ocultos detr&aacute;s 
+  de esta interfaz. </blockquote>
+<p>Sin embargo, Propel tambi&eacute; genera las clases para cada tabla que exibe algunas de 
+  las propidades de la tabla del patr&oacute;n datos de entrada:</p>
+<blockquote>Una tabla de entrada de datos almacena todo el SQL para aceder a una sola tabla o vista: 
+  selecciones, inserciones, actualizaciones, y eliminaciones. Otro c&oacute;digo llama los m&eacute;todos para todas
+  las interacciones con la base de datos.</blockquote>
+<p>En Propel las clases de tabla de entrada de datos es llamada clases<em>Peer</em>, 
+  mientras las clases de filas de entrada de datos es llamada <em>entidad</em> o clases <em>objeto</em> 
+  .</p>
+<p>Como una aplicaci&oacute;n, Propel tiene dos componentes principales (y ahora formalmente separados):</p>
+<ol>
+  <li>Un motor generador para construir sus clases y archivos SQL(<em>generador-propel</em>)</li>
+  <li>Un ambiente de ejecuci&oacute;n que proporciona herramientas para construir consultas SQL, ejecutando 
+    consultas compiladas, y herramientas para el manejo de conecciones para multiples bases de datos 
+    simult&aacute;neamente(<em>propel)</em></li>
+</ol>
+<p>El ambiente de ejecuci&oacute;n proporciona una capa de abstracciones y encapsulaci&oacute;n 
+  de bases de datos reglas logicas de negocios. Las clases Propel representan la capa modelo del 
+  tradicional MVC, dise&ntilde;ado para encapsular cualquier nivel de validaci&oacute;n de dato necesitado por
+  su aplicaci&oacute;n. El siguiente diagrama ilustra como Propel existe en relaci&oacute;n 
+  a Creole y las subyacentes bases de datos. (Note que el m&aacute;ximo-nivel significa poder 
+  encarnar cualquier aplicaci&oacute;n PHP, y puede bien envolver cualquier capa adicional).</p>
+<p><img src="../images/diagramonwhite.gif" width="663" height="586" /></p>
+<h2><a name="Introduction.Approach"></a>Aproximaci&oacute;n</h2>
+<p>Hay un n&uacute;mero de implementaciones de objetos persistentes -- proporcionando diferentes 
+  niveles de abstracci&oacute;n, algunos son abstraidos hacia el punto donde los objetos pueden incluso 
+  ser persistentes a no-SQL backends. Propel es una capa muy literal de persistencia de objetos: 
+  El modelo de datos XML corresponde muy cerca a la estructura de la base de datos. 
+  Entidades en Propel son siempre tablas; relaciones son especificadas usando llaves 
+  extranjeras; los tipos de columnas de propel corresponden casi directamente con el nivel de base de datos 
+  <a href="Bibliography.html#bib.creole">(Creole)</a> tipos de columna. </p>
+<p>Qu&eacute; significa esto en t&eacute;rminos simples para los usuarios de Propel? Esto 
+  significa que Propel es completamente f&aacute;cil de aprender y tambi&eacute;n completamente flexible -- en eso 
+  usted puede ser confidenta cuando side&ntilde;a su estructura de tabla inter-relacionada que 
+  trabaja como se espera en Propel. el desarrollo es tambi&eacute;n maximizado utilizando 
+  un sistema m&iacute;nimo de abstracci&oacute;n. En la otra mano, porque las entidades de Propel son 
+  siempre tablas, es un eficiente modelo de inerencia b&aacute;sico -- mapeando todas las 
+  subclases a una simple tabla de base de datos. Tambi&eacute;n, algunas operaciones en Propel requieren 
+  pasos intermedios adicionales -- como por ejemplo, manejando relaciones de muchos-a-muchos 
+  requiere un uso explicito de la tabla de referencias-cruzadas en sus scripts de PHP.</p>
+<p>Mientras, algunas elegancias son sacrificadas para un modelo de persistencia literal, sentimos 
+  que los beneficios en la curva de aprendizaje, flexibilidad, y desarrollo exede en peso cualquier 
+  desventaja en este sistema. El objetivo con Propel es proveer un herramienta que greatly 
+  incremente la productividad de desarrollo, mientras a&uacute;n somos lo suficiente pesoliviano para ser 
+  &uacute;til en un ambiente PHP.</p>
+<h2><a name="Introduction.Motivations"></a>Motivaciones</h2>
+<p>Hay practicamente un n&uacute;mero de capas de objetos persistentes para Java (Torque, Hibernate, 
+  Castor, and OJB por nombrar algunos); sin embargo, hay pocas soluciones que alguna vez 
+  proveen un mapeo b&aacute;sico O/R para PHP. Como PHP est&aacute; siendo utilizado de forma creciente en 
+  despliegues de larga-escala O/R, las herramientas para PHP se estan volviendo m&aacute;s prevalecentes. 
+  Aqui hay un vistazo de algunos proyectos similares que existen actualmente en varios escenarios 
+  de desarrollo para PHP (algunos han aparecido despu&eacute;s de Propel):</p>
+<ul>
+  <li> <a href="Bibliography.html#bib.alyoop">ALYOOP</a> - un simple PHP5 DAO framework</li>
+  <li><a href="Bibliography.html#bib.db_datacontainer">DB_DataContainer</a> - 
+    una soluci&oacute;n PEAR-compliant O/R.</li>
+  <li><a href="Bibliography.html#bib.db_dataobject">DB_DataObject</a> - soluci&oacute;n de mapeo Oficial 
+    PEAR O/R con generaci&oacute;n de c&oacute;digo PHP.</li>
+  <li><a href="Bibliography.html#bib.db_table">DB_Table</a> - Paul M. Jones' herramienta 
+    para abstraer una tabla de base de datos.</li>
+  <li><a href="Bibliography.html#bib.easyorm">EasyORM</a> - unsoluci&oacute;n de objetos persistentes para MySQL-&uacute;nicamente.</li>
+  <li><a href="Bibliography.html#bib.metastorage">Metastorage</a> - Una de las capas m&aacute;s 
+    comprensivas persistentes para PHP, incluye generaci&oacute;n de clases PHP</li>
+</ul>
+<p>Al poco tiempo decidimos crear Propel porque quisimos algo con lo cual se pudieran 
+  crear aplicaciones complejas de bases de datos significantemente m&aacute;s f&aacute;cil sin sacrificar 
+  flexibilidad. Rather than look at por qu&eacute; no lo hicimos como algunas de esas soluciones, 
+  aqui hay una breve descripci&oacute;n de como algunos de ellos se diferencian. Trataremos de mantenerlo 
+  lentamente object -- y permitir que usted haga las evaluaciones y juicios finale acerca de las otras 
+  soluciones.</p>
+<p><strong>ALYOOP</strong></p>
+<p>ALYOOP es una simple estructura PHP5 DAO. Que puede o no estar bajo desarrollo. 
+</p>
+<p>Algunas diferencias:</p>
+<ul>
+  <li>Utiliza PEAR::DB, y desde aqu&iacute; PEAR_Error, etc.</li>
+  <li>Un ambiente simple de ejecuci&oacute;n, manejo de objetos consulta y persistencia.</li>
+  <li>No es usada la descripci&oacute;n de archivos para la auto-generaci&oacute;n (el generador de clases crea 
+    subclases vacias como punto de partida).</li>
+  <li>No hay criterios basados en el sistema de consulta OO; en lugar de eso son usados filtros los cuales representan 
+    adiciones a la calusula WHERE de SQL.</li>
+</ul>
+<p><strong>DB_DataContainer</strong></p>
+<p>DB_DataContainer es un paquete flexible PEAR que provee una estructura simple DAO.</p>
+<p>Algunas diferencias:</p>
+<ul>
+  <li>Es una clase flexible PEAR, por ello usa PEAR::DB, PEAR_Error, etc.</li>
+  <li>DB_DataContainer no genera clases PHP, sin embargo aparentemente  
+    genera m&eacute;todos de acceso(?)</li>
+  <li>Es similar en dise&ntilde;o (entrada de datos en columna) a DB_DataObject; sin embargo esta clase 
+    tiene un API m&aacute;s simple y no utiliza archivos INI.</li>
+  <li>Se integra con DB_DataContainer_Form</li>
+  <li>No hay criterios basados en el sistema de consulta OO.</li>
+</ul>
+<p><strong>DB_DataObject</strong></p>
+<p>DB_DataObject es un paquete PEAR que hace una generaci&oacute;n b&aacute;sica de c&oacute;digo y 
+  posee un soporte b&aacute;sico para las relaciones.</p>
+<p>Algunas diferencias:</p>
+<ul>
+  <li>Es una clase PEAR , por ello usa PEAR::DB, PEAR_Error, etc.</li>
+  <li>DB_DataObject utiliza s&oacute;lo el patr&oacute;n de entrada de datos en columna [<a href="Bibliography.html#bib.martinfowler">revise 
+    los patrones EAA</a>]. Como su nombre lo dice, el dise&ntilde;o si es mucho m&aacute;s simple: hay esencialmente
+    una [gran] clase de la cual todas las tablas de filas heredan.</li>
+  <li>DB_DataObject requiere que la base de datos ya exista; luego crea los archivos INI 
+    que describen la base de datos para referencias internas.</li>
+  <li>DB_DataObject no usa las funciones getter/setter, pero expone las propiedades 
+    de la columna como publicas. Alan reconoce los m&eacute;ritos 
+    de este dise&ntilde;o; y de los beneficios de desarrollo.</li>
+  <li>No hay criterios basados en el sistema de consulta, sin embargo m&eacute;todos como <em>whereAdd() </em> 
+    pueden construirse manualmente en SQL y las b&uacute;squedas pueden incluso serdesarrolladas usando 
+    un m&eacute;todo <em>find() </em>que construye SQL basado en los valores del 
+    objeto actual.</li>
+  <li>Posee integraci&oacute;n con el paquete HTML_Quickform de PEAR .</li>
+</ul>
+<p><strong>DB_Table</strong></p>
+<p>DB_Table es otro paquete PEAR que provee un nivel de tabla de abstracci&oacute;n DB.</p>
+<p>Algunas diferencias:</p>
+<ul>
+  <li>Es una clase PEAR, por ello usa PEAR::DB, PEAR_Error, etc.</li>
+  <li>DB_Table provee solamente un patr&oacute;n de entrada de datos [<a href="Bibliography.html#bib.martinfowler">revise 
+    patrones EAA</a>].</li>
+  <li>DB_Table usa solves RDBMS-emision de implementaci&oacute;n espec&iacute;fica,esencialmente 
+    no utiliza tipos nativos RDBMS -- ej. para fechas una columna VARCHAR es usada en lugar de 
+    DATE/TIME/TIMESTAMP.</li>
+</ul>
+<p><strong>EasyORM</strong></p>
+<p>No examinamos EasyORM en m&aacute;s detalle es como una soluci&oacute;n MySQL &uacute;nicamente</p>
+<p><strong>Metastorage</strong></p>
+<p>Metastorage es probablemente la m&oacute;s completa en orden de soluciones, y mas bien 
+  similar a Propel en terminos del uso de XML para el modelo de descripci&oacute;n y consultar 
+  una fase de construcci&oacute;n para crear clases PHP.</p>
+<p>Algunas diferencias:</p>
+<ul>
+  <li>Metastorage usa XML para personalizaci&oacute;n de clases de comportamiento; Propel usa clases 
+    de extension / m&eacute;todos override. La personalizaci&oacute;n de Metastorage requiere alg&uacute;n conocimiento 
+    meta-lenguaje XML para crear c&oacute;digo. </li>
+  <li>Metastorage utiliza Metabase como una capa de abstracci&oacute;n de la base de datos, y como su nombre lo dice soporta 
+    un amplio arreglo de bases de datos que la combinaci&oacute;n Propel+Creole.</li>
+  <li>Te&oacute;ricamente Metastorage puede crear objetos persistentes para cualquier lenguaje 
+    (Java), aunque en la pr&oacute;ctica es solo generaci&oacute;n de clases PHP. Propel puede 
+    en teor&iacute;a inclusive ser extendido para crear objetos en otros lenguajes (el camino 
+    ha sido extendido para crear objetos persistentes en PHP4), pero un nuevo ambiente de 
+    ejecuci&oacute;n tendr&iacute;a que ser creado en en lenguaje objetivo.</li>
+  <li>Parece correcto decir que Metastorage no tiene ambiente de ejecuci&oacute;n; 
+    todo es almacenadoe en los objetos generados. Propel utiliza algunas clases centrales 
+    para manejar la conexi&oacute;n a las bases de datos, y almacena c&oacute;digo com&uacute;n para construir consultas, 
+    etc.</li>
+  <li>Metastorage no provee un criterio basado en un systema de construcci&oacute;n de consultas; en su lugar 
+    &eacute;l genera metodos que encapsulan totalmente las consultas -- ej. getBooksByName().</li>
+</ul>
+<p>&nbsp;</p>
+<h2><a name="Introduction.ShowMe"></a>Muestrame!</h2>
+<p>Propel es realmente simple de usar. B&aacute;sicamente, usted necesita definir su modelo 
+  de datos en XML, especificar cualquier propiedad de construcci&oacute;n (ej. cual base de datos usted es&aacute; construyendo) 
+  y entonces &quot;construir&quot;su modelo de objeto. Construyendo su modelo de objeto 
+  crear&aacute; archivos de definiciones SQL y -lo m&aacute;s importante- las clses PHP que usted necesita 
+  para utilizar su base de datos desde su aplicaci&oacute;n.</p>
+<p>Esto no quiere decir que esto es una gu&iacute;a de inicio r&aacute;pido (eso viene m&aacute;s adelante), pero clasifica como 
+  un breve abrebocas de lo que significa utilizar propel.</p>
+<p>Para empezar, aqui hay un ejemplo muy simple de una definici&oacute;n de modelo de datos:</p>
+<pre title="definici&oacute;n simple de datos">
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;
+&lt;database name=&quot;bookstore&quot;&gt;
+  &lt;table name=&quot;book&quot;&gt;
+    &lt;column name=&quot;book_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
+	   &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;50&quot; required=&quot;true&quot; /&gt;
+  &lt;/table&gt;
+&lt;/database&gt;</pre>
+<p>Construyendo este modelo de datos se crearan muchas clases PHP que usted usara para 
+  adicionar y encontrar datos en la tabla &quot;libro&quot;. Propel propel va incluso a generar un 
+  par de subclases vacias entonces usted podr&aacute; perzonalizar el comportamiento sin hacer 
+  al c&oacute;digo generado (el cual puede ser reescrito cuando usted regenere 
+  su modelo de objeto m&aacute;s tarde).</p>
+<table>
+  <thead>
+    <tr> 
+      <th>Clase</th>
+      <th>Proposito</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr> 
+      <td>BaseBook, Book</td>
+      <td>BaseBook representa la clase base para una fila de la tabla libro. Libro 
+        es la subclase vacia en donde las personalizaciones fueron adicionadas; las consultas 
+        retornaran un arreglo de objetos del tipo libro. </td>
+    </tr>
+    <tr> 
+      <td>BaseBookPeer, BookPeer</td>
+      <td>La clase Peer es una clase que posee unicamente metodos estaticos que agiliza las consultas 
+        y manipulaciones contra la tabla libro. Todas las referencias deben ser para BookPeer 
+        que es una subclase vacia (para personalizaci&oacute;n) de BaseBookPeer. </td>
+    </tr>
+    <tr> 
+      <td>BookMap</td>
+      <td>Este contiene un mapa de la base de datos para la tabla libro. Rather than having 
+        para agilizar las bajas consultas a metadatos en tiempo de ejecuci&oacute;n (ej. conocer cuales columnas 
+        son llaves primarias, llaves foraneas, etc.), Propel compila una clase mapa que puede 
+        rapidamente retornar informaci&oacute;n relevante acercade la estructura de la tabla.</td>
+    </tr>
+  </tbody>
+</table>
+<p>En su aplicaci&oacute;n PHP, puede incluir y utilizar nuevas clases libro justo y como se har&iacute;a 
+  en cualquier otra clase PHP. tras las ecenas, Propel manejar&aacute; todas las 
+  llamadas nativas a funciones en bases de datos SQL(ej. mysql_query()).</p>
+<pre title="Uselo">// example using business objects
+$b = new Book();
+$b-&gt;setTitle(&quot;War &amp; Peace&quot;);
+$b-&gt;save();
+
+// &quot;peer&quot; class is static class that handles things like queries
+$c = new Criteria();
+$c-&gt;add(BookPeer::TITLE, &quot;War%&quot;, Criteria::LIKE);
+$c-&gt;setLimit(10);
+
+$books = BookPeer::doSelect($c);
+
+foreach($books as $book) {
+  print &quot;&lt;br/&gt;&quot; . $book-&gt;getTitle();
+}</pre>
+<p>Desde luego hay un un poco m&aacute;s complicado -- y la mayor&iacute;a de las bases de datos son un poco 
+  m&aacute;s complejos que nuestro ejemplo de &quot;libro&quot; -- pero esto le d&aacute; una idea 
+  b&aacute;sica de como es realmente simple integrar Propel dentro de su aplicaci&oacute;n PHP.</p>
+</body>
+</html>
