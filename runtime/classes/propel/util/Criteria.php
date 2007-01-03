@@ -30,7 +30,7 @@ include_once 'propel/util/QueryModelClasses.php';
  *
  * @author Hans Lellelid <hans@xmpl.org> (Propel)
  *
- * @version $Revision: 372 $
+ * @version $Revision$
  * @package propel.util
  */
 class Criteria extends BaseExpressionContainer implements ExpressionContainer {

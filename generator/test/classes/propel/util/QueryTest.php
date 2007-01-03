@@ -10,7 +10,7 @@ include_once 'propel/adapter/DBNone.php';
  *
  * @author <a href="mailto:celkins@scardini.com">Christopher Elkins</a>
  * @author <a href="mailto:sam@neurogrid.com">Sam Joseph</a>
- * @version $Id: CriteriaTest.php 373 2006-05-25 21:21:12Z hans $
+ * @version $Id$
  */
 class QueryTest extends BaseTestCase {
 	
