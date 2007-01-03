@@ -211,7 +211,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		foreach ($fk->getLocalColumns() as $columnName) {
 			$column = $fk->getTable()->getColumn($columnName);
 			if (!$column) {
-			    $e = new Exception("Could not fetch column: $columnName in table " . $fk->getTable()->getName());
+				$e = new Exception("Could not fetch column: $columnName in table " . $fk->getTable()->getName());
 				print $e;
 				throw $e;
 			}
@@ -235,12 +235,12 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	{
 		return 'a' . $this->getFKPhpNameAffix($fk, $plural = false);
 	}
-	
+
 	protected function getPKRefFKVarName(ForeignKey $refFK)
 	{
 		return 'a' . $this->getRefFKPhpNameAffix($refFK, $plural = false);
 	}
-	
+
 	protected function getRefFKCollVarName(ForeignKey $fk)
 	{
 		return 'coll' . $this->getRefFKPhpNameAffix($fk, $plural = true);
@@ -355,7 +355,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 			// FIXME: is this correct? what about negative numbers?
 			if ($cptype == "integer" || $cptype == "float" || $cptype == "double") {
 				$conditional .= $and . "\$this->". $clo ." > 0";
-			} elseif($cptype == "string") {
+			} elseif ($cptype == "string") {
 				$conditional .= $and . "(\$this->" . $clo ." !== \"\" && \$this->".$clo." !== null)";
 			} else {
 				$conditional .= $and . "\$this->" . $clo ." !== null";
@@ -463,8 +463,8 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	}
 ";
 	} // addFKByKeyMutator()
-	
-	
+
+
 
 	// ----------------------------------------------------------------
 	//
@@ -481,7 +481,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	protected function addRefFKAttributes(&$script, ForeignKey $refFK)
 	{
 		$className = $refFK->getTable()->getPhpName();
-		
+
 		if ($refFK->isLocalPrimaryKey()) {
 			$aName = $this->getPKRefFKVarName($refFK);
 			$script .= "
@@ -494,7 +494,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		} else {
 			$collName = $this->getRefFKCollVarName($refFK);
 			$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
-	
+
 			$script .= "
 	/**
 	 * Collection of $className objects.
@@ -518,7 +518,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	protected function addRefFKMethods(&$script)
 	{
 		foreach($this->getTable()->getReferrers() as $refFK) {
-			// if ( $refFK->getTable()->getName() != $this->getTable()->getName() ) 
+			// if ( $refFK->getTable()->getName() != $this->getTable()->getName() )
 			if ($refFK->isLocalPrimaryKey()) {
 				$this->addPKRefFKGet($script, $refFK);
 				$this->addPKRefFKSet($script, $refFK);
@@ -670,9 +670,9 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 		} else {
 			\$query = clone \$query;
 		}
-		
+
 		\$criteria = \$query->getCriteria();
-		
+
 		if (\$this->$collName === null) {
 			if (\$this->isNew()) {
 			   \$this->$collName = array();
@@ -799,9 +799,9 @@ $script .= "
 		} else {
 			\$query = clone(\$query);
 		}
-		
+
 		\$criteria = \$query->getCriteria();
-				
+
 		if (\$this->$collName === null) {
 			if (\$this->isNew()) {
 				\$this->$collName = array();
@@ -813,7 +813,7 @@ $script .= "
 					$colFKName = $flMap[$columnName];
 					$colFK = $tblFK->getColumn($colFKName);
 					if ($colFK === null) {
-					    $e = new Exception("Column $colFKName not found in " . $tblFK->getName());
+						$e = new Exception("Column $colFKName not found in " . $tblFK->getName());
 						print $e;
 						throw $e;
 					}
@@ -850,7 +850,7 @@ $script .= "
 		return \$this->$collName;
 	}
 ";
-			} /* end if($doJoinGet) */
+			} /* end if ($doJoinGet) */
 
 		} /* end foreach ($tblFK->getForeignKeys() as $fk2) { */
 
@@ -859,28 +859,28 @@ $script .= "
 	/**
 	 * Adds the special-case method that returns a single referrer-related object, for cases
 	 * where the foreign key columns are also the primary key of the foreign table.
-	 * 
+	 *
 	 * @param string &$script The script will be modified in this method.
 	 */
 	protected function addPKRefFKGet(&$script, ForeignKey $refFK)
 	{
 		$table = $this->getTable();
 		$tblFK = $refFK->getTable();
-		
+
 		$className = $tblFK->getPhpName();
-		
+
 		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($refFK->getTable());
 		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural = false);
 
 		$collName = $this->getRefFKCollVarName($refFK);
 		$lastCriteriaName = $this->getRefFKLastCriteriaVarName($refFK);
-		
+
 		$varName = $this->getPKRefFKVarName($refFK);
-		
+
 		$script .= "
 	/**
 	 * Gets a single $className object, which is related in a one-to-one relationship to this object.
-	 * 
+	 *
 	 * @param PDO \$con
 	 * @return $className
 	 * @throws PropelException
@@ -889,26 +889,26 @@ $script .= "
 	{
 		// include the Peer class
 		include_once '".$fkPeerBuilder->getStubPeerBuilder()->getClassFilePath()."';
-";		
+";
 
 		$lfmap = $refFK->getLocalForeignMapping();
-		
+
 		// remember: this object represents the foreign table,
 		// so we need foreign columns of the reffk to know the local columns
-		// that we need to set :) 
-		 
+		// that we need to set :)
+
 		$localcols = $refFK->getForeignColumns();
-		
+
 		// we know that at least every column in the primary key of the foreign table
 		// is represented in this foreign key
-		
+
 		$params = array();
 		foreach ($tblFK->getPrimaryKey() as $col) {
-			
+
 			$localColumn = $table->getColumn($lfmap[$col->getName()]);
 			$params[] = "\$this->get".$localColumn->getPhpName()."()";
 		}
-			
+
 		$script .= "
 		if (\$this->$varName === null) {
 			\$this->$varName = ".$fkPeerBuilder->getPeerClassname()."::retrieveByPK(".implode(", ", $params).", \$con);
@@ -916,7 +916,7 @@ $script .= "
 		return \$this->$varName;
 	}
 ";
-			
+
 	} // addPKRefFKGet()
 
 	/**
@@ -924,16 +924,16 @@ $script .= "
 	 * @param string &$script The script will be modified in this method.
 	 */
 	protected function addPKRefFKSet(&$script, ForeignKey $refFK)
-	{				
+	{
 		$table = $this->getTable();
 		$tblFK = $refFK->getTable();
 
 		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($refFK->getTable());
 		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural = false);
-		
+
 		$className = $tblFK->getPhpName();
 		$varName = $this->getPKRefFKVarName($refFK);
-		
+
 		$script .= "
 	/**
 	 * Declares an association between this object and a $className object.
@@ -943,13 +943,13 @@ $script .= "
 	 * @throws PropelException
 	 */
 	public function set$relCol(\$v)
-	{	
+	{
 ";
 			// there's a method in the foreign object that will take care of setting
 			// the foreign key columns, so we just call that method.
-			 
+
 			$foreignFKSetter = $this->getFKPhpNameAffix($refFK, $plural = false);
-				
+
 				$script .= "
 		if (\$v !== null) {
 			\$v->set".$foreignFKSetter."(\$this);
@@ -1019,7 +1019,7 @@ $script .= "
 ";
 			} // foreach foreign k
 		} // if (count(foreign keys))
-	
+
 		$script .= "
 
 			// If this object has been modified, then save it to the database.
@@ -1279,7 +1279,7 @@ $script .= "
 			}
 	";
 				} /* if tableFK !+ table */
-			} // if ($fk->isLocalPrimaryKey()) 
+			} // if ($fk->isLocalPrimaryKey())
 		} /* foreach getReferrers() */
 
 		$script .= "
@@ -1382,7 +1382,7 @@ $script .= "
 			foreach(\$this->get".$this->getRefFKPhpNameAffix($fk, true)."() as \$relObj) {";
 				if ($table->getName() === $fk->getTableName()) {
 					$script .= "
-				if(\$this->getPrimaryKey() === \$relObj->getPrimaryKey()) {
+				if (\$this->getPrimaryKey() === \$relObj->getPrimaryKey()) {
 						continue;
 				}
 ";

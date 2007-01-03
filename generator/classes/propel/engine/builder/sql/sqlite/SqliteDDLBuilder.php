@@ -76,7 +76,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 
 		foreach ($table->getUnices() as $unique ) {
 			$lines[] = "UNIQUE (".$this->getColumnList($unique->getColumns()).")";
-    	}
+		}
 
 		$sep = ",
 	";
@@ -98,7 +98,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 		foreach ($table->getIndices() as $index) {
 			$script .= "
 CREATE ";
-			if($index->getIsUnique()) {
+			if ($index->getIsUnique()) {
 				$script .= "UNIQUE";
 			}
 			$script .= "INDEX ".$this->quoteIdentifier($index->getName())." ON ".$this->quoteIdentifier($table->getName())." (".$this->getColumnList($index->getColumns()).");

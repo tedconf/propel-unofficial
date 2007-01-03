@@ -174,7 +174,7 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 	/**
 	 * Test the doDeleteAll() method for single table.
-     */
+	 */
 	public function testDoDeleteAll() {
 
 		BookPeer::doDeleteAll();
@@ -277,7 +277,7 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		$this->assertEquals($limitcount, count($results2), "Expected $limitcount results from BookPeer::doSelectJoinAuthor()");
 
 	}
-	
+
 	/**
 	 * Test the basic functionality of the doSelectJoin*() methods.
 	 */
@@ -285,16 +285,16 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	{
 		$c = new Criteria();
 		$joinBooks = BookPeer::doSelectJoinAuthor($c);
-		
+
 		$obj = $joinBooks[0];
 		$joinSize = strlen(serialize($obj));
-		
+
 		$books = BookPeer::doSelect($c);
 		$obj = $books[0];
 		$size = strlen(serialize($obj));
-		
+
 		$this->assertEquals(count($books), count($joinBooks), "Expected to find same number of rows in doSelectJoin*() call as doSelect() call.");
 		$this->assertTrue($joinSize > $size, "Expected a serialized join object to be larger than a non-join object.");
 	}
-	
+
 }

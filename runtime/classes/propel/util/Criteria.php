@@ -35,10 +35,10 @@ include_once 'propel/util/QueryModelClasses.php';
  */
 class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 
-    /**
-     * @var ContainerExpression (Defaults to AndExpr if none specified).
-     */
-    protected $container;
+	/**
+	 * @var ContainerExpression (Defaults to AndExpr if none specified).
+	 */
+	protected $container;
 
 	/**
 	 * @var Join[]
@@ -50,21 +50,21 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 	 */
 	protected $having;
 
-    /**
-     * Construct a new Criteria instance for a specific table.
-     */
-    public function __construct(QueryTable $table)
-    {
+	/**
+	 * Construct a new Criteria instance for a specific table.
+	 */
+	public function __construct(QueryTable $table)
+	{
 		$this->setQueryTable($table);
 		$this->container = new AndExpr();
 	}
 
-    /**
-     * Adds an Expression to this Criteria object.
-     */
-    public function add(Expression $expr)
-    {
-    	if ($expr->getIgnoreCase() === null) {
+	/**
+	 * Adds an Expression to this Criteria object.
+	 */
+	public function add(Expression $expr)
+	{
+		if ($expr->getIgnoreCase() === null) {
 			$expr->setIgnoreCase($this->getIgnoreCase());
 		}
 		if ($expr->getQueryTable() === null) {
@@ -77,7 +77,7 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 	/**
 	 * This builds the SQL for all expressions that have been added to this Criteria.
 	 * @return string The SQL from expressions in this Criteria or NULL if no expressions have been added.
-	 */ 
+	 */
 	public function buildSql(&$params)
 	{
 		return $this->container->buildSql($params);
@@ -94,18 +94,18 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 			return new ArrayIterator();
 		}
 	}
-	
+
 	/**
 	 * This provides the database key based used by the table in this criteria.
-	 * 
+	 *
 	 * Since all Criteria must use the same database, we're not going to worry about
-	 * issues related to nested Criteria potentially having different database names.  If 
+	 * issues related to nested Criteria potentially having different database names.  If
 	 * they do, the query will certainly blow up soon enough :)
-	 * 
+	 *
 	 * This is used by BasePeer to load up a DBAdapter and DatabaseMap objects.  We may
 	 * want to have those objects loaded directly from the Criteria, but at this point,
 	 * this is the not-very-efficient, but simpler solution.
-	 * 
+	 *
 	 * @return strin
 	 */
 	public function getDbName()
@@ -113,6 +113,3 @@ class Criteria extends BaseExpressionContainer implements ExpressionContainer {
 		return $this->getQueryTable()->getDbName();
 	}
 }
-
-
-

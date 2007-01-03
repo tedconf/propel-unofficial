@@ -18,18 +18,18 @@
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
- 
+
 /**
  * This file contains a several classes that represent column-value pairs.
- * 
+ *
  * These classes are used by the Expression classes to store column-value pairs
- * that will later be bound to the queries using methods like 
- * PDOStatement->bindValue(). 
+ * that will later be bound to the queries using methods like
+ * PDOStatement->bindValue().
  */
- 
+
 /**
  * A class that holds a value whic is associated with a particular column.
- * 
+ *
  * This is used by the Expression#buildSql() method to add values to the passed-in array, and
  * then by BasePeer::populateStmtValues2() to bind values to PDO statements.
  */
@@ -48,7 +48,7 @@ class ColumnValue {
 		$this->column = $col;
 		$this->value = $value;
 	}
-	
+
 	/**
 	 * Gets the ColumnMap associated with this value.
 	 * @return ColumnMap
@@ -57,7 +57,7 @@ class ColumnValue {
 	{
 		return $this->column;
 	}
-	
+
 	/**
 	 * Sets the ColumnMap associated with this value.
 	 * @param ColumnMap $col
@@ -66,7 +66,7 @@ class ColumnValue {
 	{
 		$this->column = $col;
 	}
-	
+
 	/**
 	 * Gets the value.
 	 * @return mixed
@@ -89,7 +89,7 @@ class ColumnValue {
 
 /**
  * This class represents a collection of ColumnValue objects for a single table.
- * 
+ *
  * This class is used by methods like doInsert() to store a collection of ColumnValue
  * objects for insertion.
  */
@@ -97,7 +97,7 @@ class ColumnValueCollection implements IteratorAggregate {
 
 	private $tableMap;
 	private $columnValues = array();
-	
+
 	/**
 	 * Constructs a new collection for the specified table.
 	 * @param TableMap $table A TableMap
@@ -106,20 +106,20 @@ class ColumnValueCollection implements IteratorAggregate {
 	{
 		$this->tableMap = $table;
 	}
-	
+
 	/**
 	 * Adds an already-configured ColumnValue object to the collection.
-	 */ 
+	 */
 	public function addColumnValue(ColumnValue $cv)
 	{
 		$this->columnValues[$cv->getColumnMap()->getName()] = $cv;
 	}
-	
+
 	/**
 	 * Creates a ColumnValue object for the given columname (resolved agains this collection's TableMap) and adds it to the collection.
 	 * @param string $colname The name of the column.
 	 * @param mixed $value The value.
-	 */ 
+	 */
 	public function add($colname, $value)
 	{
 		$colMap = $this->tableMap->getColumn($colname);
@@ -128,7 +128,7 @@ class ColumnValueCollection implements IteratorAggregate {
 		}
 		$this->columnValues[$colname] = new ColumnValue($colMap, $value); // we could call ->add() but this is a tad quicker
 	}
-	
+
 	/**
 	 * Gets a ColumnValue for specified column name from the collection.
 	 * @return ColumnValue
@@ -140,7 +140,7 @@ class ColumnValueCollection implements IteratorAggregate {
 		}
 		return $this->columnValues[$colname];
 	}
-	
+
 	/**
 	 * Removes a ColumnValue for specified column name from the collection.
 	 * @return ColumnValue The removed ColumnValue object.
@@ -154,7 +154,7 @@ class ColumnValueCollection implements IteratorAggregate {
 		}
 		return $val;
 	}
-	
+
 	/**
 	 * Returns the column names of the ColumnValue objects in the collection.
 	 */
@@ -162,7 +162,7 @@ class ColumnValueCollection implements IteratorAggregate {
 	{
 		return array_keys($this->columnValues);
 	}
-	
+
 	/**
 	 * Whether the collection contains a ColumnValue object with the given column name.
 	 * @return boolean
@@ -171,25 +171,25 @@ class ColumnValueCollection implements IteratorAggregate {
 	{
 		return array_key_exists($colname, $this->columnValues);
 	}
-	
+
 	/**
 	 * Gets the number of elements in this collection.
 	 * @return int
-	 */ 
+	 */
 	public function size()
 	{
 		return count($this->columnValues);
 	}
-	
+
 	/**
 	 * Gets the TableMap for this collection.
-	 * @return TableMap 
+	 * @return TableMap
 	 */
 	public function getTableMap()
 	{
 		return $this->tableMap;
 	}
-	
+
 	/**
 	 * SPL IteratorAggregate method to return an Iterator for this object.
 	 * @return Iterator
@@ -201,51 +201,51 @@ class ColumnValueCollection implements IteratorAggregate {
 }
 
 /**
- * Class that implements SPL Iterator interface for iterating over a ColumnValueCollection. 
+ * Class that implements SPL Iterator interface for iterating over a ColumnValueCollection.
  */
 class ColumnValueCollectionIterator implements Iterator {
 
-    private $idx = 0;
-    private $coll;
-    private $keys;
-    private $size;
-    
-    public function __construct(ColumnValueCollection $coll)
-	{
-        $this->coll = $coll;
-        $this->keys = $coll->keys();
-        $this->size = $coll->size();
-    }
+	private $idx = 0;
+	private $coll;
+	private $keys;
+	private $size;
 
-    public function rewind()
+	public function __construct(ColumnValueCollection $coll)
 	{
-        $this->idx = 0;
-    }
-    
-    public function valid()
+		$this->coll = $coll;
+		$this->keys = $coll->keys();
+		$this->size = $coll->size();
+	}
+
+	public function rewind()
 	{
-        return $this->idx < $this->size;
-    }
-    
-    public function key()
+		$this->idx = 0;
+	}
+
+	public function valid()
 	{
-        return $this->keys[$this->idx];
-    }
-    
-    public function current()
+		return $this->idx < $this->size;
+	}
+
+	public function key()
 	{
-        return $this->coll->get($this->keys[$this->idx]);
-    }
-    
-    public function next()
+		return $this->keys[$this->idx];
+	}
+
+	public function current()
 	{
-        $this->idx++;
-    }
-    
-    public function size()
+		return $this->coll->get($this->keys[$this->idx]);
+	}
+
+	public function next()
 	{
-    	return $this->size;
-    }
+		$this->idx++;
+	}
+
+	public function size()
+	{
+		return $this->size;
+	}
 
 }
 
@@ -268,5 +268,5 @@ class ColumnValueUtil {
 		}
 		return $map;
 	}
-	
+
 }

@@ -79,7 +79,7 @@ abstract class DataModelBuilder {
 	public static function getBuilderClass($type)
 	{
 		if (empty(self::$buildProperties)) {
-		    throw new BuildException("Cannot determine builder class when no build properties have been loaded (hint: Did you call DataModelBuilder::setBuildProperties(\$props) first?)");
+			throw new BuildException("Cannot determine builder class when no build properties have been loaded (hint: Did you call DataModelBuilder::setBuildProperties(\$props) first?)");
 		}
 		$propname = 'builder' . ucfirst(strtolower($type)) . 'Class';
 		$classpath = self::getBuildProperty($propname);
@@ -110,26 +110,26 @@ abstract class DataModelBuilder {
 	}
 
 	/**
-     * Utility function to build a path for use in include()/require() statement.
-     *
-     * Supports two function signatures:
-     * (1) getFilePath($dotPathClass);
-     * (2) getFilePath($dotPathPrefix, $className);
-     *
-     * @param string $path dot-path to class or to package prefix.
-     * @param string $classname class name
-     * @return string
-     */
-    public static function getFilePath($path, $classname = null, $extension = '.php')
-    {
-        $path = strtr(ltrim($path, '.'), '.', '/');
-        if ($classname !== null) {
-            if ($path !== "") { $path .= '/'; }
-            return $path . $classname . $extension;
-        } else {
-            return $path . $extension;
-        }
-    }
+	 * Utility function to build a path for use in include()/require() statement.
+	 *
+	 * Supports two function signatures:
+	 * (1) getFilePath($dotPathClass);
+	 * (2) getFilePath($dotPathPrefix, $className);
+	 *
+	 * @param string $path dot-path to class or to package prefix.
+	 * @param string $classname class name
+	 * @return string
+	 */
+	public static function getFilePath($path, $classname = null, $extension = '.php')
+	{
+		$path = strtr(ltrim($path, '.'), '.', '/');
+		if ($classname !== null) {
+			if ($path !== "") { $path .= '/'; }
+			return $path . $classname . $extension;
+		} else {
+			return $path . $extension;
+		}
+	}
 
 	// --------------------------------------------------------------
 	// Non-static properties & methods inherited by subclasses

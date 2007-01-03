@@ -21,7 +21,7 @@
 
 /**
  * This file contains a collection of classes and interfaces that repersent expressions.
- * 
+ *
  * The Expression classes form the basis of the Criteria system in Propel 2.0.
  */
 
@@ -30,8 +30,8 @@
 // -----------------------------------------------------------------------------
 
 /**
- * The most basic interface for anything object that can build SQL statements (or snippets) 
- * which may or may not have some associated bind parameters. 
+ * The most basic interface for anything object that can build SQL statements (or snippets)
+ * which may or may not have some associated bind parameters.
  */
 interface StatementBuilder {
 
@@ -39,7 +39,7 @@ interface StatementBuilder {
 	 * Returns the SQL built by this StatementBuilder and adds any parameters to the passed-in
 	 * ColumnValue[] array.
 	 * @param &$bindParams ColumnValue[] The array of ColumnValue objects that any value parameters should be added to.
-	 * @return string The built SQL 
+	 * @return string The built SQL
 	 */
 	public function buildSql(&$bindParams);
 
@@ -65,10 +65,10 @@ interface Expression extends StatementBuilder {
 
 	/**
 	 * Sets the QueryTable for this expression.
-	 * 
+	 *
 	 * The QueryTable is used when building out the SQL to prepend the appropriate
 	 * prefixes (aliases), etc.
-	 * 
+	 *
 	 * @param QueryTable $table
 	 * @return Expression This modified Expression object.
 	 */
@@ -85,15 +85,15 @@ interface Expression extends StatementBuilder {
 /**
  * Interface that the values (right-side) of an expression must implement.
  * @see ExpressionValue
- */ 
+ */
 interface ColumnExpressionValue extends StatementBuilder {
 
 	/**
 	 * Sets the ColumnMap that this ColumnValueExpression will need to buildSql().
-	 * @param ColumnMap $columnMap The ColumnMap object that the value(s) from this object will be associated with. 
+	 * @param ColumnMap $columnMap The ColumnMap object that the value(s) from this object will be associated with.
 	 */
 	public function setColumnMap(ColumnMap $columnMap);
-	
+
 }
 
 
@@ -105,9 +105,9 @@ interface ColumnExpressionValue extends StatementBuilder {
 /**
  * The ExpressionContainer interface is the interface for expressions that can contain
  * other expressions.
- * 
+ *
  * The containment can imply logical relationships (@see LogicExpression) or simply a
- * collection of Expression elements. 
+ * collection of Expression elements.
  */
 interface ExpressionContainer extends Expression, IteratorAggregate {
 
@@ -120,7 +120,7 @@ interface ExpressionContainer extends Expression, IteratorAggregate {
 
 
 /**
- * The abstract superclass for all basic expressions. 
+ * The abstract superclass for all basic expressions.
  */
 abstract class BaseExpression implements Expression {
 
@@ -149,32 +149,32 @@ abstract class BaseExpression implements Expression {
 	}
 
 	/**
-     * Sets ignore case.
-     *
-     * @param boolean $b True if case should be ignored.
-     * @return Expression This modified Expression object.
-     */
-    public function setIgnoreCase($b)
-    {
-        $this->ignoreCase = (boolean) $b;
-        return $this;
-    }
+	 * Sets ignore case.
+	 *
+	 * @param boolean $b True if case should be ignored.
+	 * @return Expression This modified Expression object.
+	 */
+	public function setIgnoreCase($b)
+	{
+		$this->ignoreCase = (boolean) $b;
+		return $this;
+	}
 
-    /**
-     * Get the ignore case value.
-     *
-     * @return boolean True if case is ignored, false otherwise, or NULL if not set.
-     */
-    public function getIgnoreCase()
-    {
-        return $this->ignoreCase;
-    }
+	/**
+	 * Get the ignore case value.
+	 *
+	 * @return boolean True if case is ignored, false otherwise, or NULL if not set.
+	 */
+	public function getIgnoreCase()
+	{
+		return $this->ignoreCase;
+	}
 
 }
 
 /**
- * The abstract superclass for all expressions that contain other expressions. 
- */ 
+ * The abstract superclass for all expressions that contain other expressions.
+ */
 abstract class BaseExpressionContainer extends BaseExpression implements ExpressionContainer {
 
 	/**
@@ -194,22 +194,22 @@ abstract class BaseExpressionContainer extends BaseExpression implements Express
 	}
 
 	/**
-     * Sets ignore case for this expression and optionally all children (overriding any previous value they may have had).
-     *
-     * @param boolean $b True if case should be ignored.
-     * @return ExpressionContainer A modified ExpressionContainer object.
-     */
-    public function setIgnoreCase($b)
-    {
-    	$b = (boolean) $b;
-        parent::setIgnoreCase($b);
-        foreach($this as $expr) {
-        	if ($expr->getIgnoreCase() === null) {
-        		$expr->setIgnoreCase($b);
-        	}
+	 * Sets ignore case for this expression and optionally all children (overriding any previous value they may have had).
+	 *
+	 * @param boolean $b True if case should be ignored.
+	 * @return ExpressionContainer A modified ExpressionContainer object.
+	 */
+	public function setIgnoreCase($b)
+	{
+		$b = (boolean) $b;
+		parent::setIgnoreCase($b);
+		foreach($this as $expr) {
+			if ($expr->getIgnoreCase() === null) {
+				$expr->setIgnoreCase($b);
+			}
 		}
-        return $this;
-    }
+		return $this;
+	}
 }
 
 
@@ -219,7 +219,7 @@ abstract class BaseExpressionContainer extends BaseExpression implements Express
 abstract class ColumnExpression extends BaseExpression {
 
 	private $colname;
-	
+
 	/**
 	 * Creates a new instance of this expression for a given column.
 	 * @param string $colname The name of the column.  This is resolved later using
@@ -231,13 +231,13 @@ abstract class ColumnExpression extends BaseExpression {
 	}
 
 	/**
-     * Gets the DBAdapter, which is looked-up based on current QueryTable.
-     * @return DBAdapter
-     * @throws PropelException if QueryTable was not set.
-     */
-    protected function getAdapter()
-    {
-    	$qt = $this->getQueryTable();
+	 * Gets the DBAdapter, which is looked-up based on current QueryTable.
+	 * @return DBAdapter
+	 * @throws PropelException if QueryTable was not set.
+	 */
+	protected function getAdapter()
+	{
+		$qt = $this->getQueryTable();
 		if ($qt === null) {
 			throw new PropelException("QueryTable must be set in Expression (setQueryTable(QueryTable)) before you can call getAdapter()");
 		}
@@ -245,23 +245,23 @@ abstract class ColumnExpression extends BaseExpression {
 	}
 
 	/**
-     * Gets the resolved column (resolved based on curent QueryTable).
-     * 
-     * This returns a new object every time it is called.
-     * 
-     * @param string $colname
-     * @return ActualQueryColumn
-     * @throws PropelException if TableMap was not set or column is invalid.
-     */
-    protected function createQueryColumn()
-    {
-    	$qt = $this->getQueryTable();
+	 * Gets the resolved column (resolved based on curent QueryTable).
+	 *
+	 * This returns a new object every time it is called.
+	 *
+	 * @param string $colname
+	 * @return ActualQueryColumn
+	 * @throws PropelException if TableMap was not set or column is invalid.
+	 */
+	protected function createQueryColumn()
+	{
+		$qt = $this->getQueryTable();
 		if ($qt === null) {
 			throw new PropelException("The QueryTable must be set in Expression (setTable(TableMap)) before you can evaluate it.");
 		}
 		return $qt->createQueryColumn($this->colname);
 	}
-	
+
 }
 
 
@@ -271,13 +271,13 @@ abstract class ColumnExpression extends BaseExpression {
 abstract class ColumnValueExpression extends ColumnExpression {
 
 	protected $value;
-	
+
 	/**
 	 * Construct a new expression with column name and value.
 	 * @param string $colname
-	 * @param mixed $value 	Value can be a simple scalar (in which case it is wrapped in a BindValueWrapper 
+	 * @param mixed $value 	Value can be a simple scalar (in which case it is wrapped in a BindValueWrapper
 	 * 						and bound to statement later using PDOStatement->bindValue()) or it can be an
-	 * 						StatementBiulder object, in which case the result of StatementBuilder->buildSql() 
+	 * 						StatementBiulder object, in which case the result of StatementBuilder->buildSql()
 	 * 						is added as the value in the buildSql() method.
 	 */
 	public function __construct($colname, $value)
@@ -288,60 +288,60 @@ abstract class ColumnValueExpression extends ColumnExpression {
 		}
 		$this->value = $value;
 	}
-	
+
 	/**
 	 * Gets the operator for this expression.
-	 * 
+	 *
 	 * This method must be defined by the subclasses to return their operator.
-	 * 
+	 *
 	 * @return string The operator for the expression.
 	 */
 	abstract protected function getOperator();
-	
+
 	/**
 	 * @see Expression::buildSql()
 	 */
 	public function buildSql(&$params)
 	{
 		$col = $this->createQueryColumn();
-		
+
 		if ($this->value !== null) {
-			
+
 			if ($this->value instanceof BindValueWrapper) {
 				$this->value->setColumnMap($col->getColumnMap());
-			} 
-			
+			}
+
 			// Check to see whether we should attempt to ignore case for this
-			// expression.  This may cause SQL errors for some types of ExpressionValue 
+			// expression.  This may cause SQL errors for some types of ExpressionValue
 			// objects (e.g. LiteralSql).  But it makes more sense to attempt to apply
 			// case-insensitivity, rather than silently ignore it.
 			if ($this->getIgnoreCase() && $col->getColumnMap()->isStringType()) {
 				$sql = $this->getIgnoreCaseSql($col, $params);
-		    } else {
-	        	$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ' . $this->value->buildSql($params);
-	    	}	
+			} else {
+				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' ' . $this->value->buildSql($params);
+			}
 
-						
+
 		} else {
 			// value is null, which means it was either not specified or specifically
-            // set to null.
+			// set to null.
 
 			$sql = $this->getNullValueSql($col);
 		}
-		
+
 		return $sql;
 	}
-	
+
 	/**
 	 * Gets the version of the SQL expression to use for a case-insensitive query.
-	 * 
+	 *
 	 * In some cases this will be something like UPPER(col) = UPPER(?), but in others
 	 * it may actually involve a slightly different expression -- e.g. case-insensitive
 	 * version of "col LIKE ?" for PostgreSQL would be "col ILIKE ?".
-	 * 
+	 *
 	 * @param QueryColumn $col The QueryColumn to use (passed-in to avoid needing to re-create that object).
 	 * @param array  &$bindParams
-	 */  
+	 */
 	protected function getIgnoreCaseSql(QueryColumn $col, &$bindParams)
 	{
 		$db = $this->getAdapter();
@@ -350,7 +350,7 @@ abstract class ColumnValueExpression extends ColumnExpression {
 
 	/**
 	 * Builds SQL if the value is NULL.
-	 * 
+	 *
 	 * @param QueryColumn $col The QueryColumn to use (passed-in to avoid needing to re-create that object).
 	 */
 	protected function getNullValueSql(QueryColumn $col)
@@ -362,7 +362,7 @@ abstract class ColumnValueExpression extends ColumnExpression {
 
 /**
  * The abstract superclass for IN and NOT IN expressions.
- * 
+ *
  * IN and NOT IN expressions are expressions that contain columns (i.e. ColumnExpression)
  * but the values are arrays -- and hence more complex to build out with the correct
  * bind parameters.
@@ -371,7 +371,7 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 
 	protected $colname;
 	protected $values;
-	
+
 	/**
 	 * Create a new instance with column name and values.
 	 * @param string $colname The column name.
@@ -400,16 +400,16 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 		//var_export($values);
 		$this->values = $values;
 	}
-	
+
 	/**
 	 * Gets the operator for this expression (IN or NOT IN).
-	 * 
+	 *
 	 * This method must be defined by the subclasses to return their operator.
-	 * 
+	 *
 	 * @return string The operator for the expression.
 	 */
 	abstract protected function getOperator();
-	
+
 	/**
 	 * @see Expression::buildSql()
 	 */
@@ -418,16 +418,16 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 		$col = $this->createQueryColumn();
 
 		if ($this->values !== null) {
-			
+
 			if ($this->values instanceof BindValueWrapper) {
 				$this->values->setColumnMap($col->getColumnMap());
 			}
-			
+
 			$builtSql = $this->values->buildSql($params);
-			
+
 			if (empty($builtSql)) {
-			    // a SQL error will result if we have COLUMN IN (), so replace it with an expression
-			    // that will always evaluate to FALSE for Criteria::IN and TRUE for Criteria::NOT_IN
+				// a SQL error will result if we have COLUMN IN (), so replace it with an expression
+				// that will always evaluate to FALSE for Criteria::IN and TRUE for Criteria::NOT_IN
 				$sql = $this->getEmptyValuesSql();
 			} else {
 				$sql = $col->getQualifiedSql() . ' ' . $this->getOperator() . ' (' . $builtSql . ')';
@@ -436,25 +436,25 @@ abstract class MultiValueExpression extends ColumnExpression implements Expressi
 		} else {
 
 			// value is null, which means it was either not specified or specifically
-            // set to null.
+			// set to null.
 
 			$sql = $this->getNullValueSql($col);
 		}
-		
+
 		return $sql;
 	}
 
 	/**
-     * An empty array will raise a SQL error, so this method returns a SQL expression that evaluates to TRUE or FALSE to use in its place.
-     * @return string
-     */
+	 * An empty array will raise a SQL error, so this method returns a SQL expression that evaluates to TRUE or FALSE to use in its place.
+	 * @return string
+	 */
 	abstract protected function getEmptyValuesSql();
 
 	/**
 	 * Gets the SQL to use if the passed-in value is NULL.
 	 */
 	abstract protected function getNullValueSql(QueryColumn $col);
-	
+
 }
 
 
@@ -481,11 +481,11 @@ abstract class LogicExpression extends BaseExpressionContainer {
 	 */
 	public function buildSql(&$params)
 	{
-        // each expression gets nested in () if there is more than one expression contained
-        $sql = '';
-        $size = count($this->expressions);
-        if ($size > 1) $sql = '(';
-        $and = 0;
+		// each expression gets nested in () if there is more than one expression contained
+		$sql = '';
+		$size = count($this->expressions);
+		if ($size > 1) $sql = '(';
+		$and = 0;
 		foreach($this->expressions as $expr) {
 			if ($and++) { $sql .= ' ' . $this->getOperator() . ' '; }
 			$sql .= $expr->buildSql($params);
@@ -493,7 +493,7 @@ abstract class LogicExpression extends BaseExpressionContainer {
 		if ($size > 1) $sql .= ')';
 		return $sql;
 	}
-	
+
 	/**
 	 * @see ExpressionContainer::add()
 	 */
@@ -513,14 +513,14 @@ abstract class LogicExpression extends BaseExpressionContainer {
 	{
 		return new ArrayIterator($this->expressions);
 	}
-	
+
 	/**
 	 * Returns the logical operator (AND, OR) for this expression container.
 	 * This is implemented by each subclass.
 	 * @return string Logical operator.
-	 */ 
+	 */
 	abstract public function getOperator();
-	
+
 }
 
 // -----------------------------------------------------------------------------
@@ -529,17 +529,17 @@ abstract class LogicExpression extends BaseExpressionContainer {
 
 /**
  * This class represents the default case of a PHP value in an expression.
- * 
+ *
  * This class supports both single values and multiple values (e.g. IN expressions). This
  * class should not be instantiated by the user.
- * 
+ *
  * @access protected
  */
 class BindValueWrapper implements ColumnExpressionValue {
-	
+
 	private $value;
 	private $columnMap;
-	
+
 	/**
 	 * Create a new SingleValueWrapper with the specified value.
 	 * @param mixed $value The value that this class contains.
@@ -548,7 +548,7 @@ class BindValueWrapper implements ColumnExpressionValue {
 	{
 		$this->value = $value;
 	}
-	
+
 	/**
 	 * Sets the ColumnMap to use when crating the bind values for this expression.
 	 * @param ColumnMap $cm
@@ -557,7 +557,7 @@ class BindValueWrapper implements ColumnExpressionValue {
 	{
 		$this->columnMap = $cm;
 	}
-	
+
 	/**
 	 * Gets the SQL string to insert into the query.
 	 * @param array &$bindParams ColumnValue[]
@@ -580,16 +580,16 @@ class BindValueWrapper implements ColumnExpressionValue {
 			return '?';
 		}
 	}
-	
+
 }
 
 /**
  * A class to hold literal SQL, which can be used as a value or as a standalone expresion.
- * 
+ *
  * This can be used a simple container for custom SQL (e.g. passed as a value
  * to another expression) or it can be used as a standalone Expression (e.g.
  * added to a Criteria).
- * 
+ *
  * For example:
  * <code>
  * $c = MyPeer::createCriteria();
@@ -600,14 +600,14 @@ class BindValueWrapper implements ColumnExpressionValue {
  * $c = MyPeer::createCriteria();
  * $c->add(new LiteralSql("char_length(mycolumn) = 4"));
  * </code>
- * 
+ *
  * Note that using literal SQL expressions in Propel is discourage, but we also recognize
  * that it's not always possible to do everything you need to do without them.
  */
 class LiteralSql extends BaseExpression implements Expression {
 
 	private $sql;
-	
+
 	/**
 	 * Constructs a new object with custom SQL.
 	 * @param string $sql
@@ -616,7 +616,7 @@ class LiteralSql extends BaseExpression implements Expression {
 	{
 		$this->sql = $sql;
 	}
-	
+
 	/**
 	 * @see Expression::buildSql()
 	 */
@@ -624,7 +624,7 @@ class LiteralSql extends BaseExpression implements Expression {
 	{
 		return $this->sql;
 	}
-	
+
 	/**
 	 * Returns the custom SQL in this class.
 	 * @return string The SQL
@@ -633,7 +633,7 @@ class LiteralSql extends BaseExpression implements Expression {
 	{
 		return $this->sql;
 	}
-	
+
 }
 
 
@@ -641,12 +641,12 @@ class LiteralSql extends BaseExpression implements Expression {
  * A generic "column op value" expr.
  */
 class OpExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @var string The operator.
 	 */
 	private $op;
-	
+
 	/**
 	 * Construct a new ColValExpr with column name, value, and operator.
 	 * @param string $colname
@@ -658,7 +658,7 @@ class OpExpr extends ColumnValueExpression {
 		parent::__construct($colname, $value);
 		$this->op = $op;
 	}
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -692,7 +692,7 @@ class EqualExpr extends ColumnValueExpression {
  * A "column != value" expression.
  */
 class NotEqualExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -712,7 +712,7 @@ class NotEqualExpr extends ColumnValueExpression {
  * A "column > value" expression.
  */
 class GreaterExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -726,7 +726,7 @@ class GreaterExpr extends ColumnValueExpression {
  * A "column >= value" expression.
  */
 class GreaterEqualExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -740,7 +740,7 @@ class GreaterEqualExpr extends ColumnValueExpression {
  * A "column < value" expression.
  */
 class LessExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -754,7 +754,7 @@ class LessExpr extends ColumnValueExpression {
  * A "column <= value" expression.
  */
 class LessEqualExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -768,7 +768,7 @@ class LessEqualExpr extends ColumnValueExpression {
  * A "column LIKE value" expression.
  */
 class LikeExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getIgnoreCaseSql()
 	 */
@@ -780,7 +780,7 @@ class LikeExpr extends ColumnValueExpression {
 			// Postgres has a special case-insensitive opearator
 			$op = "ILIKE";
 			return $col->getQualifiedSql() . ' ' . $op . ' ' . $this->value->buildSql($bindParams);
-		} elseif ($db instanceof DBMySQL) { 
+		} elseif ($db instanceof DBMySQL) {
 			// some databases are not case-sensitive at all in LIKE
 			return $col->getQualifiedSql() . " " . $op . ' ' . $this->value->buildSql($bindParams);
 		} else {
@@ -788,7 +788,7 @@ class LikeExpr extends ColumnValueExpression {
 			return $db->ignoreCase($col->getQualifiedSql()) . ' ' . $op . ' ' . $db->ignoreCase($this->value->buildSql($bindParams));
 		}
 	}
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -802,7 +802,7 @@ class LikeExpr extends ColumnValueExpression {
  * A "column NOT LIKE value" expression.
  */
 class NotLikeExpr extends ColumnValueExpression {
-	
+
 	/**
 	 * @see ColumnValueExpression::getIgnoreCaseSql()
 	 */
@@ -814,7 +814,7 @@ class NotLikeExpr extends ColumnValueExpression {
 			// Postgres has a special case-insensitive opearator
 			$op = "NOT ILIKE";
 			return $col->getQualifiedSql() . ' ' . $op . ' ' . $this->value->buildSql($bindParams);
-		} elseif ($db instanceof DBMySQL) { 
+		} elseif ($db instanceof DBMySQL) {
 			// some databases are not case-sensitive at all in LIKE
 			return $col->getQualifiedSql() . " " . $op . ' ' . $this->value->buildSql($bindParams);
 		} else {
@@ -822,7 +822,7 @@ class NotLikeExpr extends ColumnValueExpression {
 			return $db->ignoreCase($col->getQualifiedSql()) . ' ' . $op . ' ' . $db->ignoreCase($this->value->buildSql($bindParams));
 		}
 	}
-	
+
 	/**
 	 * @see ColumnValueExpression::getOperator()
 	 */
@@ -836,7 +836,7 @@ class NotLikeExpr extends ColumnValueExpression {
  * A "column IN (...)" expression.
  */
 class InExpr extends MultiValueExpression {
-	
+
 	/**
 	 * @see MultiValueExpression::getEmptyValuesSql()
 	 */
@@ -844,7 +844,7 @@ class InExpr extends MultiValueExpression {
 	{
 		return "1<>1";
 	}
-	
+
 	/**
 	 * @see MultiValueExpression::getOperator()
 	 */
@@ -852,7 +852,7 @@ class InExpr extends MultiValueExpression {
 	{
 		return "IN";
 	}
-	
+
 	/**
 	 * Builds SQL if the value is NULL.
 	 */
@@ -866,7 +866,7 @@ class InExpr extends MultiValueExpression {
  * A "column NOT IN (...)" expression.
  */
 class NotInExpr extends MultiValueExpression {
-	
+
 	/**
 	 * @see MultiValueExpression::getEmptyValuesSql()
 	 */
@@ -874,7 +874,7 @@ class NotInExpr extends MultiValueExpression {
 	{
 		return "1=1";
 	}
-	
+
 	/**
 	 * @see MultiValueExpression::getOperator()
 	 */
@@ -882,7 +882,7 @@ class NotInExpr extends MultiValueExpression {
 	{
 		return "NOT IN";
 	}
-	
+
 	/**
 	 * Gets the SQL to use if the passed-in value is NULL.
 	 */
@@ -912,7 +912,7 @@ class AndExpr extends LogicExpression {
  * A expression container that relates expressions by "OR" logical operator.
  */
 class OrExpr extends LogicExpression {
-	
+
 	/**
 	 * @see LogicExpression::getOperator()
 	 */
@@ -922,5 +922,3 @@ class OrExpr extends LogicExpression {
 	}
 
 }
- 
-

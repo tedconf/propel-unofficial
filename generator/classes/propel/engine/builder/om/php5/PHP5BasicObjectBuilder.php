@@ -114,7 +114,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 
 		$interface = ClassTools::getInterface($table);
 		if ($interface) {
-		    $script .= " implements " . ClassTools::classname($interface);
+			$script .= " implements " . ClassTools::classname($interface);
 		}
 
 		$script .= " {
@@ -142,7 +142,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 
 		$this->addManipulationMethods($script);
 		$this->addValidationMethods($script);
-		
+
 		if ($this->isAddGenericAccessors()) {
 			$this->addGetByName($script);
 			$this->addGetByPosition($script);
@@ -150,7 +150,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		}
 
 		if ($this->isAddGenericMutators()) {
-		    $this->addSetByName($script);
+			$this->addSetByName($script);
 			$this->addSetByPosition($script);
 			$this->addFromArray($script);
 		}
@@ -204,7 +204,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	protected static \$peer;
 ";
 		if (!$this->getTable()->isAlias()) {
-		    $this->addColumnAttributes($script);
+			$this->addColumnAttributes($script);
 		}
 	}
 
@@ -305,7 +305,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		} elseif ($col->getType() === PropelTypes::TIMESTAMP) {
 			$defaultfmt = $this->getBuildProperty('defaultTimeStampFormat');
 		}
-		
+
 		// if the default format property was an empty string, then we'll set it
 		// to NULL, which will return the "native" integer timestamp
 		if (empty($defaultfmt)) { $defaultfmt = null; }
@@ -613,7 +613,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * for results of JOIN queries where the resultset row includes columns from two or
 	 * more tables.
 	 *
-	 * @param array \$row The row returned by PDOStatement->fetch(PDO::FETCH_NUM) 
+	 * @param array \$row The row returned by PDOStatement->fetch(PDO::FETCH_NUM)
 	 * @param int \$startcol 0-based offset column which indicates which restultset column to start with.
 	 * @return int next starting column
 	 * @throws PropelException  - Any caught Exception will be rewrapped as a PropelException.
@@ -624,7 +624,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 ";
 			$n = 0;
 			foreach($table->getColumns() as $col) {
-				if(!$col->isLazyLoad()) {
+				if (!$col->isLazyLoad()) {
 					// $affix = CreoleTypes::getAffix(CreoleTypes::getCreoleCode($col->getType()));
 					$clo = strtolower($col->getName());
 					switch($col->getType()) {
@@ -940,7 +940,7 @@ $script .= "
 		$this->addDelete($script);
 		$this->addSave($script);
 	}
-	
+
 	/**
 	 * Adds the methods related to validationg the object.
 	 * @param string &$script The script will be modified in this method.
@@ -951,7 +951,7 @@ $script .= "
 		$this->addGetValidationFailures($script);
 		$this->addValidate($script);
 	}
-	
+
 	/**
 	 * Adds the save() method.
 	 * @param string &$script The script will be modified in this method.
@@ -1079,7 +1079,7 @@ $script .= "
 	{
 		$pkeys = $this->getTable()->getPrimaryKey();
 		if (count($pkeys) == 1) {
-		    $this->addGetPrimaryKey_SinglePK($script);
+			$this->addGetPrimaryKey_SinglePK($script);
 		} elseif (count($pkeys) > 1) {
 			$this->addGetPrimaryKey_MultiPK($script);
 		} else {
@@ -1170,7 +1170,7 @@ $script .= "
 	{
 		$pkeys = $this->getTable()->getPrimaryKey();
 		if (count($pkeys) == 1) {
-		    $this->addSetPrimaryKey_SinglePK($script);
+			$this->addSetPrimaryKey_SinglePK($script);
 		} elseif (count($pkeys) > 1) {
 			$this->addSetPrimaryKey_MultiPK($script);
 		} else {

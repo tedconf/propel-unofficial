@@ -91,7 +91,7 @@ class Propel {
 	 * The Propel version.
 	 */
 	const VERSION = '2.0.0-dev';
-	
+
 	/**
 	 * The db name that is specified as the default in the property file
 	 */
@@ -112,7 +112,7 @@ class Propel {
 	 * @var array
 	 */
 	private static $connectionMap = array();
-	
+
 	/**
 	 * Propel-specific configuration.
 	 */
@@ -141,10 +141,10 @@ class Propel {
 					. "a valid configuration. Please check the log files "
 					. "for further details.");
 		}
-		
+
 		// reset the connection map (this should enable runtime changes of connection params)
 		self::$connectionMap = array();
-		
+
 		self::$isInit = true;
 	}
 
@@ -169,7 +169,7 @@ class Propel {
 			if (self::$configuration === false) {
 				throw new PropelException("Unable to open configuration file: " . var_export($configFile, true));
 			}
-		}		
+		}
 	}
 
 	/**
@@ -266,7 +266,7 @@ class Propel {
 	 */
 	public static function log($message, $level = self::LOG_DEBUG)
 	{
-		if(self::hasLogger())
+		if (self::hasLogger())
 		{
 			$logger = self::logger();
 			switch($level)
@@ -317,13 +317,13 @@ class Propel {
 
 		return self::$dbMaps[$name];
 	}
-	
+
 	/**
 	 * Registers a DatabaseMap with Propel.
-	 * 
+	 *
 	 * This can be used for testing or for otherwise performing runtime configuration
 	 * of Propel.
-	 * 
+	 *
 	 * @param string $name The database name key to register this DatabaseMap under.
 	 * @param DatabaseMap $dbMap The database map object.
 	 */
@@ -331,11 +331,11 @@ class Propel {
 	{
 		self::$dbMaps[$name] = $dbMap;
 	}
-	
+
 	/**
 	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
-	 * 
-	 * @param string $name The name that is used to look up the DSN from the runtime properties file. 
+	 *
+	 * @param string $name The name that is used to look up the DSN from the runtime properties file.
 	 * @return PDO A database connection
 	 * @throws PropelException - if no conneciton params, or lower-level exception caught when trying to connect.
 	 */
@@ -344,11 +344,11 @@ class Propel {
 		if ($name === null) {
 			$name = self::getDefaultDB();
 		}
-		
+
 		if (!isset(self::$connectionMap[$name])) {
-					
+
 			$key = $name . '.dsn';
-			
+
 			if ( ! isset ( self::$configuration['datasources'][$key] ) ) {
 				throw new PropelException("Unable to find " . $key . " in the [datasources] section of your configuration file.");
 			}
@@ -368,7 +368,7 @@ class Propel {
 				$password = NULL;
 			}
 
-			$dsn = self::$configuration['datasources'][$key];			
+			$dsn = self::$configuration['datasources'][$key];
 
 			$driver_options = array();
 			$options_key = $name . '_options';
@@ -390,16 +390,16 @@ class Propel {
 			try {
 				$con = @new PDO($dsn, $user, $password, $driver_options);
 				$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-				self::$connectionMap[$name] = $con; 
+				self::$connectionMap[$name] = $con;
 			} catch (PDOException $e) {
 				throw new PropelException("Unable to open PDO connection", $e);
 			}
-						
+
 		}
 
 		return self::$connectionMap[$name];
 	}
-	
+
 	/**
 	 * Internal function to handle driver_options in PDO
 	 *
@@ -430,10 +430,10 @@ class Propel {
 
 	/**
 	 * Registers a PDO connection with Propel.
-	 * 
+	 *
 	 * This can be used for testing or for otherwise performing runtime configuration
 	 * of Propel.
-	 * 
+	 *
 	 * @param string $name The database name key to register this connection under.
 	 * @param PDO $con The PDO database connection.
 	 */
@@ -441,7 +441,7 @@ class Propel {
 	{
 		self::$connectionMap[$name] = $con;
 	}
-	
+
 	/**
 	 * Returns database adapter for a specific connection pool.
 	 *
@@ -454,7 +454,7 @@ class Propel {
 		if ($name === null) {
 			$name = self::getDefaultDB();
 		}
-				
+
 		if (!isset(self::$adapterMap[$name])) {
 			$key = $name.'.adapter';
 			if (!isset(self::$configuration['datasources'][$key])) {
@@ -464,16 +464,16 @@ class Propel {
 			// register the adapter for this name
 			self::$adapterMap[$name] = $db;
 		}
-		
+
 		return self::$adapterMap[$name];
 	}
-	
+
 	/**
 	 * Registers a database adapter with Propel.
-	 * 
+	 *
 	 * This can be used for testing or for otherwise performing runtime configuration
 	 * of Propel.
-	 * 
+	 *
 	 * @param string $name The database name key to register this adapter under.
 	 * @param DBAdapter $adapter The database adapter.
 	 */
@@ -481,7 +481,7 @@ class Propel {
 	{
 		self::$adapterMap[$name] = $adapter;
 	}
-	
+
 	/**
 	 * Returns the name of the default database.
 	 *

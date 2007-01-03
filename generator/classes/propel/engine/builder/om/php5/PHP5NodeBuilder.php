@@ -24,18 +24,18 @@ require_once 'propel/engine/builder/om/ObjectBuilder.php';
 
 /**
  * Generates a PHP5 tree node Object class for user object model (OM).
- * 
+ *
  * This class produces the base tree node object class (e.g. BaseMyTable) which contains all
  * the custom-built accessor and setter methods.
- * 
+ *
  * This class replaces the Node.tpl, with the intent of being easier for users
  * to customize (through extending & overriding).
- * 
+ *
  * @author Hans Lellelid <hans@xmpl.org>
  * @package propel.engine.builder.om.php5
  */
-class PHP5NodeBuilder extends ObjectBuilder {		
-	
+class PHP5NodeBuilder extends ObjectBuilder {
+
 	/**
 	 * Gets the package for the [base] object classes.
 	 * @return string
@@ -44,7 +44,7 @@ class PHP5NodeBuilder extends ObjectBuilder {
 	{
 		return parent::getPackage() . ".om";
 	}
-	
+
 	/**
 	 * Returns the name of the current class being built.
 	 * @return string
@@ -53,7 +53,7 @@ class PHP5NodeBuilder extends ObjectBuilder {
 	{
 		return $this->getBuildProperty('basePrefix') . $this->getStubNodeBuilder()->getClassname();
 	}
-	
+
 	/**
 	 * Adds the include() statements for files that this class depends on or utilizes.
 	 * @param string &$script The script will be modified in this method.
@@ -64,18 +64,18 @@ class PHP5NodeBuilder extends ObjectBuilder {
 require_once '".$this->getStubNodePeerBuilder()->getClassFilePath()."';
 ";
 	} // addIncludes()
-	
+
 	/**
 	 * Adds class phpdoc comment and openning of class.
 	 * @param string &$script The script will be modified in this method.
 	 */
 	protected function addClassOpen(&$script)
 	{
-		
+
 		$table = $this->getTable();
 		$tableName = $table->getName();
 		$tableDesc = $table->getDescription();
-		
+
 		$script .= "
 /**
  * Base class that represents a row from the '$tableName' table.
@@ -92,11 +92,11 @@ require_once '".$this->getStubNodePeerBuilder()->getClassFilePath()."';
 		}
 		$script .= "
  * @package ".$this->getPackage()."
- */	
+ */
 abstract class ".$this->getClassname()." implements IteratorAggregate {
 ";
 	}
-	
+
 	/**
 	 * Specifies the methods that are added as part of the basic OM class.
 	 * This can be overridden by subclasses that wish to add more methods.
@@ -105,63 +105,63 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	protected function addClassBody(&$script)
 	{
 		$table = $this->getTable();
-		
+
 		$this->addAttributes($script);
-				
+
 		$this->addConstructor($script);
-		
+
 		$this->addCallOverload($script);
 		$this->addSetIteratorOptions($script);
 		$this->addGetIterator($script);
-		
+
 		$this->addGetNodeObj($script);
 		$this->addGetNodePath($script);
 		$this->addGetNodeIndex($script);
 		$this->addGetNodeLevel($script);
-		
+
 		$this->addHasChildNode($script);
 		$this->addGetChildNodeAt($script);
 		$this->addGetFirstChildNode($script);
 		$this->addGetLastChildNode($script);
 		$this->addGetSiblingNode($script);
-		
+
 		$this->addGetParentNode($script);
 		$this->addGetAncestors($script);
 		$this->addIsRootNode($script);
-		
+
 		$this->addSetNew($script);
 		$this->addSetDeleted($script);
 		$this->addAddChildNode($script);
 		$this->addMoveChildNode($script);
 		$this->addSave($script);
-		
+
 		$this->addDelete($script);
 		$this->addEquals($script);
-		
+
 		$this->addAttachParentNode($script);
 		$this->addAttachChildNode($script);
 		$this->addDetachParentNode($script);
 		$this->addDetachChildNode($script);
 		$this->addShiftChildNodes($script);
 		$this->addInsertNewChildNode($script);
-		
+
 		$this->addAdjustStatus($script);
 		$this->addAdjustNodePath($script);
-		
+
 	}
-	
+
 	/**
 	 * Closes class.
 	 * @param string &$script The script will be modified in this method.
-	 */	
+	 */
 	protected function addClassClose(&$script)
 	{
 		$script .= "
 } // " . $this->getClassname() . "
 ";
 	}
-	
-	
+
+
 	/**
 	 * Adds class attributes.
 	 * @param string &$script The script will be modified in this method.
@@ -173,7 +173,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 * @var ".$this->getStubObjectBuilder()->getClassname()." object wrapped by this node.
 	 */
 	protected \$obj = null;
-	
+
 	/**
 	 * The parent node for this node.
 	 * @var ".$this->getStubNodeBuilder()->getClassname()."
@@ -185,9 +185,9 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 * @var array
 	 */
 	protected \$childNodes = array();
-";	
+";
 	}
-	
+
 	/**
 	 * Adds the constructor.
 	 * @param string &$script The script will be modified in this method.
@@ -200,7 +200,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 *
 	 * @param ".$this->getStubObjectBuilder()->getClassname()." \$obj Object wrapped by this node.
 	 */
-	public function __construct(\$obj = null) 
+	public function __construct(\$obj = null)
 	{
 		if (\$obj !== null) {
 			\$this->obj = \$obj;
@@ -213,8 +213,8 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 ";
 	}
 
-	
-	
+
+
 	protected function addCallOverload(&$script)
 	{
 		$script .= "
@@ -235,14 +235,14 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addSetIteratorOptions(&$script)
 	{
 		$script .= "
-	
+
 	/**
 	 * Sets the default options for iterators created from this object.
-	 * The options are specified in map format. The following options 
+	 * The options are specified in map format. The following options
 	 * are supported by all iterators. Some iterators may support other
 	 * options:
 	 *
@@ -253,7 +253,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 * @param array Map of option name => value.
 	 * @return void
 	 * @todo Implement other iterator types (i.e. post-order, level, etc.)
-	 */ 
+	 */
 	public function setIteratorOptions(\$type, \$opts)
 	{
 		\$this->itType = \$type;
@@ -261,7 +261,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetIterator(&$script)
 	{
 		$script .= "
@@ -276,18 +276,18 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (\$type === null)
 			\$type = (isset(\$this->itType) ? \$this->itType : 'Pre');
-				
+
 		if (\$opts === null)
 			\$opts = (isset(\$this->itOpts) ? \$this->itOpts : array());
-			
+
 		\$itclass = ucfirst(strtolower(\$type)) . 'OrderNodeIterator';
-		
+
 		require_once('propel/om/' . \$itclass . '.php');
 		return new \$itclass(\$this, \$opts);
 	}
 ";
 	}
-	
+
 	protected function addGetNodeObj(&$script)
 	{
 		$script .= "
@@ -301,7 +301,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetNodePath(&$script)
 	{
 		$script .= "
@@ -332,7 +332,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetNodeLevel(&$script)
 	{
 		$script .= "
@@ -346,11 +346,11 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addHasChildNode(&$script)
 	{
 		$script .= "
-	/** 
+	/**
 	 * Returns true if specified node is a child of this node. If recurse is
 	 * true, checks if specified node is a descendant of this node.
 	 *
@@ -365,21 +365,21 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 		{
 			if (\$childNode->equals(\$node, \$strict))
 				return true;
-				
+
 			if (\$recurse && \$childNode->hasChildNode(\$node, \$recurse))
 				return true;
 		}
-		
+
 		return false;
 	}
 ";
 	}
-	
+
 	protected function addGetChildNodeAt(&$script)
 	{
 		$script .= "
 	/**
-	 * Returns child node at one-based index. Retrieves from database if not 
+	 * Returns child node at one-based index. Retrieves from database if not
 	 * loaded yet.
 	 *
 	 * @param int One-based child node index.
@@ -389,9 +389,9 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 */
 	public function getChildNodeAt(\$i, \$querydb = false, \$con = null)
 	{
-		if (\$querydb && 
-			!\$this->obj->isNew() && 
-			!\$this->obj->isDeleted() && 
+		if (\$querydb &&
+			!\$this->obj->isNew() &&
+			!\$this->obj->isDeleted() &&
 			!isset(\$this->childNodes[\$i]))
 		{
 			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."(".$this->getStubPeerBuilder()->getClassname()."::DATABASE_NAME);
@@ -405,7 +405,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetFirstChildNode(&$script)
 	{
 		$script .= "
@@ -422,15 +422,15 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetLastChildNode(&$script)
 	{
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
-		
+
 		$script .= "
 	/**
-	 * Returns last child node (if any). 
+	 * Returns last child node (if any).
 	 *
 	 * @param boolean True if child should be retrieved from database.
 	 * @param Connection Connection to use if retrieving from database.
@@ -453,16 +453,16 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 			\$criteria->addAsColumn('npathlen', \$db->strLength($nodePeerClassname::NPATH_COLNAME));
 			\$criteria->addDescendingOrderByColumn('npathlen');
 			\$criteria->addDescendingOrderByColumn($nodePeerClassname::NPATH_COLNAME);
-		  
+
 			\$lastObj = $peerClassname::doSelectOne(\$criteria, \$con);
-			
+
 			if (\$lastObj !== null)
 			{
 				\$lastNode = new ".$this->getStubNodeBuilder()->getClassname()."(\$lastObj);
-				
+
 				end(\$this->childNodes);
 				\$endNode = (count(\$this->childNodes) ? current(\$this->childNodes) : null);
-				
+
 				if (\$endNode)
 				{
 					if (\$endNode->getNodePath() > \$lastNode->getNodePath())
@@ -483,12 +483,12 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addGetSiblingNode(&$script)
 	{
-		$script .= "	
+		$script .= "
 	/**
-	 * Returns next (or previous) sibling node or null. Retrieves from database if 
+	 * Returns next (or previous) sibling node or null. Retrieves from database if
 	 * not loaded yet.
 	 *
 	 * @param boolean True if previous sibling should be returned.
@@ -499,7 +499,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	public function getSiblingNode(\$prev = false, \$querydb = false, \$con = null)
 	{
 		\$nidx = \$this->getNodeIndex();
-		
+
 		if (\$this->isRootNode())
 		{
 			return null;
@@ -538,35 +538,35 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	public function getParentNode(\$querydb = true, \$con = null)
 	{
 		if (\$querydb &&
-			\$this->parentNode === null && 
+			\$this->parentNode === null &&
 			!\$this->isRootNode() &&
-			!\$this->obj->isNew() && 
+			!\$this->obj->isNew() &&
 			!\$this->obj->isDeleted())
 		{
 			\$npath =& \$this->getNodePath();
 			\$sep = strrpos(\$npath, $nodePeerClassname::NPATH_SEP);
 			\$ppath = substr(\$npath, 0, \$sep);
-			
+
 			\$criteria = new " . $this->getBuildProperty('criteriaClass') ."($peerClassname::DATABASE_NAME);
 			\$criteria->add($nodePeerClassname::NPATH_COLNAME, \$ppath, Criteria::EQUAL);
-			
+
 			if (\$parentObj = $peerClassname::doSelectOne(\$criteria, \$con))
 			{
 				\$parentNode = new ".$this->getStubNodeBuilder()->getClassname()."(\$parentObj);
 				\$parentNode->attachChildNode(\$this);
 			}
 		}
-		
+
 		return \$this->parentNode;
 	}
 ";
 	}
-	
+
 	protected function addGetAncestors(&$script)
 	{
 		$script .= "
-	/** 
-	 * Returns an array of all ancestor nodes, starting with the root node 
+	/**
+	 * Returns an array of all ancestor nodes, starting with the root node
 	 * first.
 	 *
 	 * @param boolean True if ancestors should be retrieved from database.
@@ -577,15 +577,15 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		\$ancestors = array();
 		\$parentNode = \$this;
-		
+
 		while (\$parentNode = \$parentNode->getParentNode(\$querydb, \$con))
 			array_unshift(\$ancestors, \$parentNode);
-		
+
 		return \$ancestors;
 	}
 ";
 	}
-	
+
 	protected function addIsRootNode(&$script)
 	{
 		$script .= "
@@ -605,7 +605,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 		$script .= "
 	/**
 	 * Changes the state of the object and its descendants to 'new'.
-	 * Also changes the node path to '0' to indicate that it is not a 
+	 * Also changes the node path to '0' to indicate that it is not a
 	 * stored node.
 	 *
 	 * @param boolean
@@ -621,7 +621,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 
 	protected function addSetDeleted(&$script)
 	{
-		$script .= "	
+		$script .= "
 	/**
 	 * Changes the state of the object and its descendants to 'deleted'.
 	 *
@@ -634,16 +634,16 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addAddChildNode(&$script)
 	{
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
-		
+
 		$script .= "
 	/**
 	 * Adds the specified node (and its children) as a child to this node. If a
-	 * valid \$beforeNode is specified, the node will be inserted in front of 
+	 * valid \$beforeNode is specified, the node will be inserted in front of
 	 * \$beforeNode. If \$beforeNode is not specified the node will be appended to
 	 * the end of the child nodes.
 	 *
@@ -655,23 +655,23 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (\$this->obj->isNew() && !\$node->obj->isNew())
 			throw new PropelException('Cannot add stored nodes to a new node.');
-			
+
 		if (\$this->obj->isDeleted() || \$node->obj->isDeleted())
 			throw new PropelException('Cannot add children in a deleted state.');
-		
+
 		if (\$this->hasChildNode(\$node))
 			throw new PropelException('Node is already a child of this node.');
 
 		if (\$beforeNode && !\$this->hasChildNode(\$beforeNode))
 			throw new PropelException('Invalid beforeNode.');
-			
+
 		if (\$con === null)
 			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
-			
+
 		try {
-				
+
 			if (!\$this->obj->isNew()) Transaction::begin(\$con);
-				
+
 			if (\$beforeNode)
 			{
 				// Inserting before a node.
@@ -697,10 +697,10 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 			{
 				// \$this->isNew() && \$node->isNew() ||
 				// !\$this->isNew() && !node->isNew()
-				
+
 				\$srcPath = \$node->getNodePath();
 				\$dstPath = \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . \$childIdx;
-				
+
 				if (!\$node->obj->isNew())
 				{
 					$nodePeerClassname::moveNodeSubTree(\$srcPath, \$dstPath, \$con);
@@ -710,13 +710,13 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 				{
 					\$parentNode = \$node->getParentNode();
 				}
-				
+
 				if (\$parentNode)
 				{
 					\$parentNode->detachChildNode(\$node);
 					\$parentNode->shiftChildNodes(-1, \$node->getNodeIndex()+1, \$con);
 				}
-			
+
 				\$node->adjustNodePath(\$srcPath, \$dstPath);
 			}
 
@@ -731,7 +731,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addMoveChildNode(&$script)
 	{
 		$script .= "
@@ -749,8 +749,8 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
-	
+
+
 	protected function addSave(&$script)
 	{
 
@@ -766,15 +766,15 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (\$this->obj->isDeleted())
 			throw new PropelException('Cannot save deleted node.');
-			
+
 		if (substr(\$this->getNodePath(), 0, 1) == '0')
 			throw new PropelException('Cannot save unattached node.');
 
 		if (\$this->obj->isColumnModified($nodePeerClassname::NPATH_COLNAME))
 			throw new PropelException('Cannot save manually modified node path.');
-		
+
 		\$this->obj->save(\$con);
-		
+
 		if (\$recurse)
 		{
 			foreach (\$this->childNodes as \$childNode)
@@ -783,8 +783,8 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
-	
+
+
 	protected function addDelete(&$script)
 	{
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
@@ -805,13 +805,13 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 		{
 			$nodePeerClassname::deleteNodeSubTree(\$this->getNodePath(), \$con);
 		}
-		
+
 		if (\$parentNode = \$this->getParentNode(true, \$con))
 		{
 			\$parentNode->detachChildNode(\$this);
 			\$parentNode->shiftChildNodes(-1, \$this->getNodeIndex()+1, \$con);
 		}
-		
+
 		\$this->setDeleted(true);
 	}
 ";
@@ -822,8 +822,8 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 		$nodeClassname = $this->getStubNodeBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Compares the object wrapped by this node with that of another node. Use 
-	 * this instead of equality operators to prevent recursive dependency 
+	 * Compares the object wrapped by this node with that of another node. Use
+	 * this instead of equality operators to prevent recursive dependency
 	 * errors.
 	 *
 	 * @param $nodeClassname Node to compare.
@@ -840,14 +840,14 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addAttachParentNode(&$script)
 	{
 		$nodeClassname = $this->getStubNodeBuilder()->getClassname();
 		$script .= "
 	/**
-	 * This method is used internally when constructing the tree structure 
-	 * from the database. To set the parent of a node, you should call 
+	 * This method is used internally when constructing the tree structure
+	 * from the database. To set the parent of a node, you should call
 	 * addChildNode() on the parent.
 	 *
 	 * @param $nodeClassname Parent node to attach.
@@ -856,24 +856,24 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	 */
 	public function attachParentNode(\$node)
 	{
-		if (!\$node->hasChildNode(\$this, true)) 
+		if (!\$node->hasChildNode(\$this, true))
 			throw new PropelException('Failed to attach parent node for non-child.');
 
 		\$this->parentNode = \$node;
 	}
 ";
 	}
-	
-	
+
+
 	protected function addAttachChildNode(&$script)
 	{
 		$nodeClassname = $this->getStubNodeBuilder()->getClassname();
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * This method is used internally when constructing the tree structure 
-	 * from the database. To add a child to a node you should call the 
-	 * addChildNode() method instead. 
+	 * This method is used internally when constructing the tree structure
+	 * from the database. To add a child to a node you should call the
+	 * addChildNode() method instead.
 	 *
 	 * @param $nodeClassname Child node to attach.
 	 * @return void
@@ -883,10 +883,10 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (\$this->hasChildNode(\$node))
 			throw new PropelException('Failed to attach child node. Node already exists.');
-		
+
 		if (\$this->obj->isDeleted() || \$node->obj->isDeleted())
 			throw new PropelException('Failed to attach node in deleted state.');
-			
+
 		if (\$this->obj->isNew() && !\$node->obj->isNew())
 			throw new PropelException('Failed to attach non-new child to new node.');
 
@@ -895,15 +895,15 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 
 		if (\$this->getNodePath() . $nodePeerClassname::NPATH_SEP . \$node->getNodeIndex() != \$node->getNodePath())
 			throw new PropelException('Failed to attach child node. Node path mismatch.');
-		
+
 		\$this->childNodes[\$node->getNodeIndex()] = \$node;
 		ksort(\$this->childNodes);
-		
+
 		\$node->attachParentNode(\$this);
 	}
 ";
 	}
-	
+
 	protected function addDetachParentNode(&$script)
 	{
 		$nodeClassname = $this->getStubNodeBuilder()->getClassname();
@@ -925,7 +925,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 	protected function addDetachChildNode(&$script)
 	{
 		$script .= "
@@ -940,23 +940,23 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (!\$this->hasChildNode(\$node, true))
 			throw new PropelException('Failed to detach non-existent child node.');
-		
+
 		unset(\$this->childNodes[\$node->getNodeIndex()]);
 		\$node->parentNode = null;
 	}
 ";
 	}
-	
+
 	protected function addShiftChildNodes(&$script)
 	{
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
-		
+
 		$script .= "
 	/**
-	 * Shifts child nodes in the specified direction and offset index. This 
-	 * method assumes that there is already space available in the 
-	 * direction/offset indicated. 
+	 * Shifts child nodes in the specified direction and offset index. This
+	 * method assumes that there is already space available in the
+	 * direction/offset indicated.
 	 *
 	 * @param int Direction/# spaces to shift. 1=leftshift, 1=rightshift
 	 * @param int Node index to start shift at.
@@ -968,7 +968,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	{
 		if (\$this->obj->isDeleted())
 			throw new PropelException('Cannot shift nodes for deleted object');
-					
+
 		\$lastNode = \$this->getLastChildNode(true, \$con);
 		\$lastIdx = (\$lastNode !== null ? \$lastNode->getNodeIndex() : 0);
 
@@ -977,38 +977,38 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 
 		if (\$con === null)
 			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
-			
+
 		if (!\$this->obj->isNew())
 		{
 			// Shift nodes in database.
-			
+
 			try {
-				
+
 				Transaction::begin(\$con);
-				 
+
 				\$n = \$lastIdx - \$offsetIdx + 1;
 				\$i = \$direction < 1 ? \$offsetIdx : \$lastIdx;
-				
+
 				while (\$n--)
 				{
 					\$srcPath = \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . \$i;			  // 1.2.2
 					\$dstPath = \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . (\$i+\$direction); // 1.2.3
 
 					$nodePeerClassname::moveNodeSubTree(\$srcPath, \$dstPath, \$con);
-					
+
 					\$i -= \$direction;
 				}
-				
+
 				Transaction::commit(\$con);
-				
+
 			} catch (SQLException \$e) {
 				Transaction::rollback(\$con);
 				throw new PropelException(\$e);
 			}
 		}
-		
+
 		// Shift the in-memory objects.
-		
+
 		\$n = \$lastIdx - \$offsetIdx + 1;
 		\$i = \$direction < 1 ? \$offsetIdx : \$lastIdx;
 
@@ -1018,27 +1018,27 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 			{
 				\$srcPath = \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . \$i;			  // 1.2.2
 				\$dstPath = \$this->getNodePath() . $nodePeerClassname::NPATH_SEP . (\$i+\$direction); // 1.2.3
-				
+
 				\$this->childNodes[\$i+\$direction] = \$this->childNodes[\$i];
 				\$this->childNodes[\$i+\$direction]->adjustNodePath(\$srcPath, \$dstPath);
 
 				unset(\$this->childNodes[\$i]);
 			}
-			
+
 			\$i -= \$direction;
 		}
-		
+
 		ksort(\$this->childNodes);
 	}
 ";
 	}
-	
+
 	protected function addInsertNewChildNode(&$script)
 	{
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
 		$nodeClassname = $this->getStubNodePeerBuilder()->getClassname();
-		
+
 		$script .= "
 	/**
 	 * Inserts the node and its children at the specified childIdx.
@@ -1057,19 +1057,19 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 
 		\$node->obj->\$setNodePath(\$this->getNodePath() . $nodePeerClassname::NPATH_SEP . \$childIdx);
 		\$node->obj->save(\$con);
-		
+
 		\$i = 1;
 		foreach (\$node->childNodes as \$childNode)
-			\$node->insertNewChildNode(\$childNode, \$i++, \$con);		
+			\$node->insertNewChildNode(\$childNode, \$i++, \$con);
 	}
 ";
 	}
-	
+
 	protected function addAdjustStatus(&$script)
-	{		
+	{
 		$script .= "
 	/**
-	 * Adjust new/deleted status of node and all children. 
+	 * Adjust new/deleted status of node and all children.
 	 *
 	 * @param string Status to change ('New' or 'Deleted')
 	 * @param boolean Value for status.
@@ -1078,21 +1078,21 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	protected function adjustStatus(\$status, \$b)
 	{
 		\$setStatus = 'set' . \$status;
-		
+
 		\$this->obj->\$setStatus(\$b);
-		
+
 		foreach (\$this->childNodes as \$childNode)
-			\$childNode->obj->\$setStatus(\$b);			
+			\$childNode->obj->\$setStatus(\$b);
 	}
 ";
 	}
-	
+
 	protected function addAdjustNodePath(&$script)
 	{
 		$nodePeerClassname = $this->getStubNodePeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Adjust path of node and all children. This is used internally when 
+	 * Adjust path of node and all children. This is used internally when
 	 * inserting/moving nodes.
 	 *
 	 * @param string Section of old path to change.
@@ -1102,7 +1102,7 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	protected function adjustNodePath(\$oldBasePath, \$newBasePath)
 	{
 		\$setNodePath = 'set' . $nodePeerClassname::NPATH_PHPNAME;
-		
+
 		\$this->obj->\$setNodePath(\$newBasePath .  substr(\$this->getNodePath(), strlen(\$oldBasePath)));
 		\$this->obj->resetModified($nodePeerClassname::NPATH_COLNAME);
 
@@ -1111,5 +1111,5 @@ abstract class ".$this->getClassname()." implements IteratorAggregate {
 	}
 ";
 	}
-	
+
 } // PHP5NodeObjectBuilder

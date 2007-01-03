@@ -134,9 +134,9 @@ abstract class ".$this->getClassname()." {
 //
 // NOTE: This static code cannot call methods on the ".$this->getPeerClassname()." class, because it is not defined yet.
 // If you need to use overridden methods, you can add this code to the bottom of the ".$this->getPeerClassname()." class:
-// 
+//
 // Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getPeerClassname()."::TABLE_NAME, ".$this->getPeerClassname()."::getMapBuilder());
-// 
+//
 // Doing so will effectively overwrite the registration below.
 
 Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getClassname()."::TABLE_NAME, ".$this->getClassname()."::getMapBuilder());
@@ -182,18 +182,18 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @var array ".$this->getObjectClassname()."[]
 	 */
 	public static \$instances = array();
-	
+
 	/**
 	 * The MapBuilder instance for this peer.
 	 * @var MapBuilder
 	 */
 	private static \$mapBuilder = null;
-	
+
 ";
-		
+
 		$this->addFieldNamesAttribute($script);
 		$this->addFieldKeysAttribute($script);
-		
+
 	}
 
 	/**
@@ -336,7 +336,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	}
 ";
 	} // addTranslateFieldName()
-	
+
 	/**
 	 * Adds the createCriteria() method.
 	 * @param string &$script The script will be modified in this method.
@@ -354,7 +354,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	}
 ";
 	}
-	
+
 	/**
 	 * Adds the createQuery() method.
 	 * @param string &$script The script will be modified in this method.
@@ -364,7 +364,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 	/**
 	 * Create a new Query object for use with this table.
-	 * @param Criteria \$criteria The Criteria to use for this query. 
+	 * @param Criteria \$criteria The Criteria to use for this query.
 	 */
 	public static function createQuery(Criteria \$criteria = null)
 	{
@@ -375,7 +375,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	}
 ";
 	}
-	
+
 	/**
 	 * Adds the createQueryTable() method.
 	 * @param string &$script The script will be modified in this method.
@@ -393,7 +393,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	}
 ";
 	}
-	
+
 	/**
 	 * Adds the getMapBuilder() method.
 	 * @param string &$script The script will be modified in this method.
@@ -475,7 +475,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			$count_col = implode(",", $count_cols);
 		}
 		*/
-		
+
 		$script .= "
 	const COUNT = 'COUNT(%1\$s.$count_col)';
 	const COUNT_DISTINCT = 'COUNT(DISTINCT %1\$s.$count_col)';
@@ -503,7 +503,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		// clear out anything that might confuse the ORDER BY clause
 		\$query->clearSelectColumns()->clearOrderByColumns();
-		
+
 		if (in_array(Query::DISTINCT, \$query->getSelectModifiers())) {
 			\$query->addSelectColumn(\$query->getQueryTable()->createCustomQueryColumn(".$this->getPeerClassname()."::COUNT_DISTINCT));
 		} else {
@@ -603,20 +603,20 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
-		
+
 		if (!\$query->getSelectColumns()) {
 			\$query = clone(\$query);	// Here a shallow copy is OK, because we're not changing any
-										// of the embedded objects themselves; we're just adding references 
+										// of the embedded objects themselves; we're just adding references
 										// to the Query objec.
 			\$query->addDefaultSelectColumns();
 		}
-		
+
 		// BasePeer returns a PDOStatement
 		return ".$this->basePeerClassname."::doSelect(\$query, \$con);
 	}
 ";
 	}
-	
+
 	/**
 	 * Adds method to get a version of the primary key that can be used as a unique key for identifier map.
 	 * @param string &$script The script will be modified in this method.
@@ -626,43 +626,43 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 	/**
 	 * Retrieves a string version of the primary key that can be used to uniquely identify a row in this table.
-	 * 
+	 *
 	 * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
 	 * a multi-column primary key, a serialize()d version of the primary key will be returned.
-	 * 
+	 *
 	 * @param array \$row PDO resultset row.
 	 * @param int \$startcol The 0-based offset for reading from the resultset row.
 	 * @return string
 	 */
 	public static function getPrimaryKeyHash(\$row, \$startcol = 0)
 	{";
-		
-		// We have to iterate through all the columns so that we know the offset of the primary 
+
+		// We have to iterate through all the columns so that we know the offset of the primary
 		// key columns.
 		$n = 0;
 		foreach($this->getTable()->getColumns() as $col) {
-			if(!$col->isLazyLoad()) {
+			if (!$col->isLazyLoad()) {
 				if ($col->isPrimaryKey()) {
 					$pk[] = "\$row[\$startcol + $n]";
 				}
 				$n++;
 			}
 		}
-		
-		// the general case is a single column		
-		if (count($pk) == 1) {					
+
+		// the general case is a single column
+		if (count($pk) == 1) {
 			$script .= "
 		return (string) ".$pk[0].";";
 		} else {
 			$script .= "
-		return serialize(array(".implode(',', $pk)."));";			
+		return serialize(array(".implode(',', $pk)."));";
 		}
-		
+
 		$script .= "
 	}
 ";
 	} // addGetPrimaryKeyHash
-	
+
 	/**
 	 * Adds the populateObjects() method.
 	 * @param string &$script The script will be modified in this method.
@@ -691,7 +691,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		$script .= "
 		// populate the object(s)
-		while(\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$key = ".$this->getPeerClassname()."::getPrimaryKeyHash(\$row, 0);
 			if (isset(self::\$instances[\$key])) {
 				\$results[] = self::\$instances[\$key];
@@ -913,12 +913,12 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		if (\$con === null) {
 			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
 		}
-		
+
 		if (\$obj instanceof ColumnValueCollection) {
-			\$values = clone \$obj; // FIXME - here we need a deep copy, because we are modifying internal objects 
+			\$values = clone \$obj; // FIXME - here we need a deep copy, because we are modifying internal objects
 			\$selectCriteria = ".$this->getPeerClassname()."::createCriteria();";
 		foreach ($table->getColumns() as $col) {
-			if($col->isPrimaryKey()) {
+			if ($col->isPrimaryKey()) {
 				$script .= "
 			\$selectCriteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$values->remove(".$this->getColumnConstant($col).")));
 ";
@@ -928,7 +928,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 		} else { // \$values is ".$table->getPhpName()." object
 			\$selectCriteria = \$obj->buildPkeyCriteria(); // gets criteria w/ primary key(s)
-			\$values = \$obj->buildColumnValueCollection();			
+			\$values = \$obj->buildColumnValueCollection();
 		}
 
 		return ".$this->basePeerClassname."::doUpdate(\$selectCriteria, \$values, \$con);
@@ -961,7 +961,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			Transaction::begin(\$con);
 			";
 			if ($this->isDeleteCascadeEmulationNeeded()) {
-			    $script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(), \$con);
+				$script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(), \$con);
 			";
 			}
 			if ($this->isDeleteSetNullEmulationNeeded()) {
@@ -1015,7 +1015,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			$script .= "
 			// this table has no primary key, so we build a Criteria that contains
 			// all the columns from the object
-			\$criteria = ".$this->getPeerClassname()."::createCriteria();			
+			\$criteria = ".$this->getPeerClassname()."::createCriteria();
 			foreach(\$obj->buildColumnValueCollection() as \$cv) {
 				\$criteria->add(EqualExpr(\$cv->getColumnMap()->getName(), \$cv->getValue()));
 			}
@@ -1024,7 +1024,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		$script .= "
 		} else {
-			throw new PropelException(\"Inavlid parameter passed to ".$this->getPeerClassname()."::doDelete(): \" . var_export(\$obj, true)); 
+			throw new PropelException(\"Inavlid parameter passed to ".$this->getPeerClassname()."::doDelete(): \" . var_export(\$obj, true));
 		}
 
 		\$affectedRows = 0; // initialize var to track total num of affected rows
@@ -1036,7 +1036,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			";
 
 		if ($this->isDeleteCascadeEmulationNeeded()) {
-		    $script .= "\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(\$criteria, \$con);";
+			$script .= "\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(\$criteria, \$con);";
 		}
 		if ($this->isDeleteSetNullEmulationNeeded()) {
 			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(\$criteria, \$con);";
@@ -1305,7 +1305,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$criteria->add(new EqualExpr(".$this->getColumnConstant($col).", \$pk));
 ";
 		$script .= "
-	
+
 		return ".$this->getPeerClassname()."::doSelectOne(new Query(\$criteria), \$con);
 	}
 ";
@@ -1338,11 +1338,11 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$objs = array();
 		} else {
 			\$criteria = ".$this->getPeerClassname()."::createCriteria();";
-					
+
 		$k1 = $table->getPrimaryKey();
 		$script .= "
 			\$criteria->add(new InExpr(".$this->getColumnConstant($k1[0]).", \$pks));";
-	
+
 		$script .= "
 			\$objs = ".$this->getPeerClassname()."::doSelect(new Query(\$criteria), \$con);
 		}
@@ -1372,15 +1372,15 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @return ".$table->getPhpName()."
 	 */
 	public static function ".$this->getRetrieveMethodName()."(";
-		
+
 		$params = array();
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$params[] = "\$".$clo;
 		} /* foreach */
-		
+
 		$script .= implode(', ', $params);
-		
+
 		$script .= ", PDO \$con = null)
 	{
 		if (\$con === null) {

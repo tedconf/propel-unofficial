@@ -47,6 +47,6 @@ class MaxLengthValidator implements BasicValidator
 
   public function isValid (ValidatorMap $map, $str)
   {
-    return strlen($str) <= intval($map->getValue());
+	return strlen($str) <= intval($map->getValue());
   }
 }

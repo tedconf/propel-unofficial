@@ -39,11 +39,11 @@ require_once 'propel/validator/BasicValidator.php';
 class MinLengthValidator implements BasicValidator
 {
 
-    /**
-     * @see BasicValidator::isValid()
-     */
-    public function isValid (ValidatorMap $map, $str)
-    {
-        return strlen($str) >= intval($map->getValue());
-    }
+	/**
+	 * @see BasicValidator::isValid()
+	 */
+	public function isValid (ValidatorMap $map, $str)
+	{
+		return strlen($str) >= intval($map->getValue());
+	}
 }

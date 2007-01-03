@@ -13,44 +13,44 @@ include_once 'propel/adapter/DBNone.php';
  * @version $Id$
  */
 class QueryTest extends BaseTestCase {
-	
+
 	const DATABASE_NAME = "TESTDB";
-	
-    /** The criteria to use in the test. */
-    private $c;
-	
+
+	/** The criteria to use in the test. */
+	private $c;
+
 	private $dbMap;
-	
-    /**
-     * Initializes the criteria.
-     */
-    public function setUp()
-    {
-        parent::setUp();
-        
-        
-        $db = new DatabaseMap("TESTDB");
-		  
-        $t1 = $db->addTable("test1"); 
-        $t1->addPrimaryKey("id", "Id", PropelColumnTypes::INTEGER, true);
-        $t1->addColumn("name", "Name", PropelColumnTypes::VARCHAR, true, 255);
-        
-        $invc = $db->addTable("invoice"); 
-        $invc->addPrimaryKey("id", "Id", PropelColumnTypes::INTEGER, true);        
-        $invc->addColumn("cost", "Cost", PropelColumnTypes::DECIMAL, true);
-        
-        /*
+
+	/**
+	 * Initializes the criteria.
+	 */
+	public function setUp()
+	{
+		parent::setUp();
+
+
+		$db = new DatabaseMap("TESTDB");
+
+		$t1 = $db->addTable("test1");
+		$t1->addPrimaryKey("id", "Id", PropelColumnTypes::INTEGER, true);
+		$t1->addColumn("name", "Name", PropelColumnTypes::VARCHAR, true, 255);
+
+		$invc = $db->addTable("invoice");
+		$invc->addPrimaryKey("id", "Id", PropelColumnTypes::INTEGER, true);
+		$invc->addColumn("cost", "Cost", PropelColumnTypes::DECIMAL, true);
+
+		/*
 		public function addColumn($name, $phpName, $type, $isNotNull = false, $size = null, $pk = null, $fkTable = null, $fkColumn = null)
-        public function addForeignKey($columnName, $phpName, $type, $fkTable, $fkColumn, $isNotNull = false, $size = 0)
+		public function addForeignKey($columnName, $phpName, $type, $fkTable, $fkColumn, $isNotNull = false, $size = 0)
 		public function addPrimaryKey($columnName, $phpName, $type, $isNotNull = false, $size = null)
 		*/
-		
-		$this->dbMap = $db; 
-		
+
+		$this->dbMap = $db;
+
 		Propel::registerDatabaseMap(self::DATABASE_NAME, $db);
 		Propel::registerAdapter(self::DATABASE_NAME, new DBNone());
-    }
-	
+	}
+
 	protected function createQuery($tableName, $alias = null)
 	{
 		return new Query($this->createCriteria($tableName, $alias));
@@ -58,9 +58,9 @@ class QueryTest extends BaseTestCase {
 
 	protected function createCriteria($tableName, $alias = null)
 	{
-		return new Criteria(new QueryTable($this->dbMap->getTable($tableName), $alias));	
+		return new Criteria(new QueryTable($this->dbMap->getTable($tableName), $alias));
 	}
-	
+
 	/**
 	 * Get an old-style, simplified bind params.
 	 * @return array
@@ -73,47 +73,47 @@ class QueryTest extends BaseTestCase {
 		}
 		return $simple;
 	}
-	
+
 	public function testNestedQuery()
 	{
 		print "Hello!\n";
 		$q = $this->createQuery("test1", "test1_2");
 		$q->addSelectColumn($q->getQueryTable()->createQueryColumn("name"));
-		
+
 		//var_dump($q->getQueryTable()->createQueryColumn("name"));
-		
+
 		$c = $this->createCriteria("test1");
 		$c->add(new InExpr("id", $q));
-		
+
 		$params = array();
-        $result = $c->buildSql($params);
-        
-        var_dump($result);
-        //var_dump($this->getSimplifiedBindParams($params));
-        
+		$result = $c->buildSql($params);
+
+		var_dump($result);
+		//var_dump($this->getSimplifiedBindParams($params));
+
 	}
-	
-    public function testCountAster()
-    {	
-    	/*
-        $this->c = new Criteria();
-        $this->c->addSelectColumn("COUNT(*)");
-        $this->c->add("TABLE.TIME_COLUMN", Criteria::CURRENT_TIME);
-        $this->c->add("TABLE.DATE_COLUMN", Criteria::CURRENT_DATE);
 
-        $expect = "SELECT COUNT(*) FROM TABLE WHERE TABLE.TIME_COLUMN=CURRENT_TIME AND TABLE.DATE_COLUMN=CURRENT_DATE";
+	public function testCountAster()
+	{
+		/*
+		$this->c = new Criteria();
+		$this->c->addSelectColumn("COUNT(*)");
+		$this->c->add("TABLE.TIME_COLUMN", Criteria::CURRENT_TIME);
+		$this->c->add("TABLE.DATE_COLUMN", Criteria::CURRENT_DATE);
 
-        $result = null;
-        try {
-            $result = BasePeer::createSelectSql($this->c, $params=array());
-        } catch (PropelException $e) {
-            print $e->getTraceAsString();
-            $this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
-        }
+		$expect = "SELECT COUNT(*) FROM TABLE WHERE TABLE.TIME_COLUMN=CURRENT_TIME AND TABLE.DATE_COLUMN=CURRENT_DATE";
 
-        $this->assertEquals($expect, $result);
+		$result = null;
+		try {
+			$result = BasePeer::createSelectSql($this->c, $params=array());
+		} catch (PropelException $e) {
+			print $e->getTraceAsString();
+			$this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
+		}
+
+		$this->assertEquals($expect, $result);
 		*/
-    }
+	}
 
 	public function testJoinObject ()
 	{
@@ -126,38 +126,38 @@ class QueryTest extends BaseTestCase {
 		$this->assertEquals('TABLE_B.COL_2', $j->getRightColumn());
 		$this->assertEquals('TABLE_B', $j->getRightTableName());
 		$this->assertEquals('COL_2', $j->getRightColumnName());
-		
+
 		$j = new Join('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::LEFT_JOIN);
 		$this->assertEquals('LEFT JOIN', $j->getJoinType());
 		$this->assertEquals('TABLE_A.COL_1', $j->getLeftColumn());
 		$this->assertEquals('TABLE_B.COL_1', $j->getRightColumn());
-		
+
 		$j = new Join('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::RIGHT_JOIN);
 		$this->assertEquals('RIGHT JOIN', $j->getJoinType());
 		$this->assertEquals('TABLE_A.COL_1', $j->getLeftColumn());
 		$this->assertEquals('TABLE_B.COL_1', $j->getRightColumn());
-		
+
 		$j = new Join('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::INNER_JOIN);
 		$this->assertEquals('INNER JOIN', $j->getJoinType());
 		$this->assertEquals('TABLE_A.COL_1', $j->getLeftColumn());
 		$this->assertEquals('TABLE_B.COL_1', $j->getRightColumn());
 		*/
 	}
-	
+
 	public function testAddingJoin ()
 	{
 		/*
 		$c = new Criteria();
 		$c->addSelectColumn("*");
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1'); // straight join
-		
+
 		$expect = "SELECT * FROM TABLE_A, TABLE_B WHERE TABLE_A.COL_1=TABLE_B.COL_1";
 		try {
-            $result = BasePeer::createSelectSql($c, $params=array());
-        } catch (PropelException $e) {
-            print $e->getTraceAsString();
-            $this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
-        }
+			$result = BasePeer::createSelectSql($c, $params=array());
+		} catch (PropelException $e) {
+			print $e->getTraceAsString();
+			$this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
+		}
 		$this->assertEquals($expect, $result);
 		*/
 	}
@@ -167,17 +167,17 @@ class QueryTest extends BaseTestCase {
 		/*
 		$c = new Criteria();
 		$c->addSelectColumn("*");
-		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1'); 
-		$c->addJoin('TABLE_B.COL_X', 'TABLE_D.COL_X'); 
-		
+		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1');
+		$c->addJoin('TABLE_B.COL_X', 'TABLE_D.COL_X');
+
 		$expect = 'SELECT * FROM TABLE_A, TABLE_B, TABLE_D '
-		         .'WHERE TABLE_A.COL_1=TABLE_B.COL_1 AND TABLE_B.COL_X=TABLE_D.COL_X';
+				 .'WHERE TABLE_A.COL_1=TABLE_B.COL_1 AND TABLE_B.COL_X=TABLE_D.COL_X';
 		try {
-            $result = BasePeer::createSelectSql($c, $params=array());
-        } catch (PropelException $e) {
-            print $e->getTraceAsString();
-            $this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
-        }
+			$result = BasePeer::createSelectSql($c, $params=array());
+		} catch (PropelException $e) {
+			print $e->getTraceAsString();
+			$this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
+		}
 		$this->assertEquals($expect, $result);
 		*/
 	}
@@ -189,7 +189,7 @@ class QueryTest extends BaseTestCase {
 		$c->addSelectColumn("TABLE_A.*");
 		$c->addSelectColumn("TABLE_B.*");
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_2', Criteria::LEFT_JOIN);
-		
+
 		$expect = "SELECT TABLE_A.*, TABLE_B.* FROM TABLE_A LEFT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_2)";
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
@@ -209,9 +209,9 @@ class QueryTest extends BaseTestCase {
 		$c->addSelectColumn('*');
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::LEFT_JOIN);
 		$c->addJoin('TABLE_A.COL_2', 'TABLE_C.COL_2', Criteria::LEFT_JOIN);
-		
+
 		$expect = 'SELECT * FROM TABLE_A '
-		         .'LEFT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
+				 .'LEFT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
 						 .'LEFT JOIN TABLE_C ON (TABLE_A.COL_2=TABLE_C.COL_2)';
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
@@ -229,7 +229,7 @@ class QueryTest extends BaseTestCase {
 		$c = new Criteria();
 		$c->addSelectColumn("*");
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_2', Criteria::RIGHT_JOIN);
-		
+
 		$expect = "SELECT * FROM TABLE_A RIGHT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_2)";
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
@@ -240,7 +240,7 @@ class QueryTest extends BaseTestCase {
 		$this->assertEquals($expect, $result);
 		*/
 	}
-	
+
 	public function testAddingMultipleRightJoins ()
 	{
 		/*
@@ -249,9 +249,9 @@ class QueryTest extends BaseTestCase {
 		$c->addSelectColumn('*');
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::RIGHT_JOIN);
 		$c->addJoin('TABLE_A.COL_2', 'TABLE_C.COL_2', Criteria::RIGHT_JOIN);
-		
+
 		$expect = 'SELECT * FROM TABLE_A '
-		         .'RIGHT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
+				 .'RIGHT JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
 						 .'RIGHT JOIN TABLE_C ON (TABLE_A.COL_2=TABLE_C.COL_2)';
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
@@ -269,7 +269,7 @@ class QueryTest extends BaseTestCase {
 		$c = new Criteria();
 		$c->addSelectColumn("*");
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::INNER_JOIN);
-		
+
 		$expect = "SELECT * FROM TABLE_A INNER JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1)";
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
@@ -280,7 +280,7 @@ class QueryTest extends BaseTestCase {
 		$this->assertEquals($expect, $result);
 		*/
 	}
-	
+
 	public function testAddingMultipleInnerJoin ()
 	{
 		/*
@@ -288,9 +288,9 @@ class QueryTest extends BaseTestCase {
 		$c->addSelectColumn("*");
 		$c->addJoin('TABLE_A.COL_1', 'TABLE_B.COL_1', Criteria::INNER_JOIN);
 		$c->addJoin('TABLE_B.COL_1', 'TABLE_C.COL_1', Criteria::INNER_JOIN);
-		
+
 		$expect = 'SELECT * FROM TABLE_A '
-		         .'INNER JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
+				 .'INNER JOIN TABLE_B ON (TABLE_A.COL_1=TABLE_B.COL_1) '
 						 .'INNER JOIN TABLE_C ON (TABLE_B.COL_1=TABLE_C.COL_1)';
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());

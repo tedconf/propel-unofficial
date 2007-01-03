@@ -30,26 +30,26 @@ require_once 'propel/engine/platform/MysqlPlatform.php';
  */
 class MysqliPlatform extends MysqlPlatform {
 
-    /**
-     * Initializes db specific domain mapping.
-     */
-    protected function initialize()
-    {
-        parent::initialize();
+	/**
+	 * Initializes db specific domain mapping.
+	 */
+	protected function initialize()
+	{
+		parent::initialize();
 
 		// set these back to the SQL standard, since newer MySQL doesn't have a weird
 		// meaning for TIMESTAMP
-        $this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "TIMESTAMP"));
-        $this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "TIMESTAMP"));
-    }
+		$this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "TIMESTAMP"));
+		$this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "TIMESTAMP"));
+	}
 
-    /**
-     * Escape the string for MySQL.
-	 * 
-     * @param string $text
-     * @return string
-     */
-    public function escapeText($text) {
+	/**
+	 * Escape the string for MySQL.
+	 *
+	 * @param string $text
+	 * @return string
+	 */
+	public function escapeText($text) {
 		// Because mysqli requires open connection, we were using addslashes() here.
 		// Lets hope the user also has mysql extension installed and active
 		// It's at least somewhat better than addslashes
@@ -58,6 +58,6 @@ class MysqliPlatform extends MysqlPlatform {
 	} else {
 		return addslashes ( $text );
 	}
-    }
-	
+	}
+
 }

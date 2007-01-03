@@ -18,7 +18,7 @@
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
- 
+
 require_once 'PHPUnit2/Framework/TestCase.php';
 include_once 'bookstore/BookstoreDataPopulator.php';
 
@@ -34,7 +34,7 @@ abstract class BookstoreTestBase extends PHPUnit2_Framework_TestCase {
 		parent::setUp();
 		BookstoreDataPopulator::populate();
 	}
-	
+
 	/**
 	 * This is run after each unit test.  It empties the database.
 	 */

@@ -33,7 +33,7 @@ include_once 'propel/validator/ValidationFailed.php';
  * This is a utility class for all generated Peer classes in the system.
  *
  * This class is responsible for building and executing the SQL statements and queries
- * needed by the actual Peer implementation classes. 
+ * needed by the actual Peer implementation classes.
  *
  * @author Hans Lellelid <hans@xmpl.org>
  * @author Kaspars Jaudzems <kaspars.jaudzems@inbox.lv>
@@ -110,15 +110,15 @@ class BasePeer
 	public static function doDelete(Criteria $criteria, PDO $con)
 	{
 		$dbname = $criteria->getDbName();
-		
+
 		$db = Propel::getAdapter($dbname);
 		$dbMap = Propel::getDatabaseMap($dbname);
-		
+
 		$tableName = $criteria->getQueryTable()->getName();
 
 		$bindParams = array();
 		$whereClause = $criteria->buildSql($bindParams);
-				
+
 		if (empty($whereClause)) {
 			throw new PropelException("Cowardly refusing to perform DELETE on table $tableName with empty WHERE clause.");
 		}
@@ -188,9 +188,9 @@ class BasePeer
 	 * If no primary key is defined for the table the values will be
 	 * inserted as specified in Criteria and null will be returned.
 	 *
-	 * @param InsertValues $values  
+	 * @param InsertValues $values
 	 * @param PDO $con A PDO connection.
-	 * @return mixed The primary key for the new row if (and only if!) the primary key 
+	 * @return mixed The primary key for the new row if (and only if!) the primary key
 	 * 					is auto-generated.  Otherwise will return <code>null</code>.
 	 * @throws PropelException
 	 */
@@ -199,19 +199,19 @@ class BasePeer
 		$tableMap = $values->getTableMap();
 		$dbMap = $tableMap->getDatabase();
 		$db = $dbMap->getAdapter();
-		
+
 		if ($values->size() === 0) {
 			throw new PropelException("Database insert attempted without anything specified to insert");
 		}
-		
+
 		$useIdGen = $tableMap->isUseIdGenerator();
-		
+
 		// the primary key
 		$id = null;
-		
+
 		// the primary key column
 		$pk = null;
-		
+
 		if ($useIdGen) { // only call this method if we're using auto-incremnet pkey
 			$pks = $tableMap->getPrimaryKey();
 			$pk = $pks[0]; // we assume there is only one pkey for an autoincrement table. (violate that at your own risk!)
@@ -283,27 +283,27 @@ class BasePeer
 		$tableMap = $updateValues->getTableMap();
 		$dbMap = $tableMap->getDatabase();
 		$db = $dbMap->getAdapter();
-		
+
 		$affectedRows = 0; // initialize this in case the next loop has no iterations.
 
 		$bindParams = array();
 		$whereClause = $selectCriteria->buildSql($bindParams);
-		
+
 		if (empty($whereClause)) {
 			throw new PropelException("Cowardly refusing to perform UPDATE on table $tableName with empty WHERE clause.");
 		}
-		
+
 		$stmt = null;
 		try {
 
 			$sql = "UPDATE " . $tableMap->getName() . " SET ";
-			
-			
+
+
 			$updateValuseArray = array(); // need this Collection turned into an array so we can merge it with $bindParams later
-			
+
 			foreach($updateValues as $colname => $cv) {
 				$sql .= $colname . " = ?,";
-				$updateValuesArray[] = $cv; 
+				$updateValuesArray[] = $cv;
 			}
 
 			$sql = substr($sql, 0, -1) . " WHERE " .  $whereClause;
@@ -354,8 +354,8 @@ class BasePeer
 			if ($query->isUseTransaction()) Transaction::begin($con);
 
 			$params = array();
-			$sql = $query->buildSql($params); 
-			
+			$sql = $query->buildSql($params);
+
 			Propel::log($sql . ' [LIMIT: ' . $query->getLimit() . ', OFFSET: ' . $query->getOffset() . ']', Propel::LOG_DEBUG);
 
  			$stmt = $con->prepare($sql);
@@ -363,7 +363,7 @@ class BasePeer
 			self::populateStmtValues($stmt, $params, $db);
 
 			$stmt->execute();
-			
+
 			if ($query->isUseTransaction()) Transaction::commit($con);
 
 		} catch (Exception $e) {
@@ -387,17 +387,17 @@ class BasePeer
 	private static function populateStmtValues($stmt, $bindValues, DBAdapter $db)
 	{
 		$i = 1;
-		
+
 		foreach($bindValues as $columnValue) {
-		
+
 			$value = $columnValue->getValue();
-			
+
 			if ($value === null) {
-			
+
 				$stmt->bindValue($i++, null, PDO::PARAM_NULL);
 
 			} else {
-				
+
 				$cMap = $columnValue->getColumnMap();
 				$type = $cMap->getType();
 				$pdoType = $cMap->getPdoType();
@@ -436,7 +436,7 @@ class BasePeer
 				$col = $tableMap->getColumn($colName);
 				foreach($col->getValidators() as $validatorMap) {
 					$validator = BasePeer::getValidator($validatorMap->getClass());
-					if($validator && ($col->isNotNull() || $colValue !== null) && $validator->isValid($validatorMap, $colValue) === false) {
+					if ($validator && ($col->isNotNull() || $colValue !== null) && $validator->isValid($validatorMap, $colValue) === false) {
 						if (!isset($failureMap[$colName])) { // for now we do one ValidationFailed per column, not per rule
 							$failureMap[$colName] = new ValidationFailed($colName, $validatorMap->getMessage(), $validator);
 						}

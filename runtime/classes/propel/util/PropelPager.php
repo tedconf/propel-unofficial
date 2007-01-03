@@ -23,19 +23,19 @@
  * Provides paging support for Propel Query objects.
  *
  * Example Usage:
- * 
+ *
  * <code>
- *  
+ *
  * </code>
- * 
+ *
  * @author	Rob Halff <info@rhalff.com>
  * @author Hans Lellelid <hans@xmpl.org>
  * @version   $Revision$
  * @copyright Copyright (c) 2004 Rob Halff: LGPL - See LICENCE
- * @package   propel.util 
+ * @package   propel.util
  */
 class PropelPager {
-	
+
 	private $recordCount;
 	private $pages;
 	private $peerClass;
@@ -45,13 +45,13 @@ class PropelPager {
 	private $countQuery;
 	private $page;
 	private $rs = null;
-	
+
 	/** @var int Start row (offset) */
 	protected $start = 0;
-	
+
 	/** @var int Max rows to return (0 means all) */
 	protected $max = 0;
-	
+
 	/**
 	 * Create a new Propel Pager.
 	 * @param Query $c
@@ -62,14 +62,14 @@ class PropelPager {
 	 */
 	public function __construct(Query $q, $peerClass = null, $peerSelectMethod = null, $page = 1, $rowsPerPage = 25)
 	{
-        $this->setQuery($q);
+		$this->setQuery($q);
 		$this->setPeerClass($peerClass);
 		$this->setPeerSelectMethod($peerSelectMethod);
 		$this->guessPeerCountMethod();
 		$this->setPage($page);
 		$this->setRowsPerPage($rowsPerPage);
 	}
-	
+
 	/**
 	 * Set the Query for this pager.
 	 * @param Query $c
@@ -79,7 +79,7 @@ class PropelPager {
 	{
 		$this->query = $q;
 	}
-	
+
 	/**
 	 * Return the Query object for this pager.
 	 * @return Query
@@ -88,10 +88,10 @@ class PropelPager {
 	{
 		return $this->query;
 	}
-	
+
 	/**
 	 * Set the Peer Classname
-	 * 
+	 *
 	 * @param string $class
 	 * @return void
 	 */
@@ -108,7 +108,7 @@ class PropelPager {
 	{
 		return $this->peerClass;
 	}
-	
+
 	/**
 	 * Set the Peer select method.
 	 * This exists for legacy support, please use setPeerSelectMethod().
@@ -133,10 +133,10 @@ class PropelPager {
 	{
 		return $this->getPeerSelectMethod();
 	}
-	
+
 	/**
 	 * Set the Peer select method.
-	 * 
+	 *
 	 * @param string $method The name of the static method to call on the Peer class.
 	 * @return void
 	 */
@@ -144,7 +144,7 @@ class PropelPager {
 	{
 		$this->peerSelectMethod = $method;
 	}
-	
+
 	/**
 	 * Return the Peer select method.
 	 * @return string
@@ -153,10 +153,10 @@ class PropelPager {
 	{
 		return $this->peerSelectMethod;
 	}
-	
+
 	/**
 	 * Sets the Count method.
-	 * This is set based on the Peer method, for example if Peer method is doSelectJoin*() then the 
+	 * This is set based on the Peer method, for example if Peer method is doSelectJoin*() then the
 	 * count method will be doCountJoin*().
 	 * @param string $method The name of the static method to call on the Peer class.
 	 */
@@ -164,7 +164,7 @@ class PropelPager {
 	{
 		$this->peerCountMethod = $method;
 	}
-	
+
 	/**
 	 * Return the Peer count method.
 	 */
@@ -172,7 +172,7 @@ class PropelPager {
 	{
 		return $this->peerCountMethod;
 	}
-	
+
 	/**
 	 * Guesses the Peer count method based on the select method.
 	 */
@@ -185,68 +185,68 @@ class PropelPager {
 			$countMethod = 'doCount' . substr($selectMethod, strlen('doSelect'));
 		} else {
 			// we will fall back to doCount() if we don't understand the join
-			// method; however, it probably won't be accurate.  Maybe triggering an error would 
+			// method; however, it probably won't be accurate.  Maybe triggering an error would
 			// be appropriate ...
 			$countMethod = 'doCount';
 		}
 		$this->setPeerCountMethod($countMethod);
 	}
-	
+
 	/**
-	 * Get the paged resultset 
-	 * 
-	 * @return mixed $rs 
+	 * Get the paged resultset
+	 *
+	 * @return mixed $rs
 	 */
 	public function getResult()
 	{
-		if(!isset($this->rs)) {
+		if (!isset($this->rs)) {
 			$this->doRs();
 		}
 
 		return $this->rs;
 	}
-	
+
 	/**
-	 * Get the paged resultset 
-	 * 
-	 * Main method which creates a paged result set based on the query 
+	 * Get the paged resultset
+	 *
+	 * Main method which creates a paged result set based on the query
 	 * and the requested peer select method.
-	 * 
+	 *
 	 */
 	private function doRs()
-	{   
+	{
 		$this->query->setOffset($this->start);
 		$this->query->setLimit($this->max);
 		$this->rs = call_user_func(array($this->getPeerClass(), $this->getPeerSelectMethod()), $this->query);
 	}
-	
+
 	/**
-	 * Get the first page 
-	 * 
+	 * Get the first page
+	 *
 	 * For now I can only think of returning 1 always.
 	 * It should probably return 0 if there are no pages
-	 * 
-	 * @return int 1 
+	 *
+	 * @return int 1
 	 */
 	public function getFirstPage()
 	{
 		return '1';
 	}
-	
+
 	/**
 	 * Convenience method to indicate whether current page is the first page.
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function atFirstPage()
 	{
 		return $this->getPage() == $this->getFirstPage();
 	}
-	
+
 	/**
-	 * Get last page 
-	 * 
-	 * @return int $lastPage 
+	 * Get last page
+	 *
+	 * @return int $lastPage
 	 */
 	public function getLastPage()
 	{
@@ -257,26 +257,26 @@ class PropelPager {
 			return $totalPages;
 		}
 	}
-	
+
 	/**
 	 * Convenience method to indicate whether current page is the last page.
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function atLastPage()
 	{
 		return $this->getPage() == $this->getLastPage();
 	}
-	
+
 	/**
-	 * get total pages 
-	 * 
+	 * get total pages
+	 *
 	 * @return int $this->pages
 	 */
 	public function getTotalPages() {
-		if(!isset($this->pages)) {
+		if (!isset($this->pages)) {
 			$recordCount = $this->getTotalRecordCount();
-			if($this->max > 0) {
+			if ($this->max > 0) {
 					$this->pages = ceil($recordCount/$this->max);
 			} else {
 					$this->pages = 0;
@@ -284,10 +284,10 @@ class PropelPager {
 		}
 		return $this->pages;
 	}
-	
+
 	/**
-	 * get an array of previous id's  
-	 * 
+	 * get an array of previous id's
+	 *
 	 * @param int $range
 	 * @return array $links
 	 */
@@ -299,7 +299,7 @@ class PropelPager {
 		$first =  $this->getFirstPage();
 		$links = array();
 		for($i=$start; $i>$end; $i--) {
-			if($i < $first) {
+			if ($i < $first) {
 					break;
 			}
 			$links[] = $i;
@@ -307,10 +307,10 @@ class PropelPager {
 
 		return array_reverse($links);
 	}
-	
+
 	/**
-	 * get an array of next id's  
-	 * 
+	 * get an array of next id's
+	 *
 	 * @param int $range
 	 * @return array $links
 	 */
@@ -322,15 +322,15 @@ class PropelPager {
 		$last =  $this->getLastPage();
 		$links = array();
 		for($i=$start; $i<$end; $i++) {
-			if($i > $last) {
+			if ($i > $last) {
 					break;
 			}
 			$links[] = $i;
 		}
 
 		return $links;
-	}	
-	
+	}
+
 	/**
 	 * Returns whether last page is complete
 	 *
@@ -340,35 +340,35 @@ class PropelPager {
 	{
 		return !($this->getTotalRecordCount() % $this->max);
 	}
-	
+
 	/**
-	 * get previous id  
-	 * 
+	 * get previous id
+	 *
 	 * @return mixed $prev
 	 */
 	public function getPrev() {
-		if($this->getPage() != $this->getFirstPage()) {
+		if ($this->getPage() != $this->getFirstPage()) {
 				$prev = $this->getPage() - 1;
 		} else {
 				$prev = false;
 		}
 		return $prev;
 	}
-	
+
 	/**
-	 * get next id  
-	 * 
+	 * get next id
+	 *
 	 * @return mixed $next
 	 */
 	public function getNext() {
-		if($this->getPage() != $this->getLastPage()) {
+		if ($this->getPage() != $this->getLastPage()) {
 				$next = $this->getPage() + 1;
 		} else {
 				$next = false;
 		}
 		return $next;
 	}
-	
+
 	/**
 	 * Set the current page number (First page is 1).
 	 * @param int $page
@@ -380,7 +380,7 @@ class PropelPager {
 		// (re-)calculate start rec
 		$this->calculateStart();
 	}
-	
+
 	/**
 	 * Get current page.
 	 * @return int
@@ -389,7 +389,7 @@ class PropelPager {
 	{
 		return $this->page;
 	}
-	
+
 	/**
 	 * Set the number of rows per page.
 	 * @param int $r
@@ -400,7 +400,7 @@ class PropelPager {
 		// (re-)calculate start rec
 		$this->calculateStart();
 	}
-	
+
 	/**
 	 * Get number of rows per page.
 	 * @return int
@@ -409,7 +409,7 @@ class PropelPager {
 	{
 		return $this->max;
 	}
-	
+
 	/**
 	 * Calculate startrow / max rows based on current page and rows-per-page.
 	 * @return void
@@ -418,40 +418,40 @@ class PropelPager {
 	{
 		$this->start = ( ($this->page - 1) * $this->max );
 	}
-	
+
 	/**
 	 * Gets the total number of (un-LIMITed) records.
-	 * 
-	 * This method will perform a query that executes un-LIMITed query. 
+	 *
+	 * This method will perform a query that executes un-LIMITed query.
 	 *
 	 * @return int Total number of records - disregarding page, maxrows, etc.
 	 */
 	public function getTotalRecordCount()
-	{	
+	{
 
-                if(!isset($this->rs)) {
-                    $this->doRs();
-                }
+				if (!isset($this->rs)) {
+					$this->doRs();
+				}
 
-                if(empty($this->recordCount)) {
-                        $this->countQuery = clone $this->query;
-                        $this->countQuery->setLimit(0);
-                        $this->countQuery->setOffset(0);
+				if (empty($this->recordCount)) {
+						$this->countQuery = clone $this->query;
+						$this->countQuery->setLimit(0);
+						$this->countQuery->setOffset(0);
 
-                        $this->recordCount = call_user_func(
-                                        array(
-                                                $this->getPeerClass(),
+						$this->recordCount = call_user_func(
+								        array(
+								                $this->getPeerClass(),
 												$this->getPeerCountMethod()
-                                             ),
-                                        $this->countQuery
-                                        );
+								             ),
+								        $this->countQuery
+								        );
 
-                }
+				}
 
-                return $this->recordCount;
+				return $this->recordCount;
 
 	}
-	
+
 	/**
 	 * Sets the start row or offset.
 	 * @param int $v
@@ -460,7 +460,7 @@ class PropelPager {
 	{
 		$this->start = $v;
 	}
-	
+
 	/**
 	 * Sets max rows (limit).
 	 * @param int $v
@@ -471,5 +471,4 @@ class PropelPager {
 		$this->max = $v;
 	}
 
-} 
-
+}
