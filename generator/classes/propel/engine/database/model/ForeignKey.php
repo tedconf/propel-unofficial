@@ -24,16 +24,18 @@ require_once 'propel/engine/database/model/XMLElement.php';
 /**
  * A Class for information about foreign keys of a table.
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @author Fedor <fedor.karpelevitch@home.com>
- * @author Daniel Rall <dlr@finemaltcoding.com>
- * @version $Revision$
- * @package propel.engine.database.model
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Fedor <fedor.karpelevitch@home.com>
+ * @author     Daniel Rall <dlr@finemaltcoding.com>
+ * @version    $Revision$
+ * @package    propel.engine.database.model
  */
 class ForeignKey extends XMLElement {
 
 	private $foreignTableName;
 	private $name;
+	private $phpName;
+	private $refPhpName;
 	private $onUpdate;
 	private $onDelete;
 	private $parentTable;
@@ -50,12 +52,14 @@ class ForeignKey extends XMLElement {
 
 	/**
 	 * Sets up the ForeignKey object based on the attributes that were passed to loadFromXML().
-	 * @see parent::loadFromXML()
+	 * @see        parent::loadFromXML()
 	 */
 	protected function setupObject()
 	{
 		$this->foreignTableName = $this->getAttribute("foreignTable");
 		$this->name = $this->getAttribute("name");
+		$this->phpName = $this->getAttribute("phpName");
+		$this->refPhpName = $this->getAttribute("refPhpName");
 		$this->onUpdate = $this->normalizeFKey($this->getAttribute("onUpdate"));
 		$this->onDelete = $this->normalizeFKey($this->getAttribute("onDelete"));
 	}
@@ -140,6 +144,42 @@ class ForeignKey extends XMLElement {
 	}
 
 	/**
+	 * Gets the phpName for this foreign key (if any).
+	 * @return     string
+	 */
+	public function getPhpName()
+	{
+		return $this->phpName;
+	}
+
+	/**
+	 * Sets a phpName to use for this foreign key.
+	 * @param      string $name
+	 */
+	public function setPhpName($name)
+	{
+		$this->phpName = $name;
+	}
+
+	/**
+	 * Gets the refPhpName for this foreign key (if any).
+	 * @return     string
+	 */
+	public function getRefPhpName()
+	{
+		return $this->refPhpName;
+	}
+
+	/**
+	 * Sets a refPhpName to use for this foreign key.
+	 * @param      string $name
+	 */
+	public function setRefPhpName($name)
+	{
+		$this->refPhpName = $name;
+	}
+
+	/**
 	 * Get the foreignTableName of the FK
 	 */
 	public function getForeignTableName()
@@ -157,7 +197,7 @@ class ForeignKey extends XMLElement {
 
 	/**
 	 * Gets the resolved foreign Table model object.
-	 * @return Table
+	 * @return     Table
 	 */
 	public function getForeignTable()
 	{
@@ -221,7 +261,7 @@ class ForeignKey extends XMLElement {
 
 	/**
 	 * Return an array of local column names.
-	 * @return array string[]
+	 * @return     array string[]
 	 */
 	public function getLocalColumns()
 	{
@@ -243,7 +283,7 @@ class ForeignKey extends XMLElement {
 
 	/**
 	 * Return an array of foreign column names.
-	 * @return array string[]
+	 * @return     array string[]
 	 */
 	public function getForeignColumns()
 	{
@@ -266,7 +306,7 @@ class ForeignKey extends XMLElement {
 	/**
 	 * Whether this foreign key is also the primary key of the local table.
 	 *
-	 * @return boolean
+	 * @return     boolean
 	 */
 	public function isLocalPrimaryKey()
 	{
@@ -275,7 +315,7 @@ class ForeignKey extends XMLElement {
 		$localPKColumnObjs = $this->getTable()->getPrimaryKey();
 
 		$localPKCols = array();
-		foreach($localPKColumnObjs as $lPKCol) {
+		foreach ($localPKColumnObjs as $lPKCol) {
 			$localPKCols[] = $lPKCol->getName();
 		}
 //
@@ -297,7 +337,10 @@ class ForeignKey extends XMLElement {
 			. $this->getForeignTableName()
 			. "\" name=\""
 			. $this->getName()
-			. "\">\n";
+			. "\""
+			. ($this->getPhpName() ? " phpName=\"".($this->getPhpName())."\"" : "")
+			. ($this->getRefPhpName() ? " refPhpName=\"".($this->getRefPhpName())."\"" : "")
+			.">\n";
 
 		for ($i=0, $size=count($this->localColumns); $i < $size; $i++) {
 			$result .= "        <reference local=\""

@@ -20,21 +20,21 @@
  * <http://propel.phpdb.org>.
  */
 
+require_once 'propel/phing/AbstractPropelDataModelTask.php';
 include_once 'propel/engine/database/model/AppData.php';
-//require_once 'phing/Task.php';
 
 /**
- * A task to generate Graphviz png images from propel datamodel.
+ * A task to generate Graphviz dot files from Propel datamodel.
  *
- * @author Mark Kimsal
- * @version $Revision$
- * @package propel.phing
+ * @author     Mark Kimsal
+ * @version    $Revision$
+ * @package    propel.phing
  */
 class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * The properties file that maps an SQL file to a particular database.
-	 * @var PhingFile
+	 * @var        PhingFile
 	 */
 	private $sqldbmap;
 
@@ -51,7 +51,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Set the sqldbmap.
-	 * @param PhingFile $sqldbmap The db map.
+	 * @param      PhingFile $sqldbmap The db map.
 	 */
 	public function setOutputDirectory(PhingFile $out)
 	{
@@ -64,7 +64,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Set the sqldbmap.
-	 * @param PhingFile $sqldbmap The db map.
+	 * @param      PhingFile $sqldbmap The db map.
 	 */
 	public function setSqlDbMap(PhingFile $sqldbmap)
 	{
@@ -73,7 +73,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Get the sqldbmap.
-	 * @return PhingFile $sqldbmap.
+	 * @return     PhingFile $sqldbmap.
 	 */
 	public function getSqlDbMap()
 	{
@@ -82,7 +82,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Set the database name.
-	 * @param string $database
+	 * @param      string $database
 	 */
 	public function setDatabase($database)
 	{
@@ -91,7 +91,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Get the database name.
-	 * @return string
+	 * @return     string
 	 */
 	public function getDatabase()
 	{
@@ -118,7 +118,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 				$this->log("db: " . $database->getName());
 
 				//print the tables
-				foreach($database->getTables() as $tbl) {
+				foreach ($database->getTables() as $tbl) {
 
 					$this->log("\t+ " . $tbl->getName());
 
@@ -142,7 +142,7 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 
 				$count = 0;
 				$dotSyntax .= "\n";
-				foreach($database->getTables() as $tbl) {
+				foreach ($database->getTables() as $tbl) {
 					++$count;
 
 					foreach ($tbl->getColumns() as $col) {
@@ -158,7 +158,9 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 			} // foreach database
 			$dotSyntax .= "}\n";
 
-			$this->writeDot($dotSyntax,$this->outDir);
+			$this->writeDot($dotSyntax,$this->outDir,$database->getName());
+
+		$dotSyntax = '';
 
 		} //foreach datamodels
 
@@ -168,8 +170,8 @@ class PropelGraphvizTask extends AbstractPropelDataModelTask {
 	/**
 	 * probably insecure
 	 */
-	function writeDot($dotSyntax, PhingFile $outputDir) {
-		$file = new PhingFile($outputDir, 'schema.dot');
+	function writeDot($dotSyntax, PhingFile $outputDir, $baseFilename) {
+		$file = new PhingFile($outputDir, $baseFilename . '.schema.dot');
 		$this->log("Writing dot file to " . $file->getAbsolutePath());
 		file_put_contents($file->getAbsolutePath(), $dotSyntax);
 	}

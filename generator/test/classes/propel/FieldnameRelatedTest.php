@@ -37,7 +37,7 @@ require_once 'bookstore/BookstoreTestBase.php';
  * need the BookstoreTestBase's setUp and tearDown (database de/population)
  * behaviour. The tests will run faster this way.
  *
- * @author Sven Fuchs <svenfuchs@artweb-design.de>
+ * @author     Sven Fuchs <svenfuchs@artweb-design.de>
  */
 class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 
@@ -66,33 +66,37 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 				0 => 'Id',
 				1 => 'Title',
 				2 => 'ISBN',
-				3 => 'PublisherId',
-				4 => 'AuthorId'
+				3 => 'Price',
+				4 => 'PublisherId',
+				5 => 'AuthorId'
 			),
 			BasePeer::TYPE_COLNAME => array(
 				0 => 'book.ID',
 				1 => 'book.TITLE',
 				2 => 'book.ISBN',
-				3 => 'book.PUBLISHER_ID',
-				4 => 'book.AUTHOR_ID'
+				3 => 'book.PRICE',
+				4 => 'book.PUBLISHER_ID',
+				5 => 'book.AUTHOR_ID'
 			),
 			BasePeer::TYPE_FIELDNAME => array(
 				0 => 'id',
 				1 => 'title',
 				2 => 'isbn',
-				3 => 'publisher_id',
-				4 => 'author_id'
+				3 => 'price',
+				4 => 'publisher_id',
+				5 => 'author_id'
 			),
 			BasePeer::TYPE_NUM => array(
 				0 => 0,
 				1 => 1,
 				2 => 2,
 				3 => 3,
-				4 => 4
+				4 => 4,
+				5 => 5
 			)
 		);
 
-		foreach($types as $type) {
+		foreach ($types as $type) {
 			$results[$type] = BookPeer::getFieldnames($type);
 			$this->assertEquals(
 				$expecteds[$type],
@@ -118,10 +122,10 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 			BasePeer::TYPE_PHPNAME => 'AuthorId',
 			BasePeer::TYPE_COLNAME => 'book.AUTHOR_ID',
 			BasePeer::TYPE_FIELDNAME => 'author_id',
-			BasePeer::TYPE_NUM => 4,
+			BasePeer::TYPE_NUM => 5,
 		);
-		foreach($types as $fromType) {
-			foreach($types as $toType) {
+		foreach ($types as $fromType) {
+			foreach ($types as $toType) {
 				$name = $expecteds[$fromType];
 				$expected = $expecteds[$toType];
 				$result = BookPeer::translateFieldName($name, $fromType, $toType);
@@ -146,33 +150,37 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 				0 => 'Id',
 				1 => 'Title',
 				2 => 'ISBN',
-				3 => 'PublisherId',
-				4 => 'AuthorId'
+				3 => 'Price',
+				4 => 'PublisherId',
+				5 => 'AuthorId'
 			),
 			BasePeer::TYPE_COLNAME => array(
 				0 => 'book.ID',
 				1 => 'book.TITLE',
 				2 => 'book.ISBN',
-				3 => 'book.PUBLISHER_ID',
-				4 => 'book.AUTHOR_ID'
+				3 => 'book.PRICE',
+				4 => 'book.PUBLISHER_ID',
+				5 => 'book.AUTHOR_ID'
 			),
 			BasePeer::TYPE_FIELDNAME => array(
 				0 => 'id',
 				1 => 'title',
 				2 => 'isbn',
-				3 => 'publisher_id',
-				4 => 'author_id'
+				3 => 'price',
+				4 => 'publisher_id',
+				5 => 'author_id'
 			),
 			BasePeer::TYPE_NUM => array(
 				0 => 0,
 				1 => 1,
 				2 => 2,
 				3 => 3,
-				4 => 4
+				4 => 4,
+				5 => 5
 			)
 		);
 
-		foreach($types as $type) {
+		foreach ($types as $type) {
 			$results[$type] = BasePeer::getFieldnames('Book', $type);
 			$this->assertEquals(
 				$expecteds[$type],
@@ -198,10 +206,10 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 			BasePeer::TYPE_PHPNAME => 'AuthorId',
 			BasePeer::TYPE_COLNAME => 'book.AUTHOR_ID',
 			BasePeer::TYPE_FIELDNAME => 'author_id',
-			BasePeer::TYPE_NUM => 4,
+			BasePeer::TYPE_NUM => 5,
 		);
-		foreach($types as $fromType) {
-			foreach($types as $toType) {
+		foreach ($types as $fromType) {
+			foreach ($types as $toType) {
 				$name = $expecteds[$fromType];
 				$expected = $expecteds[$toType];
 				$result = BasePeer::translateFieldName('Book', $name, $fromType, $toType);
@@ -226,7 +234,7 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 		$book->setTitle('Harry Potter and the Order of the Phoenix');
 
 		$expected = 'Harry Potter and the Order of the Phoenix';
-		foreach($types as $type => $name) {
+		foreach ($types as $type => $name) {
 			$result = $book->getByName($name, $type);
 			$this->assertEquals($expected, $result);
 		}
@@ -287,7 +295,7 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 
 		$book = new Book();
 
-		foreach($types as $type) {
+		foreach ($types as $type) {
 			$expected = $expecteds[$type];
 			$book->fromArray($expected, $type);
 			$result = array();
@@ -340,7 +348,7 @@ class FieldnameRelatedTest extends PHPUnit2_Framework_TestCase {
 			)
 		);
 
-		foreach($types as $type) {
+		foreach ($types as $type) {
 			$expected = $expecteds[$type];
 			$result = $book->toArray($type);
 			// remove ID since its autoincremented at each test iteration

@@ -32,15 +32,15 @@ require_once 'bookstore/BookstoreTestBase.php';
  * for each test method in this class.  See the BookstoreDataPopulator::populate()
  * method for the exact contents of the database.
  *
- * @see BookstoreDataPopulator
- * @author Hans Lellelid <hans@xmpl.org>
+ * @see        BookstoreDataPopulator
+ * @author     Hans Lellelid <hans@xmpl.org>
  */
 class GeneratedPeerTest extends BookstoreTestBase {
 
 	/**
 	 * Test ability to delete multiple rows via single Criteria object.
 	 */
-	public function testDoDelete_MultiTable() {
+	public function t3estDoDelete_MultiTable() {
 
 		$selc = new Criteria();
 		$selc->add(BookPeer::TITLE, "Harry Potter and the Order of the Phoenix");
@@ -56,6 +56,8 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		$c->add(PublisherPeer::ID, $hp->getPublisherId());
 		$c->setSingleRecord(true);
 		BookPeer::doDelete($c);
+
+		//print_r(AuthorPeer::doSelect(new Criteria()));
 
 		// check to make sure the right # of records was removed
 		$this->assertEquals(3, count(AuthorPeer::doSelect(new Criteria())), "Expected 3 authors after deleting.");
@@ -119,13 +121,13 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 		// 1) Get an arbitrary book
 
-			$book = BookPeer::doSelectOne(new Criteria());
+			$c = new Criteria();
+			$book = BookPeer::doSelectOne($c);
 			$bookId = $book->getId();
 			$authorId = $book->getAuthorId();
 			unset($book);
 
 		// 2) Delete the author for that book
-
 			AuthorPeer::doDelete($authorId);
 
 		// 3) Assert that the book.author_id column is now NULL
@@ -283,18 +285,134 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoSelectJoin()
 	{
-		$c = new Criteria();
-		$joinBooks = BookPeer::doSelectJoinAuthor($c);
 
-		$obj = $joinBooks[0];
-		$joinSize = strlen(serialize($obj));
+		$c = new Criteria();
 
 		$books = BookPeer::doSelect($c);
 		$obj = $books[0];
 		$size = strlen(serialize($obj));
 
+
+		$joinBooks = BookPeer::doSelectJoinAuthor($c);
+		$obj = $joinBooks[0];
+		$joinSize = strlen(serialize($obj));
+
 		$this->assertEquals(count($books), count($joinBooks), "Expected to find same number of rows in doSelectJoin*() call as doSelect() call.");
+
 		$this->assertTrue($joinSize > $size, "Expected a serialized join object to be larger than a non-join object.");
 	}
 
+	public function testObjectInstances()
+	{
+
+		// 1) make sure consecutive calls to retrieveByPK() return the same object.
+		$b1 = BookPeer::retrieveByPK(1);
+		$b2 = BookPeer::retrieveByPK(1);
+
+		$sampleval = md5(microtime());
+
+		$this->assertTrue($b1 === $b2, "Expected object instances to match for calls with same retrieveByPK() method signature.");
+
+		// 2) make sure that calls to doSelect also return references to the same objects.
+		$allbooks = BookPeer::doSelect(new Criteria());
+		foreach ($allbooks as $testb) {
+			if ($testb->getPrimaryKey() == $b1->getPrimaryKey()) {
+				$this->assertTrue($testb === $b1, "Expected same object instance from doSelect() as from retrieveByPK()");
+			}
+		}
+
+		// 3) test fetching related objects
+		$book = BookPeer::retrieveByPK(1);
+
+		$bookauthor = $book->getAuthor();
+
+		$author = AuthorPeer::retrieveByPK($bookauthor->getId());
+
+		$this->assertTrue($bookauthor === $author, "Expected same object instance when calling fk object accessor as retrieveByPK()");
+
+		// 4) test a doSelectJoin()
+		$morebooks = BookPeer::doSelectJoinAuthor(new Criteria());
+		for ($i=0,$j=0; $j < count($morebooks); $i++, $j++) {
+			$testb1 = $allbooks[$i];
+			$testb2 = $allbooks[$j];
+			$this->assertTrue($testb1 === $testb2, "Expected the same objects from consecutive doSelect() calls.");
+			// we could probably also test this by just verifying that $book & $testb are the same
+			if ($testb1->getPrimaryKey() === $book) {
+				$this->assertTrue($book->getAuthor() === $testb1->getAuthor(), "Expected same author object in calls to pkey-matching books.");
+			}
+		}
+
+
+		// 5) test creating a new object, saving it, and then retrieving that object (should all be same instance)
+		$b = new BookstoreEmployee();
+		$b->setName("Testing");
+		$b->setJobTitle("Testing");
+		$b->save();
+
+		$empId = $b->getId();
+
+		$this->assertSame($b, BookstoreEmployeePeer::retrieveByPK($empId), "Expected newly saved object to be same instance as pooled.");
+
+	}
+
+	/**
+	 * Test inheritance features.
+	 */
+	public function testInheritance()
+	{
+		$manager = new BookstoreManager();
+		$manager->setName("Manager 1");
+		$manager->setJobTitle("Warehouse Manager");
+		$manager->save();
+		$managerId = $manager->getId();
+
+		$employee = new BookstoreEmployee();
+		$employee->setName("Employee 1");
+		$employee->setJobTitle("Janitor");
+		$employee->setSupervisorId($managerId);
+		$employee->save();
+		$empId = $employee->getId();
+
+		$cashier = new BookstoreCashier();
+		$cashier->setName("Cashier 1");
+		$cashier->setJobTitle("Cashier");
+		$cashier->save();
+		$cashierId = $cashier->getId();
+
+		// 1) test the pooled instances'
+		$c = new Criteria();
+		$c->add(BookstoreEmployeePeer::ID, array($managerId, $empId, $cashierId), Criteria::IN);
+		$c->addAscendingOrderByColumn(BookstoreEmployeePeer::ID);
+
+		$objects = BookstoreEmployeePeer::doSelect($c);
+
+		$this->assertEquals(3, count($objects), "Expected 3 objects to be returned.");
+
+		list($o1, $o2, $o3) = $objects;
+
+		$this->assertSame($o1, $manager);
+		$this->assertSame($o2, $employee);
+		$this->assertSame($o3, $cashier);
+
+		// 2) test a forced reload from database
+		BookstoreEmployeePeer::clearInstancePool();
+
+		list($o1,$o2,$o3) = BookstoreEmployeePeer::doSelect($c);
+
+		$this->assertTrue($o1 instanceof BookstoreManager, "Expected BookstoreManager object, got " . get_class($o1));
+		$this->assertTrue($o2 instanceof BookstoreEmployee, "Expected BookstoreEmployee object, got " . get_class($o2));
+		$this->assertTrue($o3 instanceof BookstoreCashier, "Expected BookstoreCashier object, got " . get_class($o3));
+
+	}
+
+	/**
+	 * Tests the return type of doCount*() methods.
+	 */
+	public function testDoCountType()
+	{
+		$c = new Criteria();
+		$this->assertType('integer', BookPeer::doCount($c), "Expected doCount() to return an integer.");
+		$this->assertType('integer', BookPeer::doCountJoinAll($c), "Expected doCountJoinAll() to return an integer.");
+		$this->assertType('integer', BookPeer::doCountJoinAuthor($c), "Expected doCountJoinAuthor() to return an integer.");
+	}
 }

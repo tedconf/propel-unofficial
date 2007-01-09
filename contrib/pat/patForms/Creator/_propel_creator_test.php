@@ -9,13 +9,13 @@
  * WARNING:
  * The Creator subpackage is still in devel state!
  *
- * @access		public
- * @package		patForms
- * @subpackage	Examples
- * @author		Stephan Schmidt <schst@php-tools.net
- * @author		Sebastian Mordziol <argh@php-tools.net>
- * @license		LGPL, see license.txt for details
- * @link		http://www.php-tools.net
+ * @access     public
+ * @package    patForms
+ * @subpackage Examples
+ * @author     Stephan Schmidt <schst@php-tools.net
+ * @author     Sebastian Mordziol <argh@php-tools.net>
+ * @license    LGPL, see license.txt for details
+ * @link       http://www.php-tools.net
  */
 
 	/**
@@ -81,8 +81,8 @@
 	* so that you may concentrate on the relevant parts of the examples.
 	* It does in no way represent the way it should be done :)
 	*
-	* @access       public
-	* @param        object  &$form  The patForms object to use
+	* @access     public
+	* @param      object  &$form  The patForms object to use
 	*/
 	function displayErrors( &$form )
 	{
@@ -99,14 +99,14 @@
 
 					// the errors collection is an associative array with the
 					// field names as keys, so we go through that.
-					foreach( $errors as $elementName => $elementErrors )
+					foreach ( $errors as $elementName => $elementErrors )
 					{
 							$element =& $form->getElementByName( $elementName );
 
 							// each element can have more than one error - this
 							// is rare, but can happen so this is an indexed array
 							// with one error in each row.
-							foreach( $elementErrors as $row => $error )
+							foreach ( $elementErrors as $row => $error )
 							{
 									echo '          <div class="piError">';
 									echo '                  <b>'.$element->getAttribute( 'label' ).':</b> '.$error['message'].'('.$error['element'].' element error #'.$error['code'].')<br/>';
@@ -135,9 +135,9 @@
 	* so that you may concentrate on the relevant parts of the examples.
 	* It does in no way represent the way it should be done :)
 	*
-	* @access       public
-	* @param        object  &$form          The current form object
-	* @param        array   $elements       The rendered elements from the
+	* @access     public
+	* @param      object  &$form          The current form object
+	* @param      array   $elements       The rendered elements from the
 	* @return
 	* @see
 	*/
@@ -147,12 +147,12 @@
 		echo $form->serializeStart();
 
 		echo "<table>\n";
-		foreach( $elements as $element ) {
+		foreach ( $elements as $element ) {
 		}
 		echo "</table>\n";
 
 		// display all elements
-		foreach( $elements as $element )
+		foreach ( $elements as $element )
 		{
 			if (!isset($element['description'])) {
 				// would choke a warning on hidden fields
@@ -188,7 +188,7 @@
 				echo '  <div class="piValuesContent">';
 				echo '          <table cellpadding="2" cellspacing="0" border="0">';
 
-				for( $i = 0; $i < $cnt; $i++ ) {
+				for ( $i = 0; $i < $cnt; $i++ ) {
 						echo '<tr>';
 						echo '  <td>'.$els[$i]->getAttribute('label').'</td><td>&nbsp;:&nbsp;</td><td>'.$els[$i]->getValue().'</td>';
 						echo '</tr>';

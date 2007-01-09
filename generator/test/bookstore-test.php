@@ -17,8 +17,8 @@
  * of driver-specific things like callable statements (stored procedures), etc.  Perhaps break
  * functionality into class & provide ability to subclass.
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @version $Revision$
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
  */
 
 // Setup configuration.  It is expected that the bookstore-conf.php file exists in ../build/conf
@@ -26,10 +26,10 @@
 
 error_reporting(E_ALL);
 
-$conf_path = realpath(dirname(__FILE__) . '/../projects/bookstore/runtime-conf.ini');
+$conf_path = realpath(dirname(__FILE__) . '/../projects/bookstore/build/conf/bookstore-conf.php');
 if (!file_exists($conf_path)) {
 	print "Make sure that you specify properties in conf/bookstore.properties and "
-	."build propel before running this script.";
+	."build propel before running this script.\n";
 	exit;
 }
 
@@ -47,14 +47,7 @@ set_include_path(
 
 
  // Require classes.
- require_once 'propel/Propel.php';
- require_once 'bookstore/Author.php';
- require_once 'bookstore/Publisher.php';
- require_once 'bookstore/Book.php';
- require_once 'bookstore/Review.php';
- include_once 'bookstore/Media.php';
- include_once 'bookstore/BookClubList.php';
- include_once 'bookstore/BookListRel.php';
+ require 'propel/Propel.php';
 
  include_once 'Benchmark/Timer.php';
 
@@ -446,16 +439,14 @@ try {
 	}
 
 	print "Making sure BLOB was correctly updated: ";
-	print boolTest( $m1_lookup->getCoverImage()->getContents() === file_get_contents($blob_path));
+	print boolTest( $m1_lookup->getCoverImage() === file_get_contents($blob_path));
 	print "Making sure CLOB was correctly updated: ";
-	print boolTest((string) $m1_lookup->getExcerpt()->getContents() === file_get_contents($clob_path));
+	print boolTest((string) $m1_lookup->getExcerpt() === file_get_contents($clob_path));
 
 
 	// now update the BLOB column and save it & check the results
 
-	$b = $m1_lookup->getCoverImage();
-	$b->setContents(file_get_contents($blob2_path));
-	$m1_lookup->setCoverImage($b);
+	$m1_lookup->setCoverImage(file_get_contents($blob2_path));
 	$m1_lookup->save();
 
 	try {
@@ -466,7 +457,7 @@ try {
 	}
 
 	print "Making sure BLOB was correctly overwritten: ";
-	print boolTest($m2_lookup->getCoverImage()->getContents() === file_get_contents($blob2_path));
+	print boolTest($m2_lookup->getCoverImage() === file_get_contents($blob2_path));
 
 } catch (Exception $e) {
 	die("Error doing blob/clob updates: " . $e->__toString());

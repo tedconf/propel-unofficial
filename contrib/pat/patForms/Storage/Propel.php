@@ -32,9 +32,9 @@ class patForms_Storage_Propel extends patForms_Storage
 	* form and populates the form with the data of this
 	* entry
 	*
-	* @access	public
-	* @param	object patForms		patForms object that should be stored
-	* @return	boolean				true on success
+	* @access     public
+	* @param      object patForms		patForms object that should be stored
+	* @return     boolean				true on success
 	*/
 	public function loadEntry(&$form) {
 
@@ -59,7 +59,7 @@ class patForms_Storage_Propel extends patForms_Storage
 		if ($result !== true) {
 			$mapBuilder = $this->peer->getMapBuilder();
 			$dbMap = $mapBuilder->getDatabaseMap();
-			foreach($result as $colname => $error) {
+			foreach ($result as $colname => $error) {
 				list($tablename, $colname) = explode('.', $colname);
 				$column = $dbMap->getTable($tablename)->getColumn($colname);
 				$element = $form->getElement($column->getPhpName());
@@ -77,8 +77,8 @@ class patForms_Storage_Propel extends patForms_Storage
    /**
 	* adds an entry to the storage
 	*
-	* @param	object patForms		patForms object that should be stored
-	* @return	boolean				true on success
+	* @param      object patForms		patForms object that should be stored
+	* @return     boolean				true on success
 	*/
 	public function _addEntry(&$form) {
 
@@ -92,8 +92,8 @@ class patForms_Storage_Propel extends patForms_Storage
    /**
 	* updates an entry in the storage
 	*
-	* @param	object patForms		patForms object that should be stored
-	* @return	boolean				true on success
+	* @param      object patForms		patForms object that should be stored
+	* @return     boolean				true on success
 	*/
 	public function _updateEntry(&$form, $primary) {
 
@@ -107,8 +107,8 @@ class patForms_Storage_Propel extends patForms_Storage
    /**
 	* check, whether an entry exists
 	*
-	* @access	private
-	* @param	array
+	* @access     private
+	* @param      array
 	*/
 	public function _entryExists($values) {
 
@@ -136,7 +136,7 @@ class patForms_Storage_Propel extends patForms_Storage
 
 	private function populateObjectFromArray($object, $values) {
 
-		foreach(array_keys($object->toArray()) as $key) {
+		foreach (array_keys($object->toArray()) as $key) {
 			if (array_key_exists($key, $values)) {
 				$object->{'set' . $key}($values[$key]);
 			}

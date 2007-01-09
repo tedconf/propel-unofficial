@@ -13,17 +13,17 @@
   <property name="build.properties" value="build.properties"/>
   <property name="propel.contextProperties" value="./${build.properties}"/>
   <property name="propel.home" value="."/>
-  
+
   <available file="${propel.home}/build.properties" property="globalBuildPopertiesExists"/>
-  
-  <if> 
+
+  <if>
   	<and>
   		<isset property="globalBuildPopertiesExists"/>
   	</and>
   	<then>
 	    <property file="${propel.home}/build.properties"/>
-	</then>	
-  </if>  
+	</then>
+  </if>
 
   <!--
     The default.properties file will map old properties to the new ones along
@@ -55,9 +55,12 @@
   <taskdef
     name="propel-data-sql"
     classname="propel.phing.PropelDataSQLTask" classpathRef="propelclasses"/>
+<!--
    <taskdef
     name="propel-creole-transform"
     classname="propel.phing.PropelCreoleTransformTask" classpathRef="propelclasses"/>
+-->
+
   <taskdef
     name="propel-sql"
     classname="propel.phing.PropelSQLTask" classpathRef="propelclasses"/>
@@ -67,7 +70,9 @@
   <taskdef
     name="propel-graphviz"
     classname="propel.phing.PropelGraphvizTask" classpathRef="propelclasses"/>
-
+  <taskdef
+    name="propel-convert-conf"
+    classname="propel.phing.PropelConvertConfTask" classpathRef="propelclasses"/>
 
   <!-- ================================================================ -->
   <!-- M A I N  T A R G E T                                             -->
@@ -84,7 +89,7 @@
 
     <phingcall target="sql"/>
     <phingcall target="om"/>
-    <phingcall target="copy-runtime-conf"/>
+    <phingcall target="convert-conf"/>
   </target>
 
   <!-- ================================================================ -->
@@ -196,6 +201,9 @@
     depends="create-db-check"
     description="==> generates the target database">
 
+	<fail message="create-db target temporarily disabled, while we replace creole components."/>
+
+	<!--
     <propel-data-model
 	  validate="${propel.schema.validate}"
 	  xsd="${propel.schema.xsd.file}"
@@ -223,6 +231,7 @@
       src="${propel.sql.dir}/create-db.sql"
       url="${propel.database.createUrl}"
     />
+    -->
   </target>
 
   <!-- ================================================================ -->
@@ -235,7 +244,6 @@
 
     <propel-sql-exec
       autocommit="true"
-      driver="${propel.database.driver}"
       onerror="continue"
       sqldbmap="${propel.sql.dir}/sqldb.map"
       srcDir="${propel.sql.dir}"
@@ -256,7 +264,8 @@
     <echo message="| Generating XML from Creole connection !       |"/>
     <echo message="|                                               |"/>
     <echo message="+-----------------------------------------------+"/>
-
+    <fail message="The 'creole' target is temporarily disabled while we build a PDO reverse-engineer solution."/>
+	<!--
     <propel-creole-transform
       dbDriver="${propel.database.driver}"
       dbSchema="${propel.database.schema}"
@@ -267,7 +276,9 @@
       addVendorInfo="${propel.addVendorInfo}"
       addValidators="${propel.addValidators}"
     />
+    -->
   </target>
+
 
   <!-- ================================================================ -->
   <!-- Generate SQL from XML data file                                  -->
@@ -393,7 +404,7 @@
     <echo message="+------------------------------------------+"/>
     <echo message="|                                          |"/>
     <echo message="| Generating Peer-based Object Model for   |"/>
-    <echo message="| YOUR Propel project! (NEW OM BUILDERS)!  |"/>
+    <echo message="| YOUR Propel project!                     |"/>
     <echo message="|                                          |"/>
     <echo message="+------------------------------------------+"/>
 
@@ -420,25 +431,36 @@
   </target>
 
   <!-- ================================================================== -->
-  <!-- P R O P S   T O   P H P   A R R A Y                                -->
+  <!-- X M L   R U N T I M E   C O N F   T O   P H P   A R R A Y          -->
   <!-- ================================================================== -->
 
   <target
-    name="copy-runtime-conf"
+    name="convert-conf"
     description="==> converts properties file to PHP array">
 
     <echo message="+------------------------------------------+"/>
     <echo message="|                                          |"/>
-    <echo message="| Copying your runtime config file(s) to   |"/>
-    <echo message="| the output directory.                    |"/>
+    <echo message="| Converting runtime config file to an     |"/>
+    <echo message="| array dump for improved performance.     |"/>
     <echo message="|                                          |"/>
     <echo message="+------------------------------------------+"/>
 
-    <copy todir="${propel.phpconf.dir}">
-    	<fileset dir="${propel.conf.dir}">
-			<include name="${propel.runtime.conf.includes}"/>
-		</fileset>
-    </copy>
+
+	<echo>Output file: ${propel.runtime.phpconf.file}</echo>
+	<echo>XMLFile: ${propel.conf.dir}/${propel.runtime.conf.file}</echo>
+
+    <propel-convert-conf
+      targetDatabase="${propel.database}"
+      xsd="${propel.schema.xsd.file}"
+	  xsl="${propel.schema.xsl.file}"
+      xmlConfFile="${propel.conf.dir}/${propel.runtime.conf.file}"
+      outputDirectory="${propel.phpconf.dir}"
+      outputFile="${propel.runtime.phpconf.file}">
+      <schemafileset dir="${propel.schema.dir}"
+        includes="${propel.schema.sql.includes}"
+        excludes="${propel.schema.sql.excludes}"
+      />
+     </propel-convert-conf>
 
   </target>
 

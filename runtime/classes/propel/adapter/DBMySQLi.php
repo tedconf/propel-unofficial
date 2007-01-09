@@ -20,14 +20,12 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/adapter/DBMySQL.php';
-
 /**
  * This is used in order to connect to a MySQL database using the new mysqli API.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @version $Revision$
- * @package propel.adapter
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @version    $Revision$
+ * @package    propel.adapter
  */
 class DBMySQLi extends DBMySQL {
 

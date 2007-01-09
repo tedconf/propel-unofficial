@@ -19,8 +19,6 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/validator/BasicValidator.php';
-
 /**
  * A validator for valid values (e.g. for enum fields)
  *
@@ -32,9 +30,9 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class ValidValuesValidator implements BasicValidator
 {

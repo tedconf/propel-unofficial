@@ -24,9 +24,9 @@ require_once 'propel/engine/platform/MysqlPlatform.php';
 /**
  * MySql Platform implementation, using new mysqli API.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @version $Revision$
- * @package propel.engine.platform
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @version    $Revision$
+ * @package    propel.engine.platform
  */
 class MysqliPlatform extends MysqlPlatform {
 
@@ -37,27 +37,22 @@ class MysqliPlatform extends MysqlPlatform {
 	{
 		parent::initialize();
 
-		// set these back to the SQL standard, since newer MySQL doesn't have a weird
-		// meaning for TIMESTAMP
-		$this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "TIMESTAMP"));
-		$this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "TIMESTAMP"));
+		// HL -- commenting these out, as it turns out that while the date format is fixed
+		// there is still a special meaning to TIMESTAMP in MySQL 4.1+
+		// $this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "TIMESTAMP"));
+		// $this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "TIMESTAMP"));
 	}
 
 	/**
 	 * Escape the string for MySQL.
 	 *
-	 * @param string $text
-	 * @return string
+	 * @param      string $text
+	 * @return     string
 	 */
 	public function escapeText($text) {
-		// Because mysqli requires open connection, we were using addslashes() here.
-		// Lets hope the user also has mysql extension installed and active
-		// It's at least somewhat better than addslashes
-	if ( function_exists ( 'mysql_escape_string' ) ) {
-		return mysql_escape_string ( $text );
-	} else {
-		return addslashes ( $text );
-	}
+		// Because mysqli requires open connection, we are using addslashes() here.
+		// This needs to be fixed in a better way ...
+		return addslashes($text);
 	}
 
 }

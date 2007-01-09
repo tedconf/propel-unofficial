@@ -43,7 +43,7 @@ class patForms_Definition_Propel extends patForms_Definition {
 	);
 
 	/**
-	 * @param array $conf an assoc array of parameters. these are:
+	 * @param      array $conf an assoc array of parameters. these are:
 	 *     - string name => $name of the propel object class
 	 *     - string filename => $filename of the form definition xml file
 	 */
@@ -77,7 +77,7 @@ class patForms_Definition_Propel extends patForms_Definition {
 		$tableMap = $mapBuilder->getDatabaseMap()->getTable($tablename);
 		$cols = $tableMap->getColumns();
 
-		foreach($cols as $col) {
+		foreach ($cols as $col) {
 
 			$phpname = $col->getPhpName();
 			// this would need a patched version of patForms in order

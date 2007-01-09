@@ -26,8 +26,8 @@ require_once 'propel/engine/builder/sql/DDLBuilder.php';
  * The SQL DDL-building class for MS SQL Server.
  *
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @package propel.engine.builder.sql.pgsql
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @package    propel.engine.builder.sql.pgsql
  */
 class MssqlDDLBuilder extends DDLBuilder {
 
@@ -35,7 +35,7 @@ class MssqlDDLBuilder extends DDLBuilder {
 
 	/**
 	 *
-	 * @see parent::addDropStatement()
+	 * @see        parent::addDropStatement()
 	 */
 	protected function addDropStatements(&$script)
 	{
@@ -45,7 +45,7 @@ class MssqlDDLBuilder extends DDLBuilder {
 		foreach ($table->getForeignKeys() as $fk) {
 			$script .= "
 IF EXISTS (SELECT 1 FROM sysobjects WHERE type ='RI' AND name='".$fk->getName()."')
-	ALTER TABLE ".$this->quoteIdentifier($table->getName())." DROP CONSTRAINT ".$this->quoteIdentifier($fk->getName()).";
+	ALTER TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))." DROP CONSTRAINT ".$this->quoteIdentifier($fk->getName()).";
 ";
 		}
 
@@ -53,7 +53,7 @@ IF EXISTS (SELECT 1 FROM sysobjects WHERE type ='RI' AND name='".$fk->getName().
 		self::$dropCount++;
 
 		$script .= "
-IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = '".$table->getName()."')
+IF EXISTS (SELECT 1 FROM sysobjects WHERE type = 'U' AND name = '".DataModelBuilder::prefixTablename($table->getName())."')
 BEGIN
 	 DECLARE @reftable_".self::$dropCount." nvarchar(60), @constraintname_".self::$dropCount." nvarchar(60)
 	 DECLARE refcursor CURSOR FOR
@@ -65,7 +65,7 @@ BEGIN
 	   where tables.id = ref.rkeyid
 		 and cons.id = ref.constid
 		 and reftables.id = ref.fkeyid
-		 and tables.name = '".$table->getName()."'
+		 and tables.name = '".DataModelBuilder::prefixTablename($table->getName())."'
 	 OPEN refcursor
 	 FETCH NEXT from refcursor into @reftable_".self::$dropCount.", @constraintname_".self::$dropCount."
 	 while @@FETCH_STATUS = 0
@@ -75,13 +75,13 @@ BEGIN
 	 END
 	 CLOSE refcursor
 	 DEALLOCATE refcursor
-	 DROP TABLE ".$this->quoteIdentifier($table->getName())."
+	 DROP TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))."
 END
 ";
 	}
 
 	/**
-	 * @see parent::addColumns()
+	 * @see        parent::addColumns()
 	 */
 	protected function addTable(&$script)
 	{
@@ -99,7 +99,7 @@ END
 
 		$script .= "
 
-CREATE TABLE ".$this->quoteIdentifier($table->getName())."
+CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))."
 (
 	";
 
@@ -110,7 +110,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 		}
 
 		if ($table->hasPrimaryKey()) {
-			$lines[] = "CONSTRAINT ".$this->quoteIdentifier($table->getName())."_PK PRIMARY KEY (".$this->getColumnList($table->getPrimaryKey()).")";
+			$lines[] = "CONSTRAINT ".$this->quoteIdentifier($table->getName()."_PK") . " PRIMARY KEY (".$this->getColumnList($table->getPrimaryKey()).")";
 		}
 
 		foreach ($table->getUnices() as $unique ) {
@@ -127,7 +127,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 
 	/**
 	 * Adds CREATE INDEX statements for this table.
-	 * @see parent::addIndices()
+	 * @see        parent::addIndices()
 	 */
 	protected function addIndices(&$script)
 	{
@@ -140,14 +140,14 @@ CREATE ";
 			if ($index->getIsUnique()) {
 				$script .= "UNIQUE";
 			}
-			$script .= "INDEX ".$this->quoteIdentifier($index->getName())." ON ".$this->quoteIdentifier($table->getName())." (".$this->getColumnList($index->getColumns()).");
+			$script .= "INDEX ".$this->quoteIdentifier($index->getName())." ON ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))." (".$this->getColumnList($index->getColumns()).");
 ";
 		}
 	}
 
 	/**
 	 *
-	 * @see parent::addForeignKeys()
+	 * @see        parent::addForeignKeys()
 	 */
 	protected function addForeignKeys(&$script)
 	{
@@ -157,7 +157,7 @@ CREATE ";
 		foreach ($table->getForeignKeys() as $fk) {
 			$script .= "
 BEGIN
-ALTER TABLE ".$this->quoteIdentifier($table->getName())." ADD CONSTRAINT ".$this->quoteIdentifier($fk->getName())." FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()) .") REFERENCES ".$this->quoteIdentifier($fk->getForeignTableName())." (".$this->getColumnList($fk->getForeignColumns()).")";
+ALTER TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))." ADD CONSTRAINT ".$this->quoteIdentifier($fk->getName())." FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()) .") REFERENCES ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($fk->getForeignTableName()))." (".$this->getColumnList($fk->getForeignColumns()).")";
 			if ($fk->hasOnUpdate()) {
 				if ($fk->getOnUpdate() == ForeignKey::SETNULL) { // there may be others that also won't work
 					// we have to skip this because it's unsupported.

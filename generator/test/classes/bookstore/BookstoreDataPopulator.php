@@ -27,6 +27,9 @@ require_once 'bookstore/Review.php';
 require_once 'bookstore/BookClubList.php';
 require_once 'bookstore/BookListRel.php';
 require_once 'bookstore/BookstoreEmployee.php';
+require_once 'bookstore/BookstoreManager.php';
+require_once 'bookstore/BookstoreCashier.php';
+require_once 'bookstore/BookstoreEmployeeAccount.php';
 
 define('_LOB_SAMPLE_FILE_PATH', dirname(__FILE__) . '/../../etc/lob');
 
@@ -37,7 +40,7 @@ define('_LOB_SAMPLE_FILE_PATH', dirname(__FILE__) . '/../../etc/lob');
  * inserting directly into the database.  This will have a performance hit, but will
  * benefit from increased flexibility (as does anything using Propel).
  *
- * @author Hans Lellelid <hans@xmpl.org>
+ * @author     Hans Lellelid <hans@xmpl.org>
  */
 class BookstoreDataPopulator {
 
@@ -82,6 +85,7 @@ class BookstoreDataPopulator {
 		$rowling = new Author();
 		$rowling->setFirstName("J.K.");
 		$rowling->setLastName("Rowling");
+		// print "Created author Rowling: " . (string) $rowling . "\n";
 		// no save()
 		//print "Added author \"J.K. Rowling\" [not saved yet].\n";
 
@@ -119,13 +123,17 @@ class BookstoreDataPopulator {
 		$phoenix->setISBN("043935806X");
 		$phoenix->setAuthor($rowling);
 		$phoenix->setPublisher($scholastic);
+		$phoenix->setPrice(10.99);
 		$phoenix->save();
 		$phoenix_id = $phoenix->getId();
+		// print "Created book Phoenix: " . (string) $phoenix . "\n";
+
 		// print "Added book \"Harry Potter and the Order of the Phoenix\" [id = $phoenix_id].\n";
 
 		$qs = new Book();
 		$qs->setISBN("0380977427");
 		$qs->setTitle("Quicksilver");
+		$qs->setPrice(11.99);
 		$qs->setAuthor($stephenson);
 		$qs->setPublisher($morrow);
 		$qs->save();
@@ -135,6 +143,7 @@ class BookstoreDataPopulator {
 		$dj = new Book();
 		$dj->setISBN("0140422161");
 		$dj->setTitle("Don Juan");
+		$dj->setPrice(12.99);
 		$dj->setAuthor($byron);
 		$dj->setPublisher($penguin);
 		$dj->save();
@@ -144,6 +153,7 @@ class BookstoreDataPopulator {
 		$td = new Book();
 		$td->setISBN("067972575X");
 		$td->setTitle("The Tin Drum");
+		$td->setPrice(13.99);
 		$td->setAuthor($grass);
 		$td->setPublisher($vintage);
 		$td->save();
@@ -183,7 +193,6 @@ class BookstoreDataPopulator {
 		$m1->setExcerpt(file_get_contents($clob_path));
 		$m1->save();
 
-
 		// Add book list records
 		// ---------------------
 		// (this is for many-to-many tests)
@@ -201,6 +210,16 @@ class BookstoreDataPopulator {
 		$blc1->addBookListRel($brel1);
 		$blc1->addBookListRel($brel2);
 
+		$bemp1 = new BookstoreEmployee();
+		$bemp1->setName("John");
+		$bemp1->setJobTitle("Manager");
+
+		$bemp2 = new BookstoreEmployee();
+		$bemp2->setName("Pieter");
+		$bemp2->setJobTitle("Clerk");
+		$bemp2->setSupervisor($bemp1);
+
+		$bemp2->save();
 
 	}
 
@@ -212,7 +231,8 @@ class BookstoreDataPopulator {
 		ReviewPeer::doDeleteAll();
 		MediaPeer::doDeleteAll();
 		BookClubListPeer::doDeleteAll();
-
+		BookstoreEmployeePeer::doDeleteAll();
+		BookstoreEmployeeAccountPeer::doDeleteAll();
 	}
 
 }

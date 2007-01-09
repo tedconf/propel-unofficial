@@ -20,21 +20,19 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/adapter/DBSybase.php';
-
 /**
  * This is used to connect to a MSSQL database.  For now, this class
  * simply extends the adaptor for Sybase.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @version $Revision$
- * @package propel.adapter
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @version    $Revision$
+ * @package    propel.adapter
  */
 class DBMSSQL extends DBSybase {
 	// no difference currently
 
 	/**
-	 * @see DBAdapter::applyLimit()
+	 * @see        DBAdapter::applyLimit()
 	 */
 	public function applyLimit(&$sql, $offset, $limit)
 	{
@@ -79,4 +77,10 @@ class DBMSSQL extends DBSybase {
 		DEALLOCATE node_cursor
 		*/
 	}
+
+	public function random($seed=NULL) 
+	{
+		return 'NEWID()';
+	}
+
 }

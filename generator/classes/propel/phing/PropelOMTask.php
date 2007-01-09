@@ -27,20 +27,20 @@ require_once 'propel/engine/builder/om/OMBuilder.php';
 /**
  * This Task creates the OM classes based on the XML schema file.
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @package propel.phing
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @package    propel.phing
  */
 class PropelOMTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * The platform (php4, php5, etc.) for which the om is being built.
-	 * @var string
+	 * @var        string
 	 */
 	private $targetPlatform;
 
 	/**
 	 * Sets the platform (php4, php5, etc.) for which the om is being built.
-	 * @param string $v
+	 * @param      string $v
 	 */
 	public function setTargetPlatform($v) {
 		$this->targetPlatform = $v;
@@ -48,7 +48,7 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Gets the platform (php4, php5, etc.) for which the om is being built.
-	 * @return string
+	 * @return     string
 	 */
 	public function getTargetPlatform() {
 		return $this->targetPlatform;
@@ -56,8 +56,8 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 
 	/**
 	 * Utility method to create directory for package if it doesn't already exist.
-	 * @param string $path The [relative] package path.
-	 * @throws BuildException - if there is an error creating directories
+	 * @param      string $path The [relative] package path.
+	 * @throws     BuildException - if there is an error creating directories
 	 */
 	protected function ensureDirExists($path)
 	{
@@ -72,9 +72,9 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 	/**
 	 * Uses a builder class to create the output class.
 	 * This method assumes that the DataModelBuilder class has been initialized with the build properties.
-	 * @param OMBuilder $builder
-	 * @param boolean $overwrite Whether to overwrite existing files with te new ones (default is YES).
-	 * @todo -cPropelOMTask Consider refactoring build() method into AbstractPropelDataModelTask (would need to be more generic).
+	 * @param      OMBuilder $builder
+	 * @param      boolean $overwrite Whether to overwrite existing files with te new ones (default is YES).
+	 * @todo       -cPropelOMTask Consider refactoring build() method into AbstractPropelDataModelTask (would need to be more generic).
 	 */
 	protected function build(OMBuilder $builder, $overwrite = true)
 	{
@@ -87,7 +87,7 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 			$this->log("\t\t-> " . $builder->getClassname() . " [builder: " . get_class($builder) . "]");
 			$script = $builder->build();
 			file_put_contents($_f->getAbsolutePath(), $script);
-			foreach($builder->getWarnings() as $warning) {
+			foreach ($builder->getWarnings() as $warning) {
 				$this->log($warning, PROJECT_MSG_WARN);
 			}
 		} else {
@@ -124,7 +124,7 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 						// -----------------------------------------------------------------------------------------
 
 						// these files are always created / overwrite any existing files
-						foreach(array('peer', 'object', 'mapbuilder') as $target) {
+						foreach (array('peer', 'object', 'mapbuilder') as $target) {
 							$builder = DataModelBuilder::builderFactory($table, $target);
 							$this->build($builder);
 						}
@@ -134,7 +134,7 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 						// -----------------------------------------------------------------------------------------
 
 						// these classes are only generated if they don't already exist
-						foreach(array('peerstub', 'objectstub') as $target) {
+						foreach (array('peerstub', 'objectstub') as $target) {
 							$builder = DataModelBuilder::builderFactory($table, $target);
 							$this->build($builder, $overwrite=false);
 						}
@@ -170,19 +170,33 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 						// Create tree Node classes
 						// -----------------------------------------------------------------------------------------
 
-						if ($table->isTree()) {
+						if ($table->treeMode()) {
+							switch($table->treeMode()) {
+								case 'NestedSet':
+									foreach (array('nestedsetpeer', 'nestedset') as $target) {
+										$builder = DataModelBuilder::builderFactory($table, $target);
+										$this->build($builder);
+									}
+								break;
 
-							foreach(array('nodepeer', 'node') as $target) {
-								$builder = DataModelBuilder::builderFactory($table, $target);
-								$this->build($builder);
+								case 'MaterializedPath':
+									foreach (array('nodepeer', 'node') as $target) {
+										$builder = DataModelBuilder::builderFactory($table, $target);
+										$this->build($builder);
+									}
+
+									foreach (array('nodepeerstub', 'nodestub') as $target) {
+										$builder = DataModelBuilder::builderFactory($table, $target);
+										$this->build($builder, $overwrite=false);
+									}
+								break;
+
+								case 'AdjacencyList':
+								default:
+								break;
 							}
 
-							foreach(array('nodepeerstub', 'nodestub') as $target) {
-								$builder = DataModelBuilder::builderFactory($table, $target);
-								$this->build($builder, $overwrite=false);
-							}
-
-						} // if Table->isTree()
+						} // if Table->treeMode()
 
 
 					} // if !$table->isForReferenceOnly()
@@ -192,7 +206,6 @@ class PropelOMTask extends AbstractPropelDataModelTask {
 			} // foreach database
 
 		} // foreach dataModel
-
 
 	} // main()
 }

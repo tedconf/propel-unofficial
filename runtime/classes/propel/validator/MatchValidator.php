@@ -19,8 +19,6 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/validator/BasicValidator.php';
-
 /**
  * A validator for regular expressions.
  *
@@ -45,18 +43,18 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @author Hans Lellelid <hans@xmpl.org>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class MatchValidator implements BasicValidator
 {
 	/**
 	 * Prepares the regular expression entered in the XML
 	 * for use with preg_match().
-	 * @param string $exp
-	 * @return string Prepared regular expession.
+	 * @param      string $exp
+	 * @return     string Prepared regular expession.
 	 */
 	private function prepareRegexp($exp)
 	{

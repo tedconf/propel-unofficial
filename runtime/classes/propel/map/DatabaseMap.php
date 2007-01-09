@@ -20,8 +20,6 @@
  * <http://propel.phpdb.org>.
  */
 
-include_once 'propel/map/TableMap.php';
-
 /**
  * DatabaseMap is used to model a database.
  *
@@ -36,31 +34,30 @@ include_once 'propel/map/TableMap.php';
  * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc.
  * classes.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @author Daniel Rall <dlr@collab.net> (Torque)
- * @version $Revision$
- * @package propel.map
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @author     Daniel Rall <dlr@collab.net> (Torque)
+ * @version    $Revision$
+ * @package    propel.map
  */
 class DatabaseMap {
 
-	/** @var string Name of the database. */
+	/** Name of the database. */
 	private $name;
 
-	/** @var array TableMap[] Tables in the database. */
-	private $tables = array();
+	/** Name of the tables in the database. */
+	protected $tables = array();
 
 	/**
 	 * The table MapBuilder objects that will initialize tables (on demand).
-	 * @var array Map of table builders (name => MapBuilder)
+	 * @var        array Map of table builders (name => MapBuilder)
 	 */
 	private $tableBuilders = array();
 
 	/**
 	 * Constructor.
 	 *
-	 * @param string $name Name of the database.
-	 * @param DBAdapter $adapter
+	 * @param      string $name Name of the database.
 	 */
 	public function __construct($name)
 	{
@@ -68,19 +65,10 @@ class DatabaseMap {
 	}
 
 	/**
-	 * Convenience method to get the DBAdapter registered with Propel for this database.
-	 * @see Propel::getAdapter(string)
-	 */
-	public function getAdapter()
-	{
-		return Propel::getAdapter($this->name);
-	}
-
-	/**
 	 * Does this database contain this specific table?
 	 *
-	 * @param string $name The String representation of the table.
-	 * @return boolean True if the database contains the table.
+	 * @param      string $name The String representation of the table.
+	 * @return     boolean True if the database contains the table.
 	 */
 	public function containsTable($name)
 	{
@@ -94,7 +82,7 @@ class DatabaseMap {
 	/**
 	 * Get the name of this database.
 	 *
-	 * @return string The name of the database.
+	 * @return     string The name of the database.
 	 */
 	public function getName()
 	{
@@ -104,9 +92,9 @@ class DatabaseMap {
 	/**
 	 * Get a TableMap for the table by name.
 	 *
-	 * @param string $name Name of the table.
-	 * @return TableMap A TableMap
-	 * @throws PropelException if the table is undefined
+	 * @param      string $name Name of the table.
+	 * @return     TableMap A TableMap
+	 * @throws     PropelException if the table is undefined
 	 */
 	public function getTable($name)
 	{
@@ -122,14 +110,14 @@ class DatabaseMap {
 	/**
 	 * Get a TableMap[] of all of the tables in the database.
 	 *
-	 * @return array A TableMap[].
+	 * @return     array A TableMap[].
 	 */
 	public function getTables()
 	{
 		// if there's a mismatch in the tables and tableBuilders
 		if (count($this->tableBuilders) != count($this->tables)) {
 			$missingTables = array_diff(array_keys($this->tableBuilders), array_keys($this->tables));
-			foreach($missingTables as $table) {
+			foreach ($missingTables as $table) {
 				$this->tableBuilders[$table]->doBuild();
 			}
 		}
@@ -143,8 +131,8 @@ class DatabaseMap {
 	 * is called indirectly on-demand by the getTable() method, when there is
 	 * a table builder (MapBuilder) registered, but no TableMap loaded.
 	 *
-	 * @param string $tableName The name of the table.
-	 * @return TableMap The newly created TableMap.
+	 * @param      string $tableName The name of the table.
+	 * @return     TableMap The newly created TableMap.
 	 */
 	public function addTable($tableName)
 	{
@@ -155,7 +143,7 @@ class DatabaseMap {
 	/**
 	 * Add a new table builder (MapBuilder) to the database by name.
 	 *
-	 * @param string $tableName The name of the table.
+	 * @param      string $tableName The name of the table.
 	 */
 	public function addTableBuilder($tableName, MapBuilder $builder)
 	{

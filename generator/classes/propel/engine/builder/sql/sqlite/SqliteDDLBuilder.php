@@ -26,14 +26,14 @@ require_once 'propel/engine/builder/sql/DDLBuilder.php';
  * The SQL DDL-building class for SQLite.
  *
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @package propel.engine.builder.sql.pgsql
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @package    propel.engine.builder.sql.pgsql
  */
 class SqliteDDLBuilder extends DDLBuilder {
 
 	/**
 	 *
-	 * @see parent::addDropStatement()
+	 * @see        parent::addDropStatement()
 	 */
 	protected function addDropStatements(&$script)
 	{
@@ -41,13 +41,13 @@ class SqliteDDLBuilder extends DDLBuilder {
 		$platform = $this->getPlatform();
 
 		$script .= "
-DROP TABLE ".$this->quoteIdentifier($table->getName()).";
+DROP TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName())).";
 ";
 	}
 
 	/**
 	 *
-	 * @see parent::addColumns()
+	 * @see        parent::addColumns()
 	 */
 	protected function addTable(&$script)
 	{
@@ -64,7 +64,7 @@ DROP TABLE ".$this->quoteIdentifier($table->getName()).";
 
 		$script .= "
 
-CREATE TABLE ".$this->quoteIdentifier($table->getName())."
+CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))."
 (
 	";
 
@@ -88,7 +88,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 
 	/**
 	 * Adds CREATE INDEX statements for this table.
-	 * @see parent::addIndices()
+	 * @see        parent::addIndices()
 	 */
 	protected function addIndices(&$script)
 	{
@@ -101,14 +101,14 @@ CREATE ";
 			if ($index->getIsUnique()) {
 				$script .= "UNIQUE";
 			}
-			$script .= "INDEX ".$this->quoteIdentifier($index->getName())." ON ".$this->quoteIdentifier($table->getName())." (".$this->getColumnList($index->getColumns()).");
+			$script .= "INDEX ".$this->quoteIdentifier($index->getName())." ON ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))." (".$this->getColumnList($index->getColumns()).");
 ";
 		}
 	}
 
 	/**
 	 *
-	 * @see parent::addForeignKeys()
+	 * @see        parent::addForeignKeys()
 	 */
 	protected function addForeignKeys(&$script)
 	{
@@ -118,7 +118,7 @@ CREATE ";
 		foreach ($table->getForeignKeys() as $fk) {
 			$script .= "
 -- SQLite does not support foreign keys; this is just for reference
--- FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()).") REFERENCES ".$fk->getForeignTableName()." (".$this->getColumnList($fk->getForeignColumns()).")
+-- FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()).") REFERENCES ".DataModelBuilder::prefixTablename($fk->getForeignTableName())." (".$this->getColumnList($fk->getForeignColumns()).")
 ";
 		}
 	}

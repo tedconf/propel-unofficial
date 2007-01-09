@@ -50,7 +50,7 @@ PHP class or method name.
   skipSql (true|false) "false"
   readOnly (true|false) "false"
   abstract (true|false) "false"
-  isTree (true|false) "false"
+  treeMode (MaterializedPath|NestedSet|AdjacencyList) "AdjacencyList"
   package CDATA #IMPLIED
   baseClass CDATA #IMPLIED
   basePeer CDATA #IMPLIED
@@ -107,6 +107,8 @@ PHP class or method name.
 <!ATTLIST foreign-key
   foreignTable CDATA #REQUIRED
   name CDATA #IMPLIED
+  phpName CDATA #IMPLIED
+  refPhpName CDATA #IMPLIED
   onUpdate (CASCADE|cascade|SETNULL|setnull|RESTRICT|restrict|NONE|none) "none"
   onDelete (CASCADE|cascade|SETNULL|setnull|RESTRICT|restrict|NONE|none) "none"
 >

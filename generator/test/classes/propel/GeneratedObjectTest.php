@@ -33,8 +33,8 @@ require_once 'bookstore/BookstoreTestBase.php';
  * for each test method in this class.  See the BookstoreDataPopulator::populate()
  * method for the exact contents of the database.
  *
- * @see BookstoreDataPopulator
- * @author Hans Lellelid <hans@xmpl.org>
+ * @see        BookstoreDataPopulator
+ * @author     Hans Lellelid <hans@xmpl.org>
  */
 class GeneratedObjectTest extends BookstoreTestBase {
 
@@ -146,10 +146,59 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$super = new BookstoreEmployee();
 		// we don't know who the supervisor is yet
-		$super->addBookstoreEmployeeRelatedBySupervisorId($e1);
-		$super->addBookstoreEmployeeRelatedBySupervisorId($e2);
+		$super->addSubordinate($e1);
+		$super->addSubordinate($e2);
 
 		$affected = $super->save();
+
+	}
+
+	/**
+	 * Tests new one-to-one functionality.
+	 *
+	 * @todo       -cGeneratedObjectTest Add a test for one-to-one when implemented.
+	 */
+	public function testOneToOne()
+	{
+		$emp = BookstoreEmployeePeer::doSelectOne(new Criteria());
+
+		$acct = new BookstoreEmployeeAccount();
+		$acct->setBookstoreEmployee($emp);
+		$acct->setLogin("testuser");
+		$acct->setPassword("testpass");
+
+		$this->assertSame($emp->getBookstoreEmployeeAccount(), $acct, "Expected same object instance.");
+	}
+
+	/**
+	 * Test the type sensitivity of the resturning columns.
+	 *
+	 */
+	public function testTypeSensitive()
+	{
+		$book = BookPeer::doSelectOne(new Criteria());
+
+		$r = new Review();
+		$r->setReviewedBy("testTypeSensitive Tester");
+		$r->setReviewDate(time());
+		$r->setBook($book);
+		$r->setRecommended(true);
+		$id = $r->save();
+
+		unset($r);
+
+		// clear the instance cache to force reload from database.
+		ReviewPeer::clearInstancePool();
+		BookPeer::clearInstancePool();
+
+		// reload and verify that the types are the same
+		$r2 = ReviewPeer::retrieveByPK($id);
+
+		$this->assertType('integer', $r2->getId(), "Expected getId() to return an integer.");
+		$this->assertType('string', $r2->getReviewedBy(), "Expected getReviewedBy() to return a string.");
+		$this->assertType('boolean', $r2->getRecommended(), "Expected getRecommended() to return a boolean.");
+		$this->assertType('Book', $r2->getBook(), "Expected getBook() to return a Book.");
+		$this->assertType('double', $r2->getBook()->getPrice(), "Expected Book->getPrice() to return a float.");
 
 	}
 }

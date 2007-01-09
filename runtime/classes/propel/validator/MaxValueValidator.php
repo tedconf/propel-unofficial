@@ -19,8 +19,6 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/validator/BasicValidator.php';
-
 /**
  * A validator for maximum values.
  *
@@ -35,15 +33,15 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class MaxValueValidator implements BasicValidator
 {
 
 	/**
-	 * @see BasicValidator::isValid()
+	 * @see        BasicValidator::isValid()
 	 */
 	public function isValid (ValidatorMap $map, $value)
 	{

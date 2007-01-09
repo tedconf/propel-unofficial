@@ -37,8 +37,8 @@
  * // $builder (by default) instanceof PHP5ComplexPeerBuilder
  * </code>
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @package propel.engine.builder
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @package    propel.engine.builder
  */
 abstract class DataModelBuilder {
 
@@ -48,13 +48,15 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Build properties (after they've been transformed from "propel.some.name" => "someName").
-	 * @var array string[]
+	 * @var        array string[]
 	 */
 	private static $buildProperties = array();
 
+	private static $cache = array();
+
 	/**
 	 * Sets the [name transformed] build properties to use.
-	 * @param array Property values keyed by [transformed] prop names.
+	 * @param      array Property values keyed by [transformed] prop names.
 	 */
 	public static function setBuildProperties($props)
 	{
@@ -63,8 +65,8 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Get a specific [name transformed] build property.
-	 * @param string $name
-	 * @return string
+	 * @param      string $name
+	 * @return     string
 	 */
 	public static function getBuildProperty($name)
 	{
@@ -73,8 +75,8 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Imports and returns the classname of the builder class for specified 'type'.
-	 * @param $type The "key" for class to load.
-	 * @return string The unqualified classname.
+	 * @param      $type The "key" for class to load.
+	 * @return     string The unqualified classname.
 	 */
 	public static function getBuilderClass($type)
 	{
@@ -99,14 +101,21 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Factory method to load a new builder instance based on specified type.
-	 * @param Table $table
-	 * @param $type The "key" for class to load.
-	 * @throws BuildException if specified class cannot be found / loaded.
+	 * @param      Table $table
+	 * @param      $type The "key" for class to load.
+	 * @throws     BuildException if specified class cannot be found / loaded.
 	 */
 	public static function builderFactory(Table $table, $type)
 	{
 		$classname = self::getBuilderClass($type);
-		return new $classname($table);
+
+		$cacheKey = strtolower($classname . $table->getName());
+
+		if (!isset(self::$cache[$cacheKey])) {
+			self::$cache[$cacheKey] = new $classname($table);
+		}
+
+		return self::$cache[$cacheKey];
 	}
 
 	/**
@@ -116,9 +125,9 @@ abstract class DataModelBuilder {
 	 * (1) getFilePath($dotPathClass);
 	 * (2) getFilePath($dotPathPrefix, $className);
 	 *
-	 * @param string $path dot-path to class or to package prefix.
-	 * @param string $classname class name
-	 * @return string
+	 * @param      string $path dot-path to class or to package prefix.
+	 * @param      string $classname class name
+	 * @return     string
 	 */
 	public static function getFilePath($path, $classname = null, $extension = '.php')
 	{
@@ -137,19 +146,19 @@ abstract class DataModelBuilder {
 
 	/**
 	 * The current table.
-	 * @var Table
+	 * @var        Table
 	 */
 	private $table;
 
 	/**
 	 * An array of warning messages that can be retrieved for display (e.g. as part of phing build process).
-	 * @var array string[]
+	 * @var        array string[]
 	 */
 	private $warnings = array();
 
 	/**
 	 * Creates new instance of DataModelBuilder subclass.
-	 * @param Table $table The Table which we are using to build [OM, DDL, etc.].
+	 * @param      Table $table The Table which we are using to build [OM, DDL, etc.].
 	 */
 	public function __construct(Table $table)
 	{
@@ -158,7 +167,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Returns the Platform class for this table (database).
-	 * @return Platform
+	 * @return     Platform
 	 */
 	protected function getPlatform()
 	{
@@ -167,7 +176,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Returns the database for current table.
-	 * @return Database
+	 * @return     Database
 	 */
 	protected function getDatabase()
 	{
@@ -176,7 +185,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Returns the current Table object.
-	 * @return Table
+	 * @return     Table
 	 */
 	protected function getTable()
 	{
@@ -185,7 +194,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Pushes a message onto the stack of warnings.
-	 * @param string $msg The warning message.
+	 * @param      string $msg The warning message.
 	 */
 	protected function warn($msg)
 	{
@@ -194,7 +203,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Gets array of warning messages.
-	 * @return array string[]
+	 * @return     array string[]
 	 */
 	public function getWarnings()
 	{
@@ -208,8 +217,8 @@ abstract class DataModelBuilder {
 	 * method directly.  This method is used by both DataSQLBuilder and DDLBuilder, and potentially
 	 * in the OM builders also, which is why it is defined in this class.
 	 *
-	 * @param string $text The text to quote.
-	 * @return string Quoted text.
+	 * @param      string $text The text to quote.
+	 * @return     string Quoted text.
 	 */
 	public function quoteIdentifier($text)
 	{
@@ -217,5 +226,52 @@ abstract class DataModelBuilder {
 			return $this->getPlatform()->quoteIdentifier($text);
 		}
 		return $text;
+	}
+
+	/**
+	 * Returns the name of the current class being built, with a possible prefix.
+	 * @return     string
+	 * @see        OMBuilder#getClassname()
+	 */
+	public static function prefixClassname($identifier)
+	{
+		return self::getBuildProperty('classPrefix') . $identifier;
+	}
+
+	/**
+	 * Returns the name of the current table being built, with a possible prefix.
+	 * @return     string
+	 */
+	public static function prefixTablename($identifier)
+	{
+		return self::getBuildProperty('tablePrefix') . $identifier;
+	}
+
+	/**
+	 * A name to use for creating a sequence if one is not specified.
+	 */
+	public function getSequenceName()
+	{
+		$table = $this->getTable();
+		static $longNamesMap = array();
+		$result = null;
+		if ($table->getIdMethod() == IDMethod::NATIVE) {
+			$idMethodParams = $table->getIdMethodParameters();
+			if ($idMethodParams === null) {
+				$maxIdentifierLength = $table->getDatabase()->getPlatform()->getMaxColumnNameLength();
+				if (strlen($table->getName() . "_SEQ") > $maxIdentifierLength) {
+					if (!isset($longNamesMap[$table->getName()])) {
+						$longNamesMap[$table->getName()] = strval(count($longNamesMap) + 1);
+					}
+					$result = substr($table->getName(), 0, $maxIdentifierLength - strlen("_SEQ_" . $longNamesMap[$table->getName()])) . "_SEQ_" . $longNamesMap[$table->getName()];
+				}
+				else {
+					$result = $table->getName() . "_SEQ";
+				}
+			} else {
+				$result = $idMethodParams[0]->getValue();
+			}
+		}
+		return $result;
 	}
 }

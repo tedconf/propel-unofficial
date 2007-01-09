@@ -19,9 +19,6 @@
  * <http://propel.phpdb.org>.
  */
 
-include_once 'propel/map/ColumnMap.php';
-include_once 'propel/map/ValidatorMap.php';
-
 /**
  * TableMap is used to model a table in a database.
  *
@@ -38,11 +35,11 @@ include_once 'propel/map/ValidatorMap.php';
  * by that template for your datamodel to further understand how these are put
  * together.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @author Daniel Rall <dlr@finemaltcoding.com> (Torque)
- * @version $Revision$
- * @package propel.map
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @author     Daniel Rall <dlr@finemaltcoding.com> (Torque)
+ * @version    $Revision$
+ * @package    propel.map
  */
 class TableMap {
 
@@ -61,6 +58,9 @@ class TableMap {
 	/** The prefix on the table name. */
 	private $prefix;
 
+	/** The Classname for this table */
+	private $classname;
+
 	/** Whether to use an id generator for pkey. */
 	private $useIdGenerator;
 
@@ -73,8 +73,8 @@ class TableMap {
 	/**
 	 * Construct a new TableMap.
 	 *
-	 * @param string $tableName The name of the table.
-	 * @param DatabaseMap $containingDB A DatabaseMap that this table belongs to.
+	 * @param      string $tableName The name of the table.
+	 * @param      DatabaseMap $containingDB A DatabaseMap that this table belongs to.
 	 */
 	public function __construct($tableName, DatabaseMap $containingDB)
 	{
@@ -84,25 +84,38 @@ class TableMap {
 	}
 
 	/**
+	 * Normalizes the column name, removing table prefix and uppercasing.
+	 * @param      string $name
+	 * @return     string Normalized column name.
+	 */
+	private function normalizeColName($name) {
+		if (false !== ($pos = strpos($name, '.'))) {
+			$name = substr($name, $pos + 1);
+		}
+		$name = strtoupper($name);
+		return $name;
+	}
+
+	/**
 	 * Does this table contain the specified column?
 	 *
-	 * @param string $name name of the column
-	 * @return boolean True if the table contains the column.
+	 * @param      string $name name of the column
+	 * @return     boolean True if the table contains the column.
 	 */
 	public function containsColumn($name)
 	{
 		if (!is_string($name)) {
 			$name = $name->getColumnName();
 		}
-		return isset($this->columns[$name]);
+		return isset($this->columns[$this->normalizeColName($name)]);
 	}
 
 	/**
 	 * Get the DatabaseMap containing this TableMap.
 	 *
-	 * @return DatabaseMap A DatabaseMap.
+	 * @return     DatabaseMap A DatabaseMap.
 	 */
-	public function getDatabase()
+	public function getDatabaseMap()
 	{
 		return $this->dbMap;
 	}
@@ -110,7 +123,7 @@ class TableMap {
 	/**
 	 * Get the name of the Table.
 	 *
-	 * @return string A String with the name of the table.
+	 * @return     string A String with the name of the table.
 	 */
 	public function getName()
 	{
@@ -120,7 +133,7 @@ class TableMap {
 	/**
 	 * Get the PHP name of the Table.
 	 *
-	 * @return string A String with the name of the table.
+	 * @return     string A String with the name of the table.
 	 */
 	public function getPhpName()
 	{
@@ -130,7 +143,7 @@ class TableMap {
 	/**
 	 * Set the PHP name of the Table.
 	 *
-	 * @param string $phpName The PHP Name for this table
+	 * @param      string $phpName The PHP Name for this table
 	 */
 	public function setPhpName($phpName)
 	{
@@ -140,7 +153,7 @@ class TableMap {
 	/**
 	 * Get table prefix name.
 	 *
-	 * @return string A String with the prefix.
+	 * @return     string A String with the prefix.
 	 */
 	public function getPrefix()
 	{
@@ -150,9 +163,9 @@ class TableMap {
 	/**
 	 * Set table prefix name.
 	 *
-	 * @param string $prefix The prefix for the table name (ie: SCARAB for
+	 * @param      string $prefix The prefix for the table name (ie: SCARAB for
 	 * SCARAB_PROJECT).
-	 * @return void
+	 * @return     void
 	 */
 	public function setPrefix($prefix)
 	{
@@ -160,8 +173,27 @@ class TableMap {
 	}
 
 	/**
+	 * Get the Classname of the Propel-Classes belonging to this table.
+	 * @return     string
+	 */
+	public function getClassname()
+	{
+		return $this->classname;
+	}
+
+	/**
+	 * Set the Classname of the Table. Could be useful for calling
+	 * Peer and Object methods dynamically.
+	 * @param      string $classname The Classname
+	 */
+	public function setClassname($classname)
+	{
+		$this->classname = $classname;
+	}
+
+	/**
 	 * Whether to use Id generator for primary key.
-	 * @return boolean
+	 * @return     boolean
 	 */
 	public function isUseIdGenerator() {
 		return $this->useIdGenerator;
@@ -170,7 +202,7 @@ class TableMap {
 	/**
 	 * Get the information used to generate a primary key
 	 *
-	 * @return An Object.
+	 * @return     An Object.
 	 */
 	public function getPrimaryKeyMethodInfo()
 	{
@@ -180,7 +212,7 @@ class TableMap {
 	/**
 	 * Get a ColumnMap[] of the columns in this table.
 	 *
-	 * @return array A ColumnMap[].
+	 * @return     array A ColumnMap[].
 	 */
 	public function getColumns()
 	{
@@ -188,32 +220,17 @@ class TableMap {
 	}
 
 	/**
-	 * Gets the columns that comprise the primary key.
-	 *
-	 * Note: this is not a performance-enhanced function, so avoid calling repetitively.
-	 *
-	 * @return array ColumnMap[]
-	 */
-	public function getPrimaryKey()
-	{
-		$pk = array();
-		foreach($this->getColumns() as $col) {
-			if ($col->isPrimaryKey()) $pk[] = $col;
-		}
-		return $pk;
-	}
-
-	/**
 	 * Get a ColumnMap for the named table.
 	 *
-	 * @param string $name A String with the name of the table.
-	 * @return ColumnMap A ColumnMap.
-	 * @throws PropelException if the column is undefined
+	 * @param      string $name A String with the name of the table.
+	 * @return     ColumnMap A ColumnMap.
+	 * @throws     PropelException if the column is undefined
 	 */
 	public function getColumn($name)
 	{
+		$name = $this->normalizeColName($name);
 		if (!isset($this->columns[$name])) {
-			throw new PropelException("Cannot fetch ColumnMap for undefined column [" . $name . "] in table [" . $this->getName() . "]");
+			throw new PropelException("Cannot fetch ColumnMap for undefined column: " . $name);
 		}
 		return $this->columns[$name];
 	}
@@ -221,11 +238,11 @@ class TableMap {
 	/**
 	 * Add a primary key column to this Table.
 	 *
-	 * @param string $columnName A String with the column name.
-	 * @param string $type A string specifying the Propel type.
-	 * @param boolean $isNotNull Whether column does not allow NULL values.
-	 * @param $size An int specifying the size.
-	 * @return ColumnMap Newly added PrimaryKey column.
+	 * @param      string $columnName A String with the column name.
+	 * @param      string $type A string specifying the Propel type.
+	 * @param      boolean $isNotNull Whether column does not allow NULL values.
+	 * @param      $size An int specifying the size.
+	 * @return     ColumnMap Newly added PrimaryKey column.
 	 */
 	public function addPrimaryKey($columnName, $phpName, $type, $isNotNull = false, $size = null)
 	{
@@ -235,14 +252,14 @@ class TableMap {
 	/**
 	 * Add a foreign key column to the table.
 	 *
-	 * @param string $columnName A String with the column name.
-	 * @param string $type A string specifying the Propel type.
-	 * @param string $fkTable A String with the foreign key table name.
-	 * @param string $fkColumn A String with the foreign key column name.
-	 * @param boolean $isNotNull Whether column does not allow NULL values.
-	 * @param int $size An int specifying the size.
-	 * @param string $defaultValue The default value for this column.
-	 * @return ColumnMap Newly added ForeignKey column.
+	 * @param      string $columnName A String with the column name.
+	 * @param      string $type A string specifying the Propel type.
+	 * @param      string $fkTable A String with the foreign key table name.
+	 * @param      string $fkColumn A String with the foreign key column name.
+	 * @param      boolean $isNotNull Whether column does not allow NULL values.
+	 * @param      int $size An int specifying the size.
+	 * @param      string $defaultValue The default value for this column.
+	 * @return     ColumnMap Newly added ForeignKey column.
 	 */
 	public function addForeignKey($columnName, $phpName, $type, $fkTable, $fkColumn, $isNotNull = false, $size = 0)
 	{
@@ -252,14 +269,14 @@ class TableMap {
 	/**
 	 * Add a foreign primary key column to the table.
 	 *
-	 * @param string $columnName A String with the column name.
-	 * @param string $type A string specifying the Propel type.
-	 * @param string $fkTable A String with the foreign key table name.
-	 * @param string $fkColumn A String with the foreign key column name.
-	 * @param boolean $isNotNull Whether column does not allow NULL values.
-	 * @param int $size An int specifying the size.
-	 * @param string $defaultValue The default value for this column.
-	 * @return ColumnMap Newly created foreign pkey column.
+	 * @param      string $columnName A String with the column name.
+	 * @param      string $type A string specifying the Propel type.
+	 * @param      string $fkTable A String with the foreign key table name.
+	 * @param      string $fkColumn A String with the foreign key column name.
+	 * @param      boolean $isNotNull Whether column does not allow NULL values.
+	 * @param      int $size An int specifying the size.
+	 * @param      string $defaultValue The default value for this column.
+	 * @return     ColumnMap Newly created foreign pkey column.
 	 */
 	public function addForeignPrimaryKey($columnName, $phpName, $type, $fkTable, $fkColumn, $isNotNull = false, $size = 0)
 	{
@@ -270,8 +287,8 @@ class TableMap {
 	 * Add a pre-created column to this table.  It will replace any
 	 * existing column.
 	 *
-	 * @param ColumnMap $cmap A ColumnMap.
-	 * @return ColumnMap The added column map.
+	 * @param      ColumnMap $cmap A ColumnMap.
+	 * @return     ColumnMap The added column map.
 	 */
 	public function addConfiguredColumn($cmap)
 	{
@@ -282,15 +299,15 @@ class TableMap {
 	/**
 	 * Add a column to the table.
 	 *
-	 * @param string name A String with the column name.
-	 * @param string $type A string specifying the Propel type.
-	 * @param boolean $isNotNull Whether column does not allow NULL values.
-	 * @param int $size An int specifying the size.
-	 * @param boolean $pk True if column is a primary key.
-	 * @param string $fkTable A String with the foreign key table name.
-	 * @param $fkColumn A String with the foreign key column name.
-	 * @param string $defaultValue The default value for this column.
-	 * @return ColumnMap The newly created column.
+	 * @param      string name A String with the column name.
+	 * @param      string $type A string specifying the Propel type.
+	 * @param      boolean $isNotNull Whether column does not allow NULL values.
+	 * @param      int $size An int specifying the size.
+	 * @param      boolean $pk True if column is a primary key.
+	 * @param      string $fkTable A String with the foreign key table name.
+	 * @param      $fkColumn A String with the foreign key column name.
+	 * @param      string $defaultValue The default value for this column.
+	 * @return     ColumnMap The newly created column.
 	 */
 	public function addColumn($name, $phpName, $type, $isNotNull = false, $size = null, $pk = null, $fkTable = null, $fkColumn = null)
 	{
@@ -298,7 +315,7 @@ class TableMap {
 		$col = new ColumnMap($name, $this);
 
 		if ($fkTable && $fkColumn) {
-			if (strstr($fkColumn, '.') > 0 && strstr($fkColumn, $fkTable) !== false) {
+			if (substr($fkColumn, '.') > 0 && substr($fkColumn, $fkTable) !== false) {
 				$fkColumn = substr($fkColumn, strlen($fkTable) + 1);
 			}
 			$col->setForeignKey($fkTable, $fkColumn);
@@ -318,12 +335,12 @@ class TableMap {
 	/**
 	* Add a validator to a table's column
 	*
-	* @param string $columnName The name of the validator's column
-	* @param string $name The rule name of this validator
-	* @param string $classname The dot-path name of class to use (e.g. myapp.propel.MyValidator)
-	* @param string $value
-	* @param string $message The error message which is returned on invalid values
-	* @return void
+	* @param      string $columnName The name of the validator's column
+	* @param      string $name The rule name of this validator
+	* @param      string $classname The dot-path name of class to use (e.g. myapp.propel.MyValidator)
+	* @param      string $value
+	* @param      string $message The error message which is returned on invalid values
+	* @return     void
 	*/
 	public function addValidator($columnName, $name, $classname, $value, $message)
 	{
@@ -344,7 +361,7 @@ class TableMap {
 
 	/**
 	 * Set whether or not to use Id generator for primary key.
-	 * @param boolean $bit
+	 * @param      boolean $bit
 	 */
 	public function setUseIdGenerator($bit) {
 		$this->useIdGenerator = $bit;
@@ -353,7 +370,7 @@ class TableMap {
 	/**
 	 * Sets the pk information needed to generate a key
 	 *
-	 * @param $pkInfo information needed to generate a key
+	 * @param      $pkInfo information needed to generate a key
 	 */
 	public function setPrimaryKeyMethodInfo($pkInfo)
 	{
@@ -365,8 +382,8 @@ class TableMap {
 	/**
 	 * Tell me if i have PREFIX in my string.
 	 *
-	 * @param data A String.
-	 * @return boolean True if prefix is contained in data.
+	 * @param      data A String.
+	 * @return     boolean True if prefix is contained in data.
 	 */
 	private function hasPrefix($data)
 	{
@@ -376,8 +393,8 @@ class TableMap {
 	/**
 	 * Removes the PREFIX.
 	 *
-	 * @param string $data A String.
-	 * @return string A String with data, but with prefix removed.
+	 * @param      string $data A String.
+	 * @return     string A String with data, but with prefix removed.
 	 */
 	private function removePrefix($data)
 	{
@@ -392,8 +409,8 @@ class TableMap {
 	 *
 	 * SCARAB_FOO_BAR becomes FooBar.
 	 *
-	 * @param data A String.
-	 * @return string A String with data processed.
+	 * @param      data A String.
+	 * @return     string A String with data processed.
 	 */
 	public final function removeUnderScores($data)
 	{
@@ -416,8 +433,8 @@ class TableMap {
 	/**
 	 * Makes the first letter caps and the rest lowercase.
 	 *
-	 * @param string $data A String.
-	 * @return string A String with data processed.
+	 * @param      string $data A String.
+	 * @return     string A String with data processed.
 	 */
 	private function firstLetterCaps($data)
 	{

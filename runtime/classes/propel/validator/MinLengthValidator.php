@@ -19,8 +19,6 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/validator/BasicValidator.php';
-
 /**
  * A validator for minimum string length.
  *
@@ -32,15 +30,15 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class MinLengthValidator implements BasicValidator
 {
 
 	/**
-	 * @see BasicValidator::isValid()
+	 * @see        BasicValidator::isValid()
 	 */
 	public function isValid (ValidatorMap $map, $str)
 	{

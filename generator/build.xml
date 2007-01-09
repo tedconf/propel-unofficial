@@ -22,6 +22,7 @@
      property here.  If it wasn't set, then this will be bogus, but it will
      be overridden by the "set-project-dir" target. -->    
 <property name="propel.project.dir" value="${project.dir}"/>
+<resolvepath propertyName="propel.project.dir" file="${propel.project.dir}" dir="${application.startdir}"/>
 
 <!-- set a default target if none provided -->
 <property name="target" value="main"/>
@@ -72,7 +73,7 @@
 	<echo message="$&gt; propel-gen /path/to/projectdir [target]"/>
 	<echo message=" "/>
 	<echo message="=========================================================="/>	
-	<fail message="No project directory specified (did you specify a relative path instead of absolute?)."/>
+	<fail message="No project directory specified."/>
 </target>
 
 <target name="check-project-set" unless="projectOrDirSet" depends="check-project-or-dir-set">
@@ -124,8 +125,8 @@
  issue as far as maintenance is concerned.
 -->
 
-<target name="copy-runtime-conf" depends="configure">
-	<phing phingfile="build-propel.xml" target="copy-runtime-conf"/>
+<target name="convert-conf" depends="configure">
+	<phing phingfile="build-propel.xml" target="convert-conf"/>
 </target>
 
 <target name="create-db" depends="configure">
