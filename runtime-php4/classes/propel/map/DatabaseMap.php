@@ -30,20 +30,20 @@ include_once 'propel/map/TableMap.php';
  * The propel.map classes are abstract building-block classes for modeling
  * the database at runtime.  These classes are similar (a lite version) to the
  * propel.engine.database.model classes, which are build-time modeling classes.
- * These classes in themselves do not do any database metadata lookups, but instead 
- * are used by the MapBuilder classes that were generated for your datamodel. The 
+ * These classes in themselves do not do any database metadata lookups, but instead
+ * are used by the MapBuilder classes that were generated for your datamodel. The
  * MapBuilder that was created for your datamodel build a representation of your
- * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc. 
+ * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc.
  * classes. See propel/templates/om/php4/MapBuilder.tpl and the classes generated
- * by that template for your datamodel to further understand how these are put 
+ * by that template for your datamodel to further understand how these are put
  * together.
- * 
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @author Daniel Rall <dlr@collab.net> (Torque)
- * @version $Revision$
- * @package propel.map
+ *
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @author     Daniel Rall <dlr@collab.net> (Torque)
+ * @version    $Revision$
+ * @package    propel.map
  */
 class DatabaseMap
 {
@@ -56,74 +56,74 @@ class DatabaseMap
   /**
   * Constructor.
   *
-  * @param string $name Name of the database.
+  * @param      string $name Name of the database.
   */
   function DatabaseMap($name)
   {
-    $this->name = $name;
-    $this->tables = array();
+	$this->name = $name;
+	$this->tables = array();
   }
 
   /**
   * Does this database contain this specific table?
   *
-  * @param string $name The String representation of the table.
-  * @return boolean True if the database contains the table.
+  * @param      string $name The String representation of the table.
+  * @return     boolean True if the database contains the table.
   */
   function containsTable($name)
   {
-    if ( strpos($name, '.') > 0) {
-      $name = substr($name, 0, strpos($name, '.'));
-    }
-  
-    return isset($this->tables[$name]);
+	if ( strpos($name, '.') > 0) {
+	  $name = substr($name, 0, strpos($name, '.'));
+	}
+
+	return isset($this->tables[$name]);
   }
 
   /**
   * Get the name of this database.
   *
-  * @return string The name of the database.
+  * @return     string The name of the database.
   */
   function getName()
   {
-    return $this->name;
+	return $this->name;
   }
 
   /**
   * Get a TableMap for the table by name.
   *
-  * @param string $name Name of the table.
-  * @return TableMap A TableMap, null if the table was not found.
+  * @param      string $name Name of the table.
+  * @return     TableMap A TableMap, null if the table was not found.
   */
   function getTable($name)
   {
-    if (isset($this->tables["$name"])) {
-      return $this->tables["$name"];
-    }
+	if (isset($this->tables["$name"])) {
+	  return $this->tables["$name"];
+	}
 
-    return null;
+	return null;
   }
 
   /**
   * Get a TableMap[] of all of the tables in the database.
   *
-  * @return array A TableMap[].
+  * @return     array A TableMap[].
   */
   function & getTables()
   {
-    return $this->tables;
+	return $this->tables;
   }
 
   /**
   * Add a new table to the database by name.  It creates an empty
   * TableMap that you need to populate.
   *
-  * @param string $tableName The name of the table.
-  * @return TableMap The newly created TableMap.
+  * @param      string $tableName The name of the table.
+  * @return     TableMap The newly created TableMap.
   */
   function & addTable($tableName)
   {
-    $this->tables[$tableName] =& new TableMap($tableName, $this);
-    return $this->tables[$tableName];
+	$this->tables[$tableName] =& new TableMap($tableName, $this);
+	return $this->tables[$tableName];
   }
 }

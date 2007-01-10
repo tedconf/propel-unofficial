@@ -120,6 +120,3 @@ class patForms_Definition {
 		return $value;
 	}
 }
-
-
-?>

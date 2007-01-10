@@ -21,23 +21,23 @@
 
 /**
  * ValidatorMap is used to model a column validator.
- * 
+ *
  * GENERAL NOTE
  * ------------
  * The propel.map classes are abstract building-block classes for modeling
  * the database at runtime.  These classes are similar (a lite version) to the
  * propel.engine.database.model classes, which are build-time modeling classes.
- * These classes in themselves do not do any database metadata lookups, but instead 
- * are used by the MapBuilder classes that were generated for your datamodel. The 
+ * These classes in themselves do not do any database metadata lookups, but instead
+ * are used by the MapBuilder classes that were generated for your datamodel. The
  * MapBuilder that was created for your datamodel build a representation of your
- * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc. 
+ * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc.
  * classes. See propel/templates/om/php4/MapBuilder.tpl and the classes generated
- * by that template for your datamodel to further understand how these are put 
+ * by that template for your datamodel to further understand how these are put
  * together.
- * 
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.map
+ *
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.map
  */
 class ValidatorMap
 {
@@ -53,64 +53,64 @@ class ValidatorMap
   var $column;
 
   /**
-  * @param ColumnMap $containingColumn
-  * @return ValidatorMap
+  * @param      ColumnMap $containingColumn
+  * @return     ValidatorMap
   */
   function ValidatorMap(&$containingColumn)
   {
-    $this->column =& $containingColumn;
+	$this->column =& $containingColumn;
   }
 
   /**
-  * @return ColumnMap
+  * @return     ColumnMap
   */
   function & getColumn()
   {
-    return $this->column;
+	return $this->column;
   }
 
   function getColumnName()
   {
-    return $this->column->getName();
+	return $this->column->getName();
   }
 
   function setName($name)
   {
-    $this->name = $name;
+	$this->name = $name;
   }
 
   function setClass($classname)
   {
-    $this->classname = $classname;
+	$this->classname = $classname;
   }
 
   function setValue($value)
   {
-    $this->value = $value;
+	$this->value = $value;
   }
 
   function setMessage($message)
   {
-    $this->message = $message;
+	$this->message = $message;
   }
 
   function getName()
   {
-    return $this->name;
+	return $this->name;
   }
 
   function getClass()
   {
-    return $this->classname;
+	return $this->classname;
   }
 
   function getValue()
   {
-    return $this->value;
+	return $this->value;
   }
 
   function getMessage()
   {
-    return $this->message;
+	return $this->message;
   }
 }

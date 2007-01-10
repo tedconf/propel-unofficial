@@ -18,7 +18,7 @@
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
- 
+
 require_once 'propel/adapter/DBAdapter.php';
 
 /**
@@ -26,75 +26,75 @@ require_once 'propel/adapter/DBAdapter.php';
  *
  * <a href="http://www.pgsql.org">http://www.pgsql.org</a>
  *
- * @author <a href="mailto:hakan42@gmx.de">Hakan Tandogan</a>
- * @version $Id$
+ * @author     <a href="mailto:hakan42@gmx.de">Hakan Tandogan</a>
+ * @version    $Id$
  */
-class DBPostgres extends DBAdapter 
+class DBPostgres extends DBAdapter
 {
 
   /**
   * This method is used to ignore case.
   *
-  * @param string $in The string to transform to upper case.
-  * @return string The upper case string.
+  * @param      string $in The string to transform to upper case.
+  * @return     string The upper case string.
   */
   function toUpperCase($in)
   {
-    return "UPPER(" . $in . ")";
+	return "UPPER(" . $in . ")";
   }
 
   /**
   * This method is used to ignore case.
   *
-  * @param in The string whose case to ignore.
-  * @return The string in a case that can be ignored.
+  * @param      in The string whose case to ignore.
+  * @return     The string in a case that can be ignored.
   */
   function ignoreCase($in)
   {
-    return "UPPER(" . $in . ")";
+	return "UPPER(" . $in . ")";
   }
 
   /**
   * Returns SQL which concatenates the second string to the first.
   *
-  * @param string String to concatenate.
-  * @param string String to append.
-  * @return string 
+  * @param      string String to concatenate.
+  * @param      string String to append.
+  * @return     string
   */
   function concatString($s1, $s2)
   {
-    return "($s1 || $s2)";
+	return "($s1 || $s2)";
   }
 
   /**
   * Returns SQL which extracts a substring.
   *
-  * @param string String to extract from.
-  * @param int Offset to start from.
-  * @param int Number of characters to extract.
-  * @return string 
+  * @param      string String to extract from.
+  * @param      int Offset to start from.
+  * @param      int Number of characters to extract.
+  * @return     string
   */
   function subString($s, $pos, $len)
   {
-    return "substring($s from $pos" . ($len > -1 ? "for $len" : "") . ")";
+	return "substring($s from $pos" . ($len > -1 ? "for $len" : "") . ")";
   }
 
   /**
   * Returns SQL which calculates the length (in chars) of a string.
   *
-  * @param string String to calculate length of.
-  * @return string 
+  * @param      string String to calculate length of.
+  * @return     string
   */
   function strLength($s)
   {
-    return "char_length($s)";
+	return "char_length($s)";
   }
-   
+
   /**
   * Locks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to lock.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to lock.
   * @exception SQLException No Statement could be created or executed.
   */
   function lockTable(&$con, $table)
@@ -104,8 +104,8 @@ class DBPostgres extends DBAdapter
   /**
   * Unlocks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to unlock.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to unlock.
   * @exception SQLException No Statement could be created or executed.
   */
   function unlockTable(&$con, $table)

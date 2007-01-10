@@ -32,15 +32,15 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class ValidValuesValidator implements BasicValidator
 {
 
-    public function isValid (ValidatorMap $map, $str)
-    {
-        return in_array($str, explode("|", $map->getValue()));
-    }
+	public function isValid (ValidatorMap $map, $str)
+	{
+		return in_array($str, explode("|", $map->getValue()));
+	}
 }

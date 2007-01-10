@@ -21,17 +21,17 @@
 
 // include BasicLogger from include path
 require_once 'propel/logger/BasicLogger.php';
- 
+
 /**
  * Mojavi logging adapter for propel
- * 
- * @author Brandon Keepers <brandon@opensoul.org>
- * @version $Revision$
- * @package propel.logger
+ *
+ * @author     Brandon Keepers <brandon@opensoul.org>
+ * @version    $Revision$
+ * @package    propel.logger
  */
-class MojaviLogAdapter extends BasicLogger 
+class MojaviLogAdapter extends BasicLogger
 {
-  
+
   /**
   * Instance of mojavi logger
   */
@@ -40,142 +40,139 @@ class MojaviLogAdapter extends BasicLogger
   /**
   * constructor for setting up Mojavi log adapter
   *
-  * @param   ErrorLog   $logger   instance of Mojavi error log obtained by
+  * @param      ErrorLog   $logger   instance of Mojavi error log obtained by
   *                               calling LogManager::getLogger();
   */
   function MojaviLogAdapter(&$logger)
   {
-    $this->logger =& $logger;
+	$this->logger =& $logger;
   }
 
   /**
   * A convenience function for logging an alert event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function alert($message)
   {
-    $this->log($message, 'alert');
+	$this->log($message, 'alert');
   }
 
   /**
   * A convenience function for logging a critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function crit($message)
   {
-    $this->log($message, 'crit');
+	$this->log($message, 'crit');
   }
- 
+
   /**
   * A convenience function for logging an error event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function err($message)
   {
-    $this->log($message, 'err');
+	$this->log($message, 'err');
   }
 
   /**
   * A convenience function for logging a warning event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function warning($message)
   {
-    $this->log($message, 'warning');
+	$this->log($message, 'warning');
   }
-  
-  
+
+
   /**
   * A convenience function for logging an critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function notice($message)
   {
-    $this->log($message, 'notice');
+	$this->log($message, 'notice');
   }
 
   /**
   * A convenience function for logging an critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function info($message)
   {
-    $this->log($message, 'info');
+	$this->log($message, 'info');
   }
-  
+
   /**
   * A convenience function for logging a debug event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function debug($message)
   {
-    $this->log($message, 'debug');
+	$this->log($message, 'debug');
   }
-  
+
   /**
   * Primary method to handle logging.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
-  * @param   int     $severity   The numeric severity.  Defaults to null so that no
+  * @param      int     $severity   The numeric severity.  Defaults to null so that no
   *                              assumptions are made about the logging backend.
   */
   function log($message, $severity = null)
   {
-    if(is_null($this->logger)) 
-    {
-      $this->logger =& LogManager::getLogger('propel');
-    }
+	if(is_null($this->logger))
+	{
+	  $this->logger =& LogManager::getLogger('propel');
+	}
 
-    switch($severity)
-    {
-      case 'crit':
-        $method = 'fatal';
-        break;
-      case 'err':
-        $method = 'error';
-        break;
-      case 'alert':
-      case 'warning':
-        $method = 'warning';
-        break;
-      case 'notice':
-      case 'info':
-        $method = 'info';
-        break;
-      case 'debug':
-      default:
-        $method = 'debug';
-    }
-    
-    // get a backtrace to pass class, function, file, & line to Mojavi logger
-    $trace =& debug_backtrace();
+	switch($severity)
+	{
+	  case 'crit':
+		$method = 'fatal';
+		break;
+	  case 'err':
+		$method = 'error';
+		break;
+	  case 'alert':
+	  case 'warning':
+		$method = 'warning';
+		break;
+	  case 'notice':
+	  case 'info':
+		$method = 'info';
+		break;
+	  case 'debug':
+	  default:
+		$method = 'debug';
+	}
 
-    // call the appropriate Mojavi logger method
-    $this->logger->{$method} (
-        $message,
-        $trace[2]['class'],
-        $trace[2]['function'],
-        $trace[1]['file'],
-        $trace[1]['line']
-    );
+	// get a backtrace to pass class, function, file, & line to Mojavi logger
+	$trace =& debug_backtrace();
+
+	// call the appropriate Mojavi logger method
+	$this->logger->{$method} (
+		$message,
+		$trace[2]['class'],
+		$trace[2]['function'],
+		$trace[1]['file'],
+		$trace[1]['line']
+	);
   }
 
 };
-
-
-

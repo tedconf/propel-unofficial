@@ -38,69 +38,69 @@ include_once 'creole/Connection.php';
  * <p>This class also replaces Torque's DBFactory class.  Use the <code>DBAdapter::factory($creoleDriver)</code>
  * method to get the correct Propel DBAdapter adapter, given a Creole driver.
  *
- * @author Kaspars Jaudzems <kasparsj@navigators.lv> (Propel)
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author Jon S. Stevens <jon@latchkey.com> (Torque)
- * @author Brett McLaughlin <bmclaugh@algx.net> (Torque)
- * @author Daniel Rall <dlr@finemaltcoding.com> (Torque)
- * @version $Revision$
+ * @author     Kaspars Jaudzems <kasparsj@navigators.lv> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     Jon S. Stevens <jon@latchkey.com> (Torque)
+ * @author     Brett McLaughlin <bmclaugh@algx.net> (Torque)
+ * @author     Daniel Rall <dlr@finemaltcoding.com> (Torque)
+ * @version    $Revision$
  */
 class DBAdapter
 {
   /**
   * Creole driver to Propel adapter map.
-  * @var array
+  * @var        array
   */
   var $adapters = array
-    (
-      ''       => 'DBNone',
-      'mysql'  => 'DBMySQL',
-      'mssql'  => 'DBMSSQL',
-      'pgsql'  => 'DBPostgres',
-      'sqlite' => 'DBSQLite',
-    );
+	(
+	  ''       => 'DBNone',
+	  'mysql'  => 'DBMySQL',
+	  'mssql'  => 'DBMSSQL',
+	  'pgsql'  => 'DBPostgres',
+	  'sqlite' => 'DBSQLite',
+	);
 
   /**
   * Creates a new instance of the database adapter associated
   * with the specified Creole driver.
   *
-  * @param string $driver The name of the Creole driver to
+  * @param      string $driver The name of the Creole driver to
   * create a new adapter instance for or a shorter form adapter key.
-  * @return DBAdapter An instance of a Turbine database adapter.
-  * @throws Exception if the Creole driver could not be instantiated.
+  * @return     DBAdapter An instance of a Turbine database adapter.
+  * @throws     Exception if the Creole driver could not be instantiated.
   */
   function & factory($driver)
   {
-    $self =& DBAdapter::getInstance();
-    $adapterClass = null;
+	$self =& DBAdapter::getInstance();
+	$adapterClass = null;
 
-    if (isset($self->adapters["$driver"])) {
-        $adapterClass =& $self->adapters["$driver"];
-    }
+	if (isset($self->adapters["$driver"])) {
+		$adapterClass =& $self->adapters["$driver"];
+	}
 
-    if ($adapterClass !== null) {
-      require_once 'propel/adapter/' . $adapterClass . '.php';
-      $a = new $adapterClass();
-      return $a;
-    }
-    else {
-      return new Exception(PROPEL_ERROR_NOT_FOUND, "Unknown Creole driver: " . $driver . ": Check your configuration file");
-    }
+	if ($adapterClass !== null) {
+	  require_once 'propel/adapter/' . $adapterClass . '.php';
+	  $a = new $adapterClass();
+	  return $a;
+	}
+	else {
+	  return new Exception(PROPEL_ERROR_NOT_FOUND, "Unknown Creole driver: " . $driver . ": Check your configuration file");
+	}
   }
 
   /**
   * This method is used to ignore case.
   *
-  * @param in The string to transform to upper case.
-  * @return string The upper case string.
+  * @param      in The string to transform to upper case.
+  * @return     string The upper case string.
   */
   function toUpperCase($in)
   {
-    trigger_error(
-      "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
@@ -108,57 +108,57 @@ class DBAdapter
   * a piece of text used in a SQL statement (generally a single
   * quote).
   *
-  * @return string The text delimeter.
+  * @return     string The text delimeter.
   */
   function getStringDelimiter()
   {
-    return '\'';
+	return '\'';
   }
 
   /**
   * Locks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to lock.
-  * @return void
-  * @throws SQLException No Statement could be created or executed.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to lock.
+  * @return     void
+  * @throws     SQLException No Statement could be created or executed.
   */
   function lockTable(/*Connection*/ &$con, $table)
   {
-    trigger_error(
-      "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
   * Unlocks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to unlock.
-  * @return void
-  * @throws SQLException No Statement could be created or executed.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to unlock.
+  * @return     void
+  * @throws     SQLException No Statement could be created or executed.
   */
   function unlockTable(/*Connection*/ &$con, $table)
   {
-    trigger_error(
-      "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
   * This method is used to ignore case.
   *
-  * @param string $in The string whose case to ignore.
-  * @return string The string in a case that can be ignored.
+  * @param      string $in The string whose case to ignore.
+  * @return     string The string in a case that can be ignored.
   */
   function ignoreCase($in)
   {
-    trigger_error(
-      "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::toUpperCase(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
@@ -167,67 +167,67 @@ class DBAdapter
   * (Interbase for example) does not use the same SQL in ORDER BY
   * and other clauses.
   *
-  * @param string $in The string whose case to ignore.
-  * @return string The string in a case that can be ignored.
+  * @param      string $in The string whose case to ignore.
+  * @return     string The string in a case that can be ignored.
   */
   function ignoreCaseInOrderBy($in)
   {
-      return $this->ignoreCase($in);
+	  return $this->ignoreCase($in);
   }
-  
+
   /**
   * Returns SQL which concatenates the second string to the first.
   *
-  * @param string String to concatenate.
-  * @param string String to append.
-  * @return string 
+  * @param      string String to concatenate.
+  * @param      string String to append.
+  * @return     string
   */
-  function concatString($s1, $s2) 
+  function concatString($s1, $s2)
   {
-    trigger_error(
-      "DBAdapter::concatString(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::concatString(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
   * Returns SQL which extracts a substring.
   *
-  * @param string String to extract from.
-  * @param int Offset to start from.
-  * @param int Number of characters to extract.
-  * @return string 
+  * @param      string String to extract from.
+  * @param      int Offset to start from.
+  * @param      int Number of characters to extract.
+  * @return     string
   */
-  function subString($s, $pos, $len) 
+  function subString($s, $pos, $len)
   {
-    trigger_error(
-      "DBAdapter::subString(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::subString(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   /**
   * Returns SQL which calculates the length (in chars) of a string.
   *
-  * @param string String to calculate length of.
-  * @return string 
+  * @param      string String to calculate length of.
+  * @return     string
   */
-  function strLength($s) 
+  function strLength($s)
   {
-    trigger_error(
-      "DBAdapter::strLength(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "DBAdapter::strLength(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 
   function & getInstance()
   {
-    static $instance;
+	static $instance;
 
-    if ($instance === null)
-      $instance = new DBAdapter();
+	if ($instance === null)
+	  $instance = new DBAdapter();
 
-    return $instance;
+	return $instance;
   }
 
 }

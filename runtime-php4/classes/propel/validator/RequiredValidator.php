@@ -34,18 +34,18 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
  */
 class RequiredValidator extends BasicValidator
 {
 
   /**
-  * @see BasicValidator::isValid()
+  * @see        BasicValidator::isValid()
   */
   function isValid (&$map, $str)
   {
-    return ($str !== null && $str !== "");
+	return ($str !== null && $str !== "");
   }
 
 }

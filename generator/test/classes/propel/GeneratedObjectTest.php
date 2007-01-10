@@ -33,8 +33,8 @@ require_once 'bookstore/BookstoreTestBase.php';
  * for each test method in this class.  See the BookstoreDataPopulator::populate()
  * method for the exact contents of the database.
  *
- * @see BookstoreDataPopulator
- * @author Hans Lellelid <hans@xmpl.org>
+ * @see        BookstoreDataPopulator
+ * @author     Hans Lellelid <hans@xmpl.org>
  */
 class GeneratedObjectTest extends BookstoreTestBase {
 
@@ -68,18 +68,18 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	public function testSaveReturnValues()
 	{
 
-	    $author = new Author();
-	    $author->setFirstName("Mark");
-	    $author->setLastName("Kurlansky");
+		$author = new Author();
+		$author->setFirstName("Mark");
+		$author->setLastName("Kurlansky");
 		// do not save
 
 		$pub = new Publisher();
-	    $pub->setName("Penguin Books");
-	    // do not save
+		$pub->setName("Penguin Books");
+		// do not save
 
 		$book = new Book();
-	    $book->setTitle("Salt: A World History");
-	    $book->setISBN("0142001619");
+		$book->setTitle("Salt: A World History");
+		$book->setISBN("0142001619");
 		$book->setAuthor($author);
 		$book->setPublisher($pub);
 
@@ -132,24 +132,24 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->assertNull($book, "Expect NULL from retrieveByPK on deleted Book.");
 
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	public function testNoColsModified()
 	{
 		$e1 = new BookstoreEmployee();
 		$e1->setName('Employee 1');
-		
+
 		$e2 = new BookstoreEmployee();
 		$e2->setName('Employee 2');
-		
+
 		$super = new BookstoreEmployee();
 		// we don't know who the supervisor is yet
 		$super->addBookstoreEmployeeRelatedBySupervisorId($e1);
 		$super->addBookstoreEmployeeRelatedBySupervisorId($e2);
-		
+
 		$affected = $super->save();
-		
+
 	}
 }

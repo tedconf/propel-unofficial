@@ -25,24 +25,24 @@ require_once 'propel/adapter/DBAdapter.php';
  * This DatabaseHandler is used when you do not have a database
  * installed.
  *
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Jon S. Stevens <jon@clearink.com> (Torque)
- * @author Brett McLaughlin <bmclaugh@algx.net> (Torque)
- * @version $Revision$
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Jon S. Stevens <jon@clearink.com> (Torque)
+ * @author     Brett McLaughlin <bmclaugh@algx.net> (Torque)
+ * @version    $Revision$
  */
 class DBNone extends DBAdapter
 {
   /**
-  * @return null
+  * @return     null
   */
   function getConnection()
   {
-    return null;
+	return null;
   }
 
   /**
-  * @see DB::init()
+  * @see        DB::init()
   */
   function init($url, $username, $password)
   {
@@ -51,67 +51,67 @@ class DBNone extends DBAdapter
   /**
   * This method is used to ignore case.
   *
-  * @param in The string to transform to upper case.
-  * @return The upper case string.
+  * @param      in The string to transform to upper case.
+  * @return     The upper case string.
   */
   function toUpperCase($in)
   {
-    return $in;
+	return $in;
   }
 
   /**
   * This method is used to ignore case.
   *
-  * @param in The string whose case to ignore.
-  * @return The string in a case that can be ignored.
+  * @param      in The string whose case to ignore.
+  * @return     The string in a case that can be ignored.
   */
   function ignoreCase($in)
   {
-    return $in;
+	return $in;
   }
 
   /**
   * Returns SQL which concatenates the second string to the first.
   *
-  * @param string String to concatenate.
-  * @param string String to append.
-  * @return string 
+  * @param      string String to concatenate.
+  * @param      string String to append.
+  * @return     string
   */
   function concatString($s1, $s2)
   {
-    return ($s1 . $s2);
+	return ($s1 . $s2);
   }
 
   /**
   * Returns SQL which extracts a substring.
   *
-  * @param string String to extract from.
-  * @param int Offset to start from.
-  * @param int Number of characters to extract.
-  * @return string 
+  * @param      string String to extract from.
+  * @param      int Offset to start from.
+  * @param      int Number of characters to extract.
+  * @return     string
   */
   function subString($s, $pos, $len)
   {
-    return substr($s, $pos, $len);
+	return substr($s, $pos, $len);
   }
 
   /**
   * Returns SQL which calculates the length (in chars) of a string.
   *
-  * @param string String to calculate length of.
-  * @return string 
+  * @param      string String to calculate length of.
+  * @return     string
   */
   function strLength($s)
   {
-    return strlen($s);
+	return strlen($s);
   }
- 
+
   /**
   * Locks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to lock.
-  * @throws SQLException No Statement could be created or executed.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to lock.
+  * @throws     SQLException No Statement could be created or executed.
   */
   function lockTable(/*Connection*/ &$con, $table)
   {
@@ -120,9 +120,9 @@ class DBNone extends DBAdapter
   /**
   * Unlocks the specified table.
   *
-  * @param Connection $con The Creole connection to use.
-  * @param string $table The name of the table to unlock.
-  * @throws SQLException No Statement could be created or executed.
+  * @param      Connection $con The Creole connection to use.
+  * @param      string $table The name of the table to unlock.
+  * @throws     SQLException No Statement could be created or executed.
   */
   function unlockTable(/*Connection*/ &$con, $table)
   {

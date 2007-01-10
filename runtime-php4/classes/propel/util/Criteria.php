@@ -24,91 +24,91 @@
  *
  * BasePeer constructs SQL statements based on the values in this class.
  *
- * @author Kaspars Jaudzems <kaspars.jaudzems@inbox.lv> (Propel)
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author Frank Y. Kim <frank.kim@clearink.com> (Torque)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @author Brett McLaughlin <bmclaugh@algx.net> (Torque)
- * @author Eric Dobbs <eric@dobbse.net> (Torque)
- * @author Henning P. Schmiedehausen <hps@intermeta.de> (Torque)
- * @author Sam Joseph <sam@neurogrid.com> (Torque)
- * @version $Revision$
- * @package propel.util
+ * @author     Kaspars Jaudzems <kaspars.jaudzems@inbox.lv> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     Frank Y. Kim <frank.kim@clearink.com> (Torque)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @author     Brett McLaughlin <bmclaugh@algx.net> (Torque)
+ * @author     Eric Dobbs <eric@dobbse.net> (Torque)
+ * @author     Henning P. Schmiedehausen <hps@intermeta.de> (Torque)
+ * @author     Sam Joseph <sam@neurogrid.com> (Torque)
+ * @version    $Revision$
+ * @package    propel.util
  */
 class Criteria /*implements IteratorAggregate */
 {
   /** Comparison type. */
-  function EQUAL() { return "="; }             
-  
+  function EQUAL() { return "="; }
+
   /** Comparison type. */
-  function NOT_EQUAL() { return "<>"; }            
-  
+  function NOT_EQUAL() { return "<>"; }
+
   /** Comparison type. */
-  function ALT_NOT_EQUAL() { return "!="; }            
-  
+  function ALT_NOT_EQUAL() { return "!="; }
+
   /** Comparison type. */
-  function GREATER_THAN() { return ">"; }             
-  
+  function GREATER_THAN() { return ">"; }
+
   /** Comparison type. */
-  function LESS_THAN() { return "<"; }             
-  
+  function LESS_THAN() { return "<"; }
+
   /** Comparison type. */
-  function GREATER_EQUAL() { return ">="; }            
-  
+  function GREATER_EQUAL() { return ">="; }
+
   /** Comparison type. */
-  function LESS_EQUAL() { return "<="; }            
-  
+  function LESS_EQUAL() { return "<="; }
+
   /** Comparison type. */
-  function LIKE() { return " LIKE "; }        
-  
+  function LIKE() { return " LIKE "; }
+
   /** Comparison type. */
-  function NOT_LIKE() { return " NOT LIKE "; }    
-  
+  function NOT_LIKE() { return " NOT LIKE "; }
+
   /** PostgreSQL comparison type */
-  function ILIKE() { return " ILIKE "; }       
-  
+  function ILIKE() { return " ILIKE "; }
+
   /** PostgreSQL comparison type */
-  function NOT_ILIKE() { return " NOT ILIKE "; }   
-  
+  function NOT_ILIKE() { return " NOT ILIKE "; }
+
   /** Comparison type. */
-  function CUSTOM() { return "CUSTOM"; }        
-  
+  function CUSTOM() { return "CUSTOM"; }
+
   /** Comparison type. */
-  function DISTINCT() { return "DISTINCT "; }     
-  
+  function DISTINCT() { return "DISTINCT "; }
+
   /** Comparison type. */
-  function IN () { return " IN "; }          
-  
+  function IN () { return " IN "; }
+
   /** Comparison type. */
-  function NOT_IN() { return " NOT IN "; }      
-  
+  function NOT_IN() { return " NOT IN "; }
+
   /** Comparison type. */
-  function ALL() { return "ALL "; }          
-  
+  function ALL() { return "ALL "; }
+
   /** Comparison type. */
-  function JOIN() { return "JOIN"; }          
-  
+  function JOIN() { return "JOIN"; }
+
   /** "Order by" qualifier - ascending */
-  function ASC() { return "ASC"; }           
-  
+  function ASC() { return "ASC"; }
+
   /** "Order by" qualifier - descending */
-  function DESC() { return "DESC"; }          
-  
+  function DESC() { return "DESC"; }
+
   /** "IS NULL" null comparison */
-  function ISNULL() { return " IS NULL "; }     
-  
+  function ISNULL() { return " IS NULL "; }
+
   /** "IS NOT NULL" null comparison */
-  function ISNOTNULL() { return " IS NOT NULL "; } 
-  
+  function ISNOTNULL() { return " IS NOT NULL "; }
+
   /** "CURRENT_DATE" ANSI SQL function */
-  function CURRENT_DATE() { return "CURRENT_DATE"; }  
-  
+  function CURRENT_DATE() { return "CURRENT_DATE"; }
+
   /** "CURRENT_TIME" ANSI SQL function */
-  function CURRENT_TIME() { return "CURRENT_TIME"; }  
-  
+  function CURRENT_TIME() { return "CURRENT_TIME"; }
+
   /** "CURRENT_TIMESTAMP" ANSI SQL function */
-  function CURRENT_TIMESTAMP() { return "CURRENT_TIMESTAMP"; } 
+  function CURRENT_TIMESTAMP() { return "CURRENT_TIMESTAMP"; }
 
   /** "LEFT JOIN" SQL statement */
   function LEFT_JOIN() { return "LEFT JOIN"; }
@@ -153,7 +153,7 @@ class Criteria /*implements IteratorAggregate */
 
   /**
   * Primary storage of criteria data.
-  * @var array
+  * @var        array
   */
   var $map = array();
 
@@ -161,31 +161,31 @@ class Criteria /*implements IteratorAggregate */
   * Creates a new instance with the default capacity which corresponds to
   * the specified database.
   *
-  * @param dbName The dabase name.
+  * @param      dbName The dabase name.
   */
   function Criteria($dbName = null)
   {
-    $this->setDbName($dbName);
-    $this->originalDbName = $dbName;
+	$this->setDbName($dbName);
+	$this->originalDbName = $dbName;
   }
 
   /**
   * Implementing SPL IteratorAggregate interface.  This allows
   * you to foreach() over a Criteria object.
   */
-  function & getIterator() 
+  function & getIterator()
   {
-    return new CriterionIterator($this);
+	return new CriterionIterator($this);
   }
 
   /**
   * Get the criteria map.
   *
-  * @return array
+  * @return     array
   */
   function & getMap()
   {
-    return $this->map;
+	return $this->map;
   }
 
   /**
@@ -193,26 +193,26 @@ class Criteria /*implements IteratorAggregate */
   * can be reused as if it was new. Except if the criteria has grown in
   * capacity, it is left at the current capacity.
   *
-  * @return void
+  * @return     void
   */
   function clear()
   {
-    $this->map = array();
-    $this->ignoreCase = false;
-    $this->singleRecord = false;
-    $this->selectModifiers = array();
-    $this->selectColumns = array();
-    $this->orderByColumns = array();
-    $this->groupByColumns = array();
-    $this->having = null;
-    $this->asColumns = array();
-    $this->joins = array();
-    $this->dbName = $this->originalDbName;
-    $this->offset = 0;
-    $this->limit = -1;
-    $this->blobFlag = null;
-    $this->aliases = null;
-    $this->useTransaction = false;
+	$this->map = array();
+	$this->ignoreCase = false;
+	$this->singleRecord = false;
+	$this->selectModifiers = array();
+	$this->selectColumns = array();
+	$this->orderByColumns = array();
+	$this->groupByColumns = array();
+	$this->having = null;
+	$this->asColumns = array();
+	$this->joins = array();
+	$this->dbName = $this->originalDbName;
+	$this->offset = 0;
+	$this->limit = -1;
+	$this->blobFlag = null;
+	$this->aliases = null;
+	$this->useTransaction = false;
   }
 
   /**
@@ -223,97 +223,97 @@ class Criteria /*implements IteratorAggregate */
   * myCrit.addAsColumn("alias", "ALIAS(" . MyPeer::ID() . ")");
   * </code>
   *
-  * @param string $name  wanted Name of the column (alias)
-  * @param string $clause SQL clause to select from the table
+  * @param      string $name  wanted Name of the column (alias)
+  * @param      string $clause SQL clause to select from the table
   *
   * If the name already exists, it is replaced by the new clause.
   *
-  * @return Criteria A modified Criteria object.
+  * @return     Criteria A modified Criteria object.
   */
   function & addAsColumn($name, $clause)
   {
-    $this->asColumns[$name] = $clause;
-    return $this;
+	$this->asColumns[$name] = $clause;
+	return $this;
   }
 
   /**
   * Get the column aliases.
   *
-  * @return array A Hashtable which map the column alias names
+  * @return     array A Hashtable which map the column alias names
   * to the alias clauses.
   */
   function & getAsColumns()
   {
-    return $this->asColumns;
+	return $this->asColumns;
   }
 
   /**
   * Returns the column name associated with an alias (AS-column).
   *
-  * @param string $alias
-  * @return string
+  * @param      string $alias
+  * @return     string
   */
   function & getColumnForAs($as)
   {
-    if(isset($this->asColumns[$as])) {
-      return $this->asColumns[$as];
-    }
+	if(isset($this->asColumns[$as])) {
+	  return $this->asColumns[$as];
+	}
   }
 
   /**
   * Allows one to specify an alias for a table that can
   * be used in various parts of the SQL.
   *
-  * @param alias a <code>String</code> value
-  * @param table a <code>String</code> value
-  * @return void
+  * @param      alias a <code>String</code> value
+  * @param      table a <code>String</code> value
+  * @return     void
   */
   function addAlias($alias, $table)
   {
-    if ($this->aliases === null) {
-      $this->aliases = array();
-    }
+	if ($this->aliases === null) {
+	  $this->aliases = array();
+	}
 
-    $this->aliases[$alias] = $table;
+	$this->aliases[$alias] = $table;
   }
 
   /**
   * Returns the table name associated with an alias.
   *
-  * @param alias a <code>String</code> value
-  * @return string A <code>String</code> value
+  * @param      alias a <code>String</code> value
+  * @return     string A <code>String</code> value
   */
   function & getTableForAlias($alias)
   {
-    $table = null;
+	$table = null;
 
-    if (isset($this->aliases[$alias])) {
-      $table = $this->aliases[$alias];
-    }
+	if (isset($this->aliases[$alias])) {
+	  $table = $this->aliases[$alias];
+	}
 
-    return $table;
+	return $table;
   }
 
   /**
   * Get the keys for the criteria map.
-  * @return array
+  * @return     array
   */
   function keys()
   {
-    return array_keys($this->map);
+	return array_keys($this->map);
   }
 
   /**
   * Does this Criteria object contain the specified key?
   *
-  * @param string $column [table.]column
-  * @return boolean True if this Criteria object contain the specified key.
+  * @param      string $column [table.]column
+  * @return     boolean True if this Criteria object contain the specified key.
   */
   function containsKey($column)
   {
-    // must use array_key_exists() because the key could
-    // exist but have a NULL value (that'd be valid).
-    return array_key_exists($column, $this->map);
+	// must use array_key_exists() because the key could
+	// exist but have a NULL value (that'd be valid).
+	return array_key_exists($column, $this->map);
   }
 
   /**
@@ -321,36 +321,36 @@ class Criteria /*implements IteratorAggregate */
   * a transaction.  This is here primarily to support the oid type in
   * postgresql.  Though it can be used to require any single sql statement
   * to use a transaction.
-  * @return void
+  * @return     void
   */
   function setUseTransaction($v)
   {
-    $this->useTransaction = (boolean) $v;
+	$this->useTransaction = (boolean) $v;
   }
 
   /**
   * called by BasePeer to determine whether the sql command specified by
   * this criteria must be wrapped in a transaction.
   *
-  * @return a <code>boolean</code> value
+  * @return     a <code>boolean</code> value
   */
   function isUseTransaction()
   {
-    return $this->useTransaction;
+	return $this->useTransaction;
   }
 
   /**
   * Method to return criteria related to columns in a table.
   *
-  * @return A Criterion.
+  * @return     A Criterion.
   */
   function & getCriterion($column)
   {
-    if (isset($this->map[$column])) {
-      return $this->map[$column];
-    }
+	if (isset($this->map[$column])) {
+	  return $this->map[$column];
+	}
 
-    return null;
+	return null;
   }
 
   /**
@@ -358,134 +358,134 @@ class Criteria /*implements IteratorAggregate */
   * to this Criteria.  This can be used to chain the
   * Criterions to form a more complex where clause.
   *
-  * @param column String full name of column (for example TABLE.COLUMN).
-  * @param mixed $value
-  * @param string $comparison
-  * @return A Criterion.
+  * @param      column String full name of column (for example TABLE.COLUMN).
+  * @param      mixed $value
+  * @param      string $comparison
+  * @return     A Criterion.
   */
   function & getNewCriterion($column, $value, $comparison = null)
   {
-    $nc =& new Criterion($this, $column, $value, $comparison);
-    return $nc;
+	$nc =& new Criterion($this, $column, $value, $comparison);
+	return $nc;
   }
 
   /**
   * Method to return a String table name.
   *
-  * @param name A String with the name of the key.
-  * @return A String with the value of the object at key.
+  * @param      name A String with the name of the key.
+  * @return     A String with the value of the object at key.
   */
   function & getColumnName($name)
   {
-    $val = null;
+	$val = null;
 
-    if(isset($this->map[$name])) {
-      $val = $this->map[$name]->getColumn();
-    }
+	if(isset($this->map[$name])) {
+	  $val = $this->map[$name]->getColumn();
+	}
 
-    return $val;
+	return $val;
   }
 
   /**
   * Shortcut method to get an array of columns indexed by table.
-  * @return array array(table => array(table.column1, table.column2))
+  * @return     array array(table => array(table.column1, table.column2))
   */
   function & getTablesColumns()
   {
-    $tables = array();
-    $keys = array_keys($this->map);
-    foreach($keys as $key) {
-      $t = substr($key, 0, strpos($key, '.'));
-      // this happens automatically, so if no notices
-      // are raised, then leave it out:
-      // if (!isset($tables[$t])) $tables[$t] = array();
-      $tables[$t][] = $key;
-    }
-    return $tables;
+	$tables = array();
+	$keys = array_keys($this->map);
+	foreach($keys as $key) {
+	  $t = substr($key, 0, strpos($key, '.'));
+	  // this happens automatically, so if no notices
+	  // are raised, then leave it out:
+	  // if (!isset($tables[$t])) $tables[$t] = array();
+	  $tables[$t][] = $key;
+	}
+	return $tables;
   }
 
   /**
   * Method to return a comparison String.
   *
-  * @param string $key String name of the key.
-  * @return string A String with the value of the object at key.
+  * @param      string $key String name of the key.
+  * @return     string A String with the value of the object at key.
   */
   function & getComparison($key)
   {
-    $val = null;
+	$val = null;
 
-    if (isset($this->map[$key])) {
-      $val = $this->map[$key]->getComparison();
-    }
+	if (isset($this->map[$key])) {
+	  $val = $this->map[$key]->getComparison();
+	}
 
-    return $val;
+	return $val;
   }
 
   /**
   * Get the Database(Map) name.
   *
-  * @return string A String with the Database(Map) name.
+  * @return     string A String with the Database(Map) name.
   */
   function getDbName()
   {
-    return $this->dbName;
+	return $this->dbName;
   }
 
   /**
   * Set the DatabaseMap name.  If <code>null</code> is supplied, uses value
   * provided by <code>Propel::getDefaultDB()</code>.
   *
-  * @param $dbName A String with the Database(Map) name.
-  * @return void
+  * @param      $dbName A String with the Database(Map) name.
+  * @return     void
   */
   function setDbName($dbName = null)
   {
-    $this->dbName = ($dbName === null ? Propel::getDefaultDB() : $dbName);
+	$this->dbName = ($dbName === null ? Propel::getDefaultDB() : $dbName);
   }
 
   /**
   * Method to return a String table name.
   *
-  * @param $name A String with the name of the key.
-  * @return string A String with the value of table for criterion at key.
+  * @param      $name A String with the name of the key.
+  * @return     string A String with the value of table for criterion at key.
   */
   function & getTableName($name)
   {
-    $val = null;
+	$val = null;
 
-    if (isset($this->map[$name])) {
-      $val = $this->map[$name]->getTable();
-    }
+	if (isset($this->map[$name])) {
+	  $val = $this->map[$name]->getTable();
+	}
 
-    return $val;
+	return $val;
   }
 
   /**
   * Method to return the value that was added to Criteria.
   *
-  * @param string $name A String with the name of the key.
-  * @return mixed The value of object at key.
+  * @param      string $name A String with the name of the key.
+  * @return     mixed The value of object at key.
   */
   function & getValue($name)
   {
-    $val = null;
+	$val = null;
 
-    if (isset($this->map[$name])) {
-      $val = $this->map[$name]->getValue();
-    }
+	if (isset($this->map[$name])) {
+	  $val = $this->map[$name]->getValue();
+	}
 
-    return $val;
+	return $val;
   }
 
   /**
   * An alias to getValue() -- exposing a Hashtable-like interface.
   *
-  * @param string $key An Object.
-  * @return mixed The value within the Criterion (not the Criterion object).
+  * @param      string $key An Object.
+  * @return     mixed The value within the Criterion (not the Criterion object).
   */
   function & get($key)
   {
-    return $this->getValue($key);
+	return $this->getValue($key);
   }
 
   /**
@@ -498,13 +498,13 @@ class Criteria /*implements IteratorAggregate */
   * throw a NPE. The reason for this is that none of the add()
   * methods support adding anything other than a String as a key.
   *
-  * @param string $key
-  * @param string $value
-  * @return Instance of self.
+  * @param      string $key
+  * @param      string $value
+  * @return     Instance of self.
   */
   function & put($key, $value)
   {
-    return $this->add($key, $value);
+	return $this->add($key, $value);
   }
 
   /**
@@ -515,30 +515,30 @@ class Criteria /*implements IteratorAggregate */
   * if the map was another Criteria, its attributes are copied to this
   * Criteria, overwriting previous settings.
   *
-  * @param mixed $t Mappings to be stored in this map.
+  * @param      mixed $t Mappings to be stored in this map.
   */
   function putAll($t)
   {
-    if (is_array($t))
-    {
-      $keys = array_keys($t);
-      foreach ($keys as $key)
-      {
-        $val =& $t[$key];
-        if (is_a($val, 'Criterion')) {//$val instanceof Criterion) {
-          $this->map[$key] =& $val;
-        } else {
-          // put throws an exception ... right?
-          // otherwise there's no difference ... not sure why this is here
-          // %%%
-          $this->put($key, $val);
-        }
-      }
-    }
-    else if (is_a($t, 'Criteria')) //($t instanceof Criteria)
-    {
-      $this->joins = $t->joins;
-    }
+	if (is_array($t))
+	{
+	  $keys = array_keys($t);
+	  foreach ($keys as $key)
+	  {
+		$val =& $t[$key];
+		if (is_a($val, 'Criterion')) {//$val instanceof Criterion) {
+		  $this->map[$key] =& $val;
+		} else {
+		  // put throws an exception ... right?
+		  // otherwise there's no difference ... not sure why this is here
+		  // %%%
+		  $this->put($key, $val);
+		}
+	  }
+	}
+	else if (is_a($t, 'Criteria')) //($t instanceof Criteria)
+	{
+	  $this->joins = $t->joins;
+	}
   }
 
   /**
@@ -560,23 +560,23 @@ class Criteria /*implements IteratorAggregate */
   * so the Column name must be something like 'TABLE.id'. If you
   * don't like this, you can use the add(table, column, value) method.
   *
-  * @param mixed $p1 The column to run the comparison on, or a Criterion object.
-  * @param mixed $value
-  * @param string $comparison A String.
+  * @param      mixed $p1 The column to run the comparison on, or a Criterion object.
+  * @param      mixed $value
+  * @param      string $comparison A String.
   *
-  * @return A modified Criteria object.
+  * @return     A modified Criteria object.
   */
   function & add($p1, $value = null, $comparison = null)
   {
-    if (is_a($p1, 'Criterion')) {
-      $c =& $p1;
-      $this->map[$c->getTable() . '.' . $c->getColumn()] =& $c;
-    } else {
-      $column = $p1;
-      $this->map[$column] =& new Criterion($this, $column, $value, $comparison);
-    }
+	if (is_a($p1, 'Criterion')) {
+	  $c =& $p1;
+	  $this->map[$c->getTable() . '.' . $c->getColumn()] =& $c;
+	} else {
+	  $column = $p1;
+	  $this->map[$column] =& new Criterion($this, $column, $value, $comparison);
+	}
 
-    return $this;
+	return $this;
   }
 
   /**
@@ -590,89 +590,89 @@ class Criteria /*implements IteratorAggregate */
   * left = PROJECT.PROJECT_ID
   * right = FOO.PROJECT_ID
   *
-  * @param string $left A String with the left side of the join.
-  * @param string $right A String with the right side of the join.
-  * @param string $operator A String with the join operator e.g. LEFT JOIN, ...
-  * @return Criteria A modified Criteria object.
+  * @param      string $left A String with the left side of the join.
+  * @param      string $right A String with the right side of the join.
+  * @param      string $operator A String with the join operator e.g. LEFT JOIN, ...
+  * @return     Criteria A modified Criteria object.
   */
   function & addJoin($left, $right, $operator = null)
   {
-    $this->joins [] =& new Join($left, $right, $operator);
+	$this->joins [] =& new Join($left, $right, $operator);
 
-    return $this;
+	return $this;
   }
 
   /**
    * Get the List of Joins.  This method is meant to
    * be called by BasePeer.
-   * @return an array which contains objects of type Join,
+   * @return     an array which contains objects of type Join,
    *         or an empty array if the criteria does not contains any joins
    */
   function & getJoins()
   {
-    return $this->joins;
+	return $this->joins;
   }
 
   /**
   * get one side of the set of possible joins.  This method is meant to
   * be called by BasePeer.
-  * @return array
+  * @return     array
   * @deprecated This method is no longer used by BasePeer.
   */
   function & getJoinL()
   {
-    return new PropelException("getJoinL() in Criteria is no longer supported!");
+	return new PropelException("getJoinL() in Criteria is no longer supported!");
   }
 
   /**
   * get one side of the set of possible joins.  This method is meant to
   * be called by BasePeer.
-  * @return array
+  * @return     array
   * @deprecated This method is no longer used by BasePeer.
   */
   function & getJoinR()
   {
-    return new PropelException("getJoinL() in Criteria is no longer supported!");
+	return new PropelException("getJoinL() in Criteria is no longer supported!");
   }
 
   /**
   * Adds "ALL " to the SQL statement.
-  * @return void
+  * @return     void
   */
   function setAll()
   {
-    $this->selectModifiers[] = Criteria::ALL();
+	$this->selectModifiers[] = Criteria::ALL();
   }
 
   /**
   * Adds "DISTINCT " to the SQL statement.
-  * @return void
+  * @return     void
   */
   function setDistinct()
   {
-    $this->selectModifiers[] = Criteria::DISTINCT();
+	$this->selectModifiers[] = Criteria::DISTINCT();
   }
 
   /**
   * Sets ignore case.
   *
-  * @param boolean $b True if case should be ignored.
-  * @return A modified Criteria object.
+  * @param      boolean $b True if case should be ignored.
+  * @return     A modified Criteria object.
   */
   function & setIgnoreCase($b)
   {
-    $this->ignoreCase = (boolean) $b;
-    return $this;
+	$this->ignoreCase = (boolean) $b;
+	return $this;
   }
 
   /**
   * Is ignore case on or off?
   *
-  * @return boolean True if case is ignored.
+  * @return     boolean True if case is ignored.
   */
   function isIgnoreCase()
   {
-    return $this->ignoreCase;
+	return $this->ignoreCase;
   }
 
   /**
@@ -684,303 +684,303 @@ class Criteria /*implements IteratorAggregate */
   * multiple records but you are only interested in the first one then you
   * should be using setLimit(1).
   *
-  * @param bool $b Set to <code>true</code> if you expect the query to select just
+  * @param      bool $b Set to <code>true</code> if you expect the query to select just
   * one record.
-  * @return A modified Criteria object.
+  * @return     A modified Criteria object.
   */
   function & setSingleRecord($b)
   {
-    $this->singleRecord = (boolean) $b;
-    return $this;
+	$this->singleRecord = (boolean) $b;
+	return $this;
   }
 
   /**
   * Is single record?
   *
-  * @return boolean True if a single record is being returned.
+  * @return     boolean True if a single record is being returned.
   */
   function isSingleRecord()
   {
-    return $this->singleRecord;
+	return $this->singleRecord;
   }
 
   /**
   * Set limit.
   *
-  * @param int $limit An int with the value for limit.
-  * @return A modified Criteria object.
+  * @param      int $limit An int with the value for limit.
+  * @return     A modified Criteria object.
   */
   function & setLimit($limit)
   {
-    $this->limit = $limit;
-    return $this;
+	$this->limit = $limit;
+	return $this;
   }
 
   /**
   * Get limit.
   *
-  * @return int An int with the value for limit.
+  * @return     int An int with the value for limit.
   */
   function getLimit()
   {
-    return $this->limit;
+	return $this->limit;
   }
 
   /**
   * Set offset.
   *
-  * @param int $offset An int with the value for offset.
-  * @return A modified Criteria object.
+  * @param      int $offset An int with the value for offset.
+  * @return     A modified Criteria object.
   */
   function & setOffset($offset)
   {
-    $this->offset = $offset;
-    return $this;
+	$this->offset = $offset;
+	return $this;
   }
 
   /**
   * Get offset.
   *
-  * @return An int with the value for offset.
+  * @return     An int with the value for offset.
   */
   function getOffset()
   {
-    return $this->offset;
+	return $this->offset;
   }
 
   /**
   * Add select column.
   *
-  * @param string $name A String with the name of the select column.
-  * @return A modified Criteria object.
+  * @param      string $name A String with the name of the select column.
+  * @return     A modified Criteria object.
   */
   function & addSelectColumn($name)
   {
-    $this->selectColumns[] = $name;
-    return $this;
+	$this->selectColumns[] = $name;
+	return $this;
   }
 
   /**
   * Get select columns.
   *
-  * @return array An array with the name of the select
+  * @return     array An array with the name of the select
   * columns.
   */
   function getSelectColumns()
   {
-    return $this->selectColumns;
+	return $this->selectColumns;
   }
 
   /**
   * Clears current select columns.
   *
-  * @return Criteria A modified Criteria object.
+  * @return     Criteria A modified Criteria object.
   */
-  function & clearSelectColumns() 
+  function & clearSelectColumns()
   {
-    $this->selectColumns = array();
-    $this->asColumns = array();
-    return $this;
+	$this->selectColumns = array();
+	$this->asColumns = array();
+	return $this;
   }
 
   /**
   * Get select modifiers.
   *
-  * @return An array with the select modifiers.
+  * @return     An array with the select modifiers.
   */
   function getSelectModifiers()
   {
-    return $this->selectModifiers;
+	return $this->selectModifiers;
   }
 
   /**
   * Add group by column name.
   *
-  * @param string $groupBy The name of the column to group by.
-  * @return A modified Criteria object.
+  * @param      string $groupBy The name of the column to group by.
+  * @return     A modified Criteria object.
   */
   function & addGroupByColumn($groupBy)
   {
-    $this->groupByColumns[] = $groupBy;
-    return $this;
+	$this->groupByColumns[] = $groupBy;
+	return $this;
   }
 
   /**
   * Add order by column name, explicitly specifying ascending.
   *
-  * @param string $name The name of the column to order by.
-  * @return The modified Criteria object.
+  * @param      string $name The name of the column to order by.
+  * @return     The modified Criteria object.
   */
   function & addAscendingOrderByColumn($name)
   {
-    $this->orderByColumns[] = $name . ' ' . Criteria::ASC();
-    return $this;
+	$this->orderByColumns[] = $name . ' ' . Criteria::ASC();
+	return $this;
   }
 
   /**
   * Add order by column name, explicitly specifying descending.
   *
-  * @param string $name The name of the column to order by.
-  * @return The modified Criteria object.
+  * @param      string $name The name of the column to order by.
+  * @return     The modified Criteria object.
   */
   function & addDescendingOrderByColumn($name)
   {
-    $this->orderByColumns[] = $name . ' ' . Criteria::DESC();
-    return $this;
+	$this->orderByColumns[] = $name . ' ' . Criteria::DESC();
+	return $this;
   }
 
   /**
   * Get order by columns.
   *
-  * @return A StringStack with the name of the order columns.
+  * @return     A StringStack with the name of the order columns.
   */
   function getOrderByColumns()
   {
-    return $this->orderByColumns;
+	return $this->orderByColumns;
   }
 
   /**
   * Clear the order-by columns.
   *
-  * @return The modified Criteria object.
+  * @return     The modified Criteria object.
   */
   function & clearOrderByColumns()
   {
-    $this->orderByColumns = array();
-    return $this;
+	$this->orderByColumns = array();
+	return $this;
   }
-  
+
   /**
   * Clear the group-by columns.
   *
-  * @return The modified Criteria object.
+  * @return     The modified Criteria object.
   */
   function & clearGroupByColumns()
   {
-    $this->groupByColumns = array();
-    return $this;
+	$this->groupByColumns = array();
+	return $this;
   }
-  
-  
+
+
   /**
   * Get group by columns.
   *
-  * @return array.
+  * @return     array.
   */
   function getGroupByColumns()
   {
-    return $this->groupByColumns;
+	return $this->groupByColumns;
   }
 
   /**
   * Get Having Criterion.
   *
-  * @return A Criterion that is the having clause.
+  * @return     A Criterion that is the having clause.
   */
   function & getHaving()
   {
-    return $this->having;
+	return $this->having;
   }
 
   /**
   * Remove an object from the criteria.
   *
-  * @param string $key A String with the key to be removed.
-  * @return mixed The removed value.
+  * @param      string $key A String with the key to be removed.
+  * @return     mixed The removed value.
   */
   function & remove($key)
   {
-    $c = null;
+	$c = null;
 
-    if(isset($this->map[$key]))
-    {
-      $c = $this->map[$key];
-      unset($this->map[$key]);
+	if(isset($this->map[$key]))
+	{
+	  $c = $this->map[$key];
+	  unset($this->map[$key]);
 
-      if (is_a($c, 'Criterion')) {
-        return $c->getValue();
-      }
-    }
+	  if (is_a($c, 'Criterion')) {
+		return $c->getValue();
+	  }
+	}
 
-    return $c;
+	return $c;
   }
 
   /**
   * Build a string representation of the Criteria.
   *
-  * @return string A String with the representation of the Criteria.
+  * @return     string A String with the representation of the Criteria.
   */
   function toString()
   {
-    $sb  = "Criteria:: ";        
-    $sb .= "\nCurrent Query SQL (may not be complete or applicable): ";
-    $params = array();
+	$sb  = "Criteria:: ";
+	$sb .= "\nCurrent Query SQL (may not be complete or applicable): ";
+	$params = array();
 
-    $sql = BasePeer::createSelectSql($this, $params);
+	$sql = BasePeer::createSelectSql($this, $params);
 
-    if (Propel::isError($sql)) {
-      $sb .= "(Error: " . $sql->getMessage() . ")";
-    }
-         
-    $sb .= "\nParameters to replace: " . var_export($params, true);
+	if (Propel::isError($sql)) {
+	  $sb .= "(Error: " . $sql->getMessage() . ")";
+	}
 
-    return $sb;
+	$sb .= "\nParameters to replace: " . var_export($params, true);
+
+	return $sb;
   }
 
   /**
   * Returns the size (count) of this criteria.
-  * @return int
+  * @return     int
   */
   function size()
   {
-    return count($this->map);
+	return count($this->map);
   }
 
   /**
   * This method checks another Criteria to see if they contain
   * the same attributes and hashtable entries.
-  * @return boolean
+  * @return     boolean
   */
   function equals(&$crit)
   {
-    $isEquiv = false;
-    if ($crit === null || ! is_a($crit, 'Criteria')) {
-      $isEquiv = false;
-    } 
-    elseif ($this === $crit) {
-      $isEquiv = true;
-    } 
-    elseif ($this->size() === $crit->size()) {
-      // Important: nested criterion objects are checked
-      $criteria =& $crit; // alias
-      if ($this->offset === $criteria->getOffset()
-          && $this->limit === $criteria->getLimit()
-          && $this->ignoreCase === $criteria->isIgnoreCase()
-          && $this->singleRecord === $criteria->isSingleRecord()
-          && $this->dbName === $criteria->getDbName()
-          && $this->selectModifiers === $criteria->getSelectModifiers()
-          && $this->selectColumns === $criteria->getSelectColumns()
-          && $this->orderByColumns === $criteria->getOrderByColumns()
-         )
-      {
-        $isEquiv = true;
-        foreach($criteria->keys() as $key) {
-          if ($this->containsKey($key)) {
-            $a = $this->getCriterion($key);
-            $b = $criteria->getCriterion($key);
-            if (!$a->equals($b)) {
-              $isEquiv = false;
-              break;
-            }
-          } else {
-            $isEquiv = false;
-            break;
-          }
-        }
-      }
-    }
+	$isEquiv = false;
+	if ($crit === null || ! is_a($crit, 'Criteria')) {
+	  $isEquiv = false;
+	}
+	elseif ($this === $crit) {
+	  $isEquiv = true;
+	}
+	elseif ($this->size() === $crit->size()) {
+	  // Important: nested criterion objects are checked
+	  $criteria =& $crit; // alias
+	  if ($this->offset === $criteria->getOffset()
+		  && $this->limit === $criteria->getLimit()
+		  && $this->ignoreCase === $criteria->isIgnoreCase()
+		  && $this->singleRecord === $criteria->isSingleRecord()
+		  && $this->dbName === $criteria->getDbName()
+		  && $this->selectModifiers === $criteria->getSelectModifiers()
+		  && $this->selectColumns === $criteria->getSelectColumns()
+		  && $this->orderByColumns === $criteria->getOrderByColumns()
+		 )
+	  {
+		$isEquiv = true;
+		foreach($criteria->keys() as $key) {
+		  if ($this->containsKey($key)) {
+			$a = $this->getCriterion($key);
+			$b = $criteria->getCriterion($key);
+			if (!$a->equals($b)) {
+			  $isEquiv = false;
+			  break;
+			}
+		  } else {
+			$isEquiv = false;
+			break;
+		  }
+		}
+	  }
+	}
 
-    return $isEquiv;
+	return $isEquiv;
   }
 
   /**
@@ -995,14 +995,14 @@ class Criteria /*implements IteratorAggregate */
   * $crit->addHaving($c);
   * </code>
   *
-  * @param having A Criterion object
+  * @param      having A Criterion object
   *
-  * @return A modified Criteria object.
+  * @return     A modified Criteria object.
   */
   function & addHaving(/*Criterion*/ &$having)
   {
-    $this->having =& $having;
-    return $this;
+	$this->having =& $having;
+	return $this;
   }
 
   /**
@@ -1034,45 +1034,45 @@ class Criteria /*implements IteratorAggregate */
   * @note As a Criterion object will be passed by value all function calls to that
   *       Criterion must be done before adding it to the Criteria !
   *
-  * @param mixed $p1 Column name or Criterion object.
-  * @param mixed $p2
-  * @param string $p3
+  * @param      mixed $p1 Column name or Criterion object.
+  * @param      mixed $p2
+  * @param      string $p3
   *
-  * @return Criteria A modified Criteria object.
+  * @return     Criteria A modified Criteria object.
   */
   function & addAnd($p1, $p2 = null, $p3 = null)
   {
-    if ($p3 !== null)
-    {
-      // addAnd(column, value, comparison)
-      $oc =& $this->getCriterion($p1);
-      $nc =& new Criterion($this, $p1, $p2, $p3);
+	if ($p3 !== null)
+	{
+	  // addAnd(column, value, comparison)
+	  $oc =& $this->getCriterion($p1);
+	  $nc =& new Criterion($this, $p1, $p2, $p3);
 
-      if ($oc === null) {
-        $this->map[$p1] =& $nc;
-      } else {
-        $oc->addAnd($nc);
-      }
-    }
-    else if ($p2 !== null)
-    {
-      // addAnd(column, value)
-      $this->addAnd($p1, $p2, Criteria::EQUAL());
-    }
-    else if (is_a($p1, 'Criterion'))
-    {
-      // addAnd(Criterion)
-      $c =& $p1;
-      $oc =& $this->getCriterion($c->getTable() . '.' . $c->getColumn());
+	  if ($oc === null) {
+		$this->map[$p1] =& $nc;
+	  } else {
+		$oc->addAnd($nc);
+	  }
+	}
+	else if ($p2 !== null)
+	{
+	  // addAnd(column, value)
+	  $this->addAnd($p1, $p2, Criteria::EQUAL());
+	}
+	else if (is_a($p1, 'Criterion'))
+	{
+	  // addAnd(Criterion)
+	  $c =& $p1;
+	  $oc =& $this->getCriterion($c->getTable() . '.' . $c->getColumn());
 
-      if ($oc === null) {
-        $this->add($c);
-      } else {
-        $oc->addAnd($c);
-      }
-    }
+	  if ($oc === null) {
+		$this->add($c);
+	  } else {
+		$oc->addAnd($c);
+	  }
+	}
 
-    return $this;
+	return $this;
   }
 
   /**
@@ -1101,44 +1101,44 @@ class Criteria /*implements IteratorAggregate */
   * @note As a Criterion object will be passed by value all function calls to that
   *       Criterion must be done before adding it to the Criteria !
   *
-  * @param mixed $p1 Column name or Criterion object.
-  * @param mixed $p2
-  * @param string $p3
+  * @param      mixed $p1 Column name or Criterion object.
+  * @param      mixed $p2
+  * @param      string $p3
   *
-  * @return Criteria A modified Criteria object.
+  * @return     Criteria A modified Criteria object.
   */
   function & addOr($p1, $p2 = null, $p3 = null)
   {
-    if ($p3 !== null)
-    {
-      // addOr(column, value, comparison)
-      $oc =& $this->getCriterion($p1);
-      $nc =& new Criterion($this, $p1, $p2, $p3);
+	if ($p3 !== null)
+	{
+	  // addOr(column, value, comparison)
+	  $oc =& $this->getCriterion($p1);
+	  $nc =& new Criterion($this, $p1, $p2, $p3);
 
-      if ($oc === null) {
-        $this->map[$p1] =& $nc;
-      } else {
-        $oc->addOr($nc);
-      }
-    }
-    else if ($p2 !== null)
-    {
-      // addOr(column, value)
-      $this->addOr($p1, $p2, Criteria::EQUAL());
-    }
-    else if (is_a($p1, 'Criterion'))
-    {
-      // addOr(Criterion)
-      $c =& $p1;
-      $oc =& $this->getCriterion($c->getTable() . '.' . $c->getColumn());
-      if ($oc === null) {
-        $this->add($c);
-      } else {
-        $oc->addOr($c);
-      }
-    }
+	  if ($oc === null) {
+		$this->map[$p1] =& $nc;
+	  } else {
+		$oc->addOr($nc);
+	  }
+	}
+	else if ($p2 !== null)
+	{
+	  // addOr(column, value)
+	  $this->addOr($p1, $p2, Criteria::EQUAL());
+	}
+	else if (is_a($p1, 'Criterion'))
+	{
+	  // addOr(Criterion)
+	  $c =& $p1;
+	  $oc =& $this->getCriterion($c->getTable() . '.' . $c->getColumn());
+	  if ($oc === null) {
+		$this->add($c);
+	  } else {
+		$oc->addOr($c);
+	  }
+	}
 
-    return $this;
+	return $this;
   }
 
 };
@@ -1152,9 +1152,9 @@ class Criteria /*implements IteratorAggregate */
  * be used w/ Criteria objects.  Probably there is no performance advantage
  * to doing it this way, but it makes sense -- and simpler code.
  *
- * @author Hans Lellelid <hans@xmpl.org>
+ * @author     Hans Lellelid <hans@xmpl.org>
  */
-class CriterionIterator 
+class CriterionIterator
 {
 
   var $idx = 0;
@@ -1162,36 +1162,36 @@ class CriterionIterator
   var $criteriaKeys;
   var $criteriaSize;
 
-  function CriterionIterator(&$criteria) 
+  function CriterionIterator(&$criteria)
   {
-    $this->criteria =& $criteria;
-    $this->criteriaKeys = $criteria->keys();
-    $this->criteriaSize = count($this->criteriaKeys);
+	$this->criteria =& $criteria;
+	$this->criteriaKeys = $criteria->keys();
+	$this->criteriaSize = count($this->criteriaKeys);
   }
 
-  function rewind() 
+  function rewind()
   {
-    $this->idx = 0;
+	$this->idx = 0;
   }
 
-  function valid() 
+  function valid()
   {
-    return $this->idx < $this->criteriaSize;
+	return $this->idx < $this->criteriaSize;
   }
 
-  function key() 
+  function key()
   {
-    return $this->criteriaKeys[$this->idx];
+	return $this->criteriaKeys[$this->idx];
   }
 
-  function & current() 
+  function & current()
   {
-    return $this->criteria->getCriterion($this->criteriaKeys[$this->idx]);
+	return $this->criteria->getCriterion($this->criteriaKeys[$this->idx]);
   }
 
-  function next() 
+  function next()
   {
-    $this->idx++;
+	$this->idx++;
   }
 
 };
@@ -1208,7 +1208,7 @@ define('Criterion_ODER'," OR ");
  *
  * In Torque this is an inner class of the Criteria class.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
  */
 class Criterion
 {
@@ -1216,7 +1216,7 @@ class Criterion
   var $value;
 
   /** Comparison value.
-  * @var SqlEnum
+  * @var        SqlEnum
   */
   var $comparison;
 
@@ -1246,155 +1246,155 @@ class Criterion
   var $parent;
 
   function UND() { return ' AND '; }
-  
+
   function ODER() { return ' OR '; }
 
   /**
   * Create a new instance.
   *
-  * @param Criteria $parent The outer class (this is an "inner" class).
-  * @param string $column TABLE.COLUMN format.
-  * @param mixed $value
-  * @param string $comparison
+  * @param      Criteria $parent The outer class (this is an "inner" class).
+  * @param      string $column TABLE.COLUMN format.
+  * @param      mixed $value
+  * @param      string $comparison
   */
   function Criterion(/*Criteria*/ &$outer, $column, $value, $comparison = null)
   {
-    $this->outer =& $outer;
-    list($this->table, $this->column) = explode('.', $column);
-    $this->value = $value;
-    $this->comparison = ($comparison === null ? Criteria::EQUAL() : $comparison);
+	$this->outer =& $outer;
+	list($this->table, $this->column) = explode('.', $column);
+	$this->value = $value;
+	$this->comparison = ($comparison === null ? Criteria::EQUAL() : $comparison);
   }
 
   /**
   * Get the column name.
   *
-  * @return string A String with the column name.
+  * @return     string A String with the column name.
   */
   function & getColumn()
   {
-    return $this->column;
+	return $this->column;
   }
 
   /**
   * Set the table name.
   *
-  * @param name A String with the table name.
-  * @return void
+  * @param      name A String with the table name.
+  * @return     void
   */
   function setTable($name)
   {
-    $this->table = $name;
+	$this->table = $name;
   }
 
   /**
   * Get the table name.
   *
-  * @return string A String with the table name.
+  * @return     string A String with the table name.
   */
   function & getTable()
   {
-    return $this->table;
+	return $this->table;
   }
 
   /**
   * Get the comparison.
   *
-  * @return string A String with the comparison.
+  * @return     string A String with the comparison.
   */
   function & getComparison()
   {
-    return $this->comparison;
+	return $this->comparison;
   }
 
   /**
   * Get the value.
   *
-  * @return mixed An Object with the value.
+  * @return     mixed An Object with the value.
   */
   function getValue()
   {
-    return $this->value;
+	return $this->value;
   }
 
   /**
   * Get the value of db.
   * The DBAdapter which might be used to get db specific
   * variations of sql.
-  * @return DBAdapter value of db.
+  * @return     DBAdapter value of db.
   */
   function & getDB()
   {
-    $db = null;
-    if ($this->db === null) {
-      // db may not be set if generating preliminary sql for
-      // debugging.
-      if (($db =& Propel::getDB($this->outer->getDbName())) === null) {
-          // we are only doing this to allow easier debugging, so
-          // no need to throw up the exception, just make note of it.
-          Propel::log("Could not get a DB adapter, so sql may be wrong", PROPEL_LOG_ERR);
-      }
-    } else {
-        $db =& $this->db;
-    }
+	$db = null;
+	if ($this->db === null) {
+	  // db may not be set if generating preliminary sql for
+	  // debugging.
+	  if (($db =& Propel::getDB($this->outer->getDbName())) === null) {
+		  // we are only doing this to allow easier debugging, so
+		  // no need to throw up the exception, just make note of it.
+		  Propel::log("Could not get a DB adapter, so sql may be wrong", PROPEL_LOG_ERR);
+	  }
+	} else {
+		$db =& $this->db;
+	}
 
-    return $db;
+	return $db;
   }
 
   /**
   * Set the value of db.
   * The DBAdapter adaptor might be used to get db specific
   * variations of sql.
-  * @param v  Value to assign to db.
-  * @return void
+  * @param      v  Value to assign to db.
+  * @return     void
   */
   function setDB(/*DBAdapter*/ &$v)
   {
-    $this->db =& $v;
-    for($i=0, $_i=count($this->clauses); $i < $_i; $i++) {
-      $this->clauses[$i]->setDB($v);
-    }
+	$this->db =& $v;
+	for($i=0, $_i=count($this->clauses); $i < $_i; $i++) {
+	  $this->clauses[$i]->setDB($v);
+	}
   }
 
   /**
   * Sets ignore case.
   *
-  * @param boolean $b True if case should be ignored.
-  * @return Criterion A modified Criterion object.
+  * @param      boolean $b True if case should be ignored.
+  * @return     Criterion A modified Criterion object.
   */
   function setIgnoreCase($b)
   {
-    $this->ignoreStringCase = $b;
-    return $this;
+	$this->ignoreStringCase = $b;
+	return $this;
   }
 
   /**
   * Is ignore case on or off?
   *
-  * @return boolean True if case is ignored.
+  * @return     boolean True if case is ignored.
   */
   function isIgnoreCase()
   {
-    return $this->ignoreStringCase;
+	return $this->ignoreStringCase;
   }
 
   /**
   * Get the list of clauses in this Criterion.
-  * @return array
+  * @return     array
   * @private
   */
   function & getClauses()
   {
-    return $this->clauses;
+	return $this->clauses;
   }
 
   /**
   * Get the list of conjunctions in this Criterion
-  * @return array
+  * @return     array
   * @private
   */
   function & getConjunctions()
   {
-    return $this->conjunctions;
+	return $this->conjunctions;
   }
 
   /**
@@ -1402,226 +1402,226 @@ class Criterion
   */
   function & addAnd(/*Criterion*/ $criterion)
   {
-    $this->clauses[] =& $criterion;
-    $this->conjunctions[] = Criterion::UND();
-    return $this;
+	$this->clauses[] =& $criterion;
+	$this->conjunctions[] = Criterion::UND();
+	return $this;
   }
 
   /**
   * Append an OR Criterion onto this Criterion's list.
-  * @return Criterion
+  * @return     Criterion
   */
   function & addOr(/*Criterion*/ $criterion)
   {
-    $this->clauses[] =& $criterion;
-    $this->conjunctions[] = Criterion::ODER();
-    return $this;
+	$this->clauses[] =& $criterion;
+	$this->conjunctions[] = Criterion::ODER();
+	return $this;
   }
 
   /**
   * Appends a Prepared Statement representation of the Criterion
   * onto the buffer.
   *
-  * @param string &$sb The stringbuffer that will receive the Prepared Statement
-  * @param array $params A list to which Prepared Statement parameters
+  * @param      string &$sb The stringbuffer that will receive the Prepared Statement
+  * @param      array $params A list to which Prepared Statement parameters
   *                      will be appended
-  * @return PropelException If an error occures.
+  * @return     PropelException If an error occures.
   */
   function appendPsTo(&$sb, &$params)
   {
-    if ($this->column === null) {
-      return;
-    }
+	if ($this->column === null) {
+	  return;
+	}
 
-    $db =& $this->getDb();
-    $clausesLength = count($this->clauses);
+	$db =& $this->getDb();
+	$clausesLength = count($this->clauses);
 
-    for($j = 0; $j < $clausesLength; $j++) {
-      $sb .= '(';
-    }
+	for($j = 0; $j < $clausesLength; $j++) {
+	  $sb .= '(';
+	}
 
-    if (Criteria::CUSTOM() === $this->comparison)
-    {
-      if ($this->value !== "") {
-        $sb .= (string) $this->value;
-      }
-    }
-    else
-    {
-      if  ($this->table === null) {
-        $field = $this->column;
-      } else {
-        $field = $this->table . '.' . $this->column;
-      }
+	if (Criteria::CUSTOM() === $this->comparison)
+	{
+	  if ($this->value !== "") {
+		$sb .= (string) $this->value;
+	  }
+	}
+	else
+	{
+	  if  ($this->table === null) {
+		$field = $this->column;
+	  } else {
+		$field = $this->table . '.' . $this->column;
+	  }
 
-      // Check to see if table is an alias & store real name, if so
-      // (real table name is needed for the returned $params array)
-      $realtable = $this->outer->getTableForAlias($this->table);
-      if(!$realtable) $realtable = $this->table;
+	  // Check to see if table is an alias & store real name, if so
+	  // (real table name is needed for the returned $params array)
+	  $realtable = $this->outer->getTableForAlias($this->table);
+	  if(!$realtable) $realtable = $this->table;
 
-      // There are several different types of expressions that need individual handling:
-      // IN/NOT IN, LIKE/NOT LIKE, and traditional expressions.
+	  // There are several different types of expressions that need individual handling:
+	  // IN/NOT IN, LIKE/NOT LIKE, and traditional expressions.
 
-      // OPTION 1:  table.column IN (?, ?) or table.column NOT IN (?, ?)
-      if ($this->comparison === Criteria::IN() || $this->comparison === Criteria::NOT_IN())
-      {
-        $sb .= $field . $this->comparison;
-        $values = (array) $this->value;
-        for ($i=0, $valuesLength=count($values); $i < $valuesLength; $i++) {
-            $params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $values[$i]);
-        }
-        $inString = '(' . substr(str_repeat("?,", $valuesLength), 0, -1) . ')';
-        $sb .= $inString;
-      }
-      // OPTION 2:  table.column LIKE ? or table.column NOT LIKE ?  (or ILIKE for Postgres)
-      elseif ($this->comparison === Criteria::LIKE() || $this->comparison === Criteria::NOT_LIKE()
-          || $this->comparison === Criteria::ILIKE() || $this->comparison === Criteria::NOT_ILIKE())
-      {
-        // Handle LIKE, NOT LIKE (and related ILIKE, NOT ILIKE for Postgres)
+	  // OPTION 1:  table.column IN (?, ?) or table.column NOT IN (?, ?)
+	  if ($this->comparison === Criteria::IN() || $this->comparison === Criteria::NOT_IN())
+	  {
+		$sb .= $field . $this->comparison;
+		$values = (array) $this->value;
+		for ($i=0, $valuesLength=count($values); $i < $valuesLength; $i++) {
+			$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $values[$i]);
+		}
+		$inString = '(' . substr(str_repeat("?,", $valuesLength), 0, -1) . ')';
+		$sb .= $inString;
+	  }
+	  // OPTION 2:  table.column LIKE ? or table.column NOT LIKE ?  (or ILIKE for Postgres)
+	  elseif ($this->comparison === Criteria::LIKE() || $this->comparison === Criteria::NOT_LIKE()
+		  || $this->comparison === Criteria::ILIKE() || $this->comparison === Criteria::NOT_ILIKE())
+	  {
+		// Handle LIKE, NOT LIKE (and related ILIKE, NOT ILIKE for Postgres)
 
-        // If selection is case insensitive use ILIKE for PostgreSQL or SQL
-        // UPPER() function on column name for other databases.
-        if ($this->ignoreStringCase)
-        {
-          if (is_a($db, 'DBPostgres'))
-          { // use is_a() because instanceof needs class to have been loaded
-            if ($this->comparison === Criteria::LIKE()) {
-              $this->comparison = Criteria::ILIKE();
-            }
-            elseif ($this->comparison === Criteria::NOT_LIKE()) {
-              $this->comparison = Criteria::NOT_ILIKE();
-            }
-          }
-          else {
-            $field = $db->ignoreCase($field);
-          }
-        }
+		// If selection is case insensitive use ILIKE for PostgreSQL or SQL
+		// UPPER() function on column name for other databases.
+		if ($this->ignoreStringCase)
+		{
+		  if (is_a($db, 'DBPostgres'))
+		  { // use is_a() because instanceof needs class to have been loaded
+			if ($this->comparison === Criteria::LIKE()) {
+			  $this->comparison = Criteria::ILIKE();
+			}
+			elseif ($this->comparison === Criteria::NOT_LIKE()) {
+			  $this->comparison = Criteria::NOT_ILIKE();
+			}
+		  }
+		  else {
+			$field = $db->ignoreCase($field);
+		  }
+		}
 
-        $sb .= $field . $this->comparison;
+		$sb .= $field . $this->comparison;
 
-        // If selection is case insensitive use SQL UPPER() function
-        // on criteria or, if Postgres we are using ILIKE, so not necessary.
-        if ($this->ignoreStringCase && !is_a($db, 'DBPostgres')) {
-          $sb .= $db->ignoreCase('?');
-        }
-        else {
-          $sb .= '?';
-        }
+		// If selection is case insensitive use SQL UPPER() function
+		// on criteria or, if Postgres we are using ILIKE, so not necessary.
+		if ($this->ignoreStringCase && !is_a($db, 'DBPostgres')) {
+		  $sb .= $db->ignoreCase('?');
+		}
+		else {
+		  $sb .= '?';
+		}
 
-        $params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
-      }
-      // OPTION 3:  table.column = ? or table.column >= ? etc. (traditional expressions, the default)
-      else
-      {
-        // NULL VALUES need special treatment because the SQL syntax is different
-        // i.e. table.column IS NULL rather than table.column = null
-        if ($this->value !== null)
-        {
-          // ANSI SQL functions get inserted right into SQL (not escaped, etc.)
-          if ($this->value === Criteria::CURRENT_DATE() || $this->value === Criteria::CURRENT_TIME()) {
-              $sb .= $field . $this->comparison . $this->value;
-          }
-          else
-          {
-            // default case, it is a normal col = value expression; value
-            // will be replaced w/ '?' and will be inserted later using native Creole functions
-            if ($this->ignoreStringCase) {
-              $sb .= $db->ignoreCase($field) . $this->comparison . $db->ignoreCase("?");
-            } else {
-              $sb .= $field . $this->comparison . "?";
-            }
+		$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
+	  }
+	  // OPTION 3:  table.column = ? or table.column >= ? etc. (traditional expressions, the default)
+	  else
+	  {
+		// NULL VALUES need special treatment because the SQL syntax is different
+		// i.e. table.column IS NULL rather than table.column = null
+		if ($this->value !== null)
+		{
+		  // ANSI SQL functions get inserted right into SQL (not escaped, etc.)
+		  if ($this->value === Criteria::CURRENT_DATE() || $this->value === Criteria::CURRENT_TIME()) {
+			  $sb .= $field . $this->comparison . $this->value;
+		  }
+		  else
+		  {
+			// default case, it is a normal col = value expression; value
+			// will be replaced w/ '?' and will be inserted later using native Creole functions
+			if ($this->ignoreStringCase) {
+			  $sb .= $db->ignoreCase($field) . $this->comparison . $db->ignoreCase("?");
+			} else {
+			  $sb .= $field . $this->comparison . "?";
+			}
 
-            // need to track the field in params, because
-            // we'll need it to determine the correct setter
-            // method later on (e.g. field 'review.DATE' => setDate());
-            $params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
-          }
-        }
-        else
-        {
-          // value is null, which means it was either not specified or specifically
-          // set to null.
-          if ($this->comparison === Criteria::EQUAL() || $this->comparison === Criteria::ISNULL()) {
-              $sb .= $field . Criteria::ISNULL();
-          } elseif ($this->comparison === Criteria::NOT_EQUAL() || $this->comparison === Criteria::ISNOTNULL()) {
-              $sb .= $field . Criteria::ISNOTNULL();
-          } else {
-              // for now throw an exception, because not sure how to interpret this
-              return new PropelException(PROPEL_ERROR_SYNTAX, "Could not build SQL for expression: $field " . $this->comparison . " NULL");
-          }
-        }
-      }
-    }
+			// need to track the field in params, because
+			// we'll need it to determine the correct setter
+			// method later on (e.g. field 'review.DATE' => setDate());
+			$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
+		  }
+		}
+		else
+		{
+		  // value is null, which means it was either not specified or specifically
+		  // set to null.
+		  if ($this->comparison === Criteria::EQUAL() || $this->comparison === Criteria::ISNULL()) {
+			  $sb .= $field . Criteria::ISNULL();
+		  } elseif ($this->comparison === Criteria::NOT_EQUAL() || $this->comparison === Criteria::ISNOTNULL()) {
+			  $sb .= $field . Criteria::ISNOTNULL();
+		  } else {
+			  // for now throw an exception, because not sure how to interpret this
+			  return new PropelException(PROPEL_ERROR_SYNTAX, "Could not build SQL for expression: $field " . $this->comparison . " NULL");
+		  }
+		}
+	  }
+	}
 
-    for($i=0; $i < $clausesLength; $i++) {
-      $sb .= $this->conjunctions[$i];
-      $this->clauses[$i]->appendPsTo($sb, $params);
-      $sb .= ')';
-    }
+	for($i=0; $i < $clausesLength; $i++) {
+	  $sb .= $this->conjunctions[$i];
+	  $this->clauses[$i]->appendPsTo($sb, $params);
+	  $sb .= ')';
+	}
   }
 
   /**
   * Build a string representation of the Criterion.
   *
-  * @return string A String with the representation of the Criterion.
+  * @return     string A String with the representation of the Criterion.
   */
   function toString()
   {
-    //
-    // it is alright if value == null
-    //
-    if ($this->column == null) {
-       return "";
-    }
+	//
+	// it is alright if value == null
+	//
+	if ($this->column == null) {
+	   return "";
+	}
 
-    $expr = "";
-    $params = array("", "");
-    $this->appendPSTo($expr, $params);
-    return $expr;
+	$expr = "";
+	$params = array("", "");
+	$this->appendPSTo($expr, $params);
+	return $expr;
   }
 
   /**
   * This method checks another Criteria to see if they contain
   * the same attributes and hashtable entries.
   *
-  * @return boolean
+  * @return     boolean
   */
   function equals(&$obj)
   {
-    if ($this === $obj) {
-      return true;
-    }
+	if ($this === $obj) {
+	  return true;
+	}
 
-    if (($obj === null) || !(is_a($obj, 'Criterion'))) {
-      return false;
-    }
+	if (($obj === null) || !(is_a($obj, 'Criterion'))) {
+	  return false;
+	}
 
-    $crit =& $obj;
+	$crit =& $obj;
 
-    $isEquiv = ( ( ($this->table === null && $crit->getTable() === null)
-            || ( $this->table !== null && $this->table === $crit->getTable() )
-                                      )
-            && $this->column === $crit->getColumn()
-            && $this->comparison === $crit->getComparison());
+	$isEquiv = ( ( ($this->table === null && $crit->getTable() === null)
+			|| ( $this->table !== null && $this->table === $crit->getTable() )
+								      )
+			&& $this->column === $crit->getColumn()
+			&& $this->comparison === $crit->getComparison());
 
 
-    // check chained criterion
+	// check chained criterion
 
-    $clausesLength = count($this->clauses);
-    $isEquiv &= (count($crit->getClauses()) == $clausesLength);
-    $critConjunctions = $crit->getConjunctions();
-    $critClauses = $crit->getClauses();
+	$clausesLength = count($this->clauses);
+	$isEquiv &= (count($crit->getClauses()) == $clausesLength);
+	$critConjunctions = $crit->getConjunctions();
+	$critClauses = $crit->getClauses();
 
-    for ($i=0; $i < $clausesLength && $isEquiv; $i++) {
-      $isEquiv &= ($this->conjunctions[$i] === $critConjunctions[$i]);
-      $isEquiv &= ($this->clauses[$i] === $critClauses[$i]);
-    }
+	for ($i=0; $i < $clausesLength && $isEquiv; $i++) {
+	  $isEquiv &= ($this->conjunctions[$i] === $critConjunctions[$i]);
+	  $isEquiv &= ($this->clauses[$i] === $critClauses[$i]);
+	}
 
-    if($isEquiv) {
-      $isEquiv &= $this->value === $crit->getValue();
-    }
+	if($isEquiv) {
+	  $isEquiv &= $this->value === $crit->getValue();
+	}
 
-    return $isEquiv;
+	return $isEquiv;
   }
 
   /**
@@ -1629,85 +1629,85 @@ class Criterion
   */
   function & hashCode()
   {
-    $h = crc32(serialize($this->value)) ^ crc32($this->comparison);
+	$h = crc32(serialize($this->value)) ^ crc32($this->comparison);
 
-    if ($this->table !== null) {
-      $h ^= crc32($this->table);
-    }
+	if ($this->table !== null) {
+	  $h ^= crc32($this->table);
+	}
 
-    if ($this->column !== null) {
-      $h ^= crc32($this->column);
-    }
+	if ($this->column !== null) {
+	  $h ^= crc32($this->column);
+	}
 
-    $clausesLength = count($this->clauses);
+	$clausesLength = count($this->clauses);
 
-    for($i=0; $i < $clausesLength; $i++) {
-      $h ^= crc32($this->clauses[$i]->toString());
-    }
+	for($i=0; $i < $clausesLength; $i++) {
+	  $h ^= crc32($this->clauses[$i]->toString());
+	}
 
-    return $h;
+	return $h;
   }
 
   /**
   * Get all tables from nested criterion objects
-  * @return array
+  * @return     array
   */
   function & getAllTables()
   {
-    $tables = array();
-    $this->addCriterionTable($this, $tables);
-    return $tables;
+	$tables = array();
+	$this->addCriterionTable($this, $tables);
+	return $tables;
   }
 
   /**
   * method supporting recursion through all criterions to give
   * us a string array of tables from each criterion
-  * @return void
+  * @return     void
   * @private
   */
   function addCriterionTable(/*Criterion*/ $c, &$s)
   {
-    $s[] = $c->getTable();
-    $clauses = $c->getClauses();
+	$s[] = $c->getTable();
+	$clauses = $c->getClauses();
 
-    $clausesLength = count($clauses);
+	$clausesLength = count($clauses);
 
-    for($i = 0; $i < $clausesLength; $i++) {
-      $this->addCriterionTable($clauses[$i], $s);
-    }
+	for($i = 0; $i < $clausesLength; $i++) {
+	  $this->addCriterionTable($clauses[$i], $s);
+	}
   }
 
   /**
   * get an array of all criterion attached to this
   * recursing through all sub criterion
-  * @return array Criterion[]
+  * @return     array Criterion[]
   */
   function & getAttachedCriterion()
   {
-    $crits = array();
-    $this->traverseCriterion($this, $crits);
-    return $crits;
+	$crits = array();
+	$this->traverseCriterion($this, $crits);
+	return $crits;
   }
 
   /**
   * method supporting recursion through all criterions to give
   * us an array of them
-  * @param Criterion $c
-  * @param array &$a
-  * @return void
+  * @param      Criterion $c
+  * @param      array &$a
+  * @return     void
   * @private
   */
   function traverseCriterion(/*Criterion*/ &$c, &$a)
   {
-    $end = count($a);
-    $a[$end] =& $c;
-    $clauses =& $c->getClauses();
+	$end = count($a);
+	$a[$end] =& $c;
+	$clauses =& $c->getClauses();
 
-    $clausesLength = count($clauses);
+	$clausesLength = count($clauses);
 
-    for($i=0; $i < $clausesLength; $i++) {
-      $this->traverseCriterion($clauses[$i], $a);
-    }
+	for($i=0; $i < $clausesLength; $i++) {
+	  $this->traverseCriterion($clauses[$i], $a);
+	}
   }
 
 };
@@ -1731,11 +1731,11 @@ class Join
 
   /**
    * Constructor
-   * @param leftColumn the left column of the join condition;
+   * @param      leftColumn the left column of the join condition;
    *        might contain an alias name
-   * @param rightColumn the right column of the join condition
+   * @param      rightColumn the right column of the join condition
    *        might contain an alias name
-   * @param joinType the type of the join. Valid join types are
+   * @param      joinType the type of the join. Valid join types are
    *        null (adding the join condition to the where clause),
    *        Criteria::LEFT_JOIN(), Criteria::RIGHT_JOIN(), and Criteria::INNER_JOIN()
    */
@@ -1747,7 +1747,7 @@ class Join
   }
 
   /**
-   * @return the type of the join, i.e. Criteria::LEFT_JOIN(), ...,
+   * @return     the type of the join, i.e. Criteria::LEFT_JOIN(), ...,
    *         or null for adding the join condition to the where Clause
    */
   function getJoinType()
@@ -1756,7 +1756,7 @@ class Join
   }
 
   /**
-   * @return the left column of the join condition
+   * @return     the left column of the join condition
    */
   function getLeftColumn()
   {
@@ -1764,7 +1764,7 @@ class Join
   }
 
   /**
-   * @return the right column of the join condition
+   * @return     the right column of the join condition
    */
   function getRightColumn()
   {
@@ -1774,17 +1774,17 @@ class Join
   /**
    * returns a String representation of the class,
    * mainly for debugging purposes
-   * @return a String representation of the class
+   * @return     a String representation of the class
    */
   function toString()
   {
-    $result = "";
-    if ($this->joinType != null)
-    {
-      $result .= $this->joinType . " : ";
-    }
-    $result .= $this->leftColumn . "=" . $this->rightColumn . " (ignoreCase not considered)";
+	$result = "";
+	if ($this->joinType != null)
+	{
+	  $result .= $this->joinType . " : ";
+	}
+	$result .= $this->leftColumn . "=" . $this->rightColumn . " (ignoreCase not considered)";
 
-    return $result;
+	return $result;
   }
 };

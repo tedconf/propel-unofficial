@@ -17,8 +17,8 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
- */ 
- 
+ */
+
 /**
  * Utility class to make it easier to begin, commit, and rollback transactions.
  *
@@ -29,10 +29,10 @@
  * by cutting down on the if statements based solely on whether a transaction
  * is needed or not.
  *
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Stephen Haberman <stephenh@chase3000.com> (Torque)
- * @version $Revision$
- * @package propel.util
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Stephen Haberman <stephenh@chase3000.com> (Torque)
+ * @version    $Revision$
+ * @package    propel.util
  */
 class Transaction
 {
@@ -41,16 +41,16 @@ class Transaction
   * return a normal connection, if the database being accessed does
   * not support transactions.
   *
-  * @param string $dbName Name of database.
-  * @return mixed The Connection for the transaction on success, PropelException on failure.
+  * @param      string $dbName Name of database.
+  * @return     mixed The Connection for the transaction on success, PropelException on failure.
   */
   function & begin($dbName)
   {
-    $con =& Propel::getConnection($dbName);
-    if (($e = $con->setAutoCommit(false)) !== true) {
-      return new PropelException(PROPEL_ERROR_DB, $e);
-    }
-    return $con;
+	$con =& Propel::getConnection($dbName);
+	if (($e = $con->setAutoCommit(false)) !== true) {
+	  return new PropelException(PROPEL_ERROR_DB, $e);
+	}
+	return $con;
   }
 
   /**
@@ -58,20 +58,20 @@ class Transaction
   * return a normal connection, if the database being accessed does
   * not support transactions.
   *
-  * @param sring $dbName Name of database.
-  * @param boolean $useTransaction If false, a transaction won't be used.
-  * @return mixed The Connection for the transaction on success, PropelException on failure.
+  * @param      sring $dbName Name of database.
+  * @param      boolean $useTransaction If false, a transaction won't be used.
+  * @return     mixed The Connection for the transaction on success, PropelException on failure.
   */
   function & beginOptional($dbName, $useTransaction)
   {
-    $con =& Propel::getConnection($dbName);
-    if ($useTransaction) {
-      $e = $con->setAutoCommit(false);
-      if (Creole::isError($e)) {
-        return new PropelException(PROPEL_ERROR_DB, $e);
-      }
-    }
-    return $con;
+	$con =& Propel::getConnection($dbName);
+	if ($useTransaction) {
+	  $e = $con->setAutoCommit(false);
+	  if (Creole::isError($e)) {
+		return new PropelException(PROPEL_ERROR_DB, $e);
+	  }
+	}
+	return $con;
   }
 
   /**
@@ -79,26 +79,26 @@ class Transaction
   * connection after the commit.  In databases that do not support
   * transactions, it only returns the connection.
   *
-  * @param Connection $con The Connection for the transaction.
-  * @return mixed TRUE on SUCCESS, PropelException on failure.
+  * @param      Connection $con The Connection for the transaction.
+  * @return     mixed TRUE on SUCCESS, PropelException on failure.
   */
   function commit(/*Connection*/ &$con)
   {
-    if ($con === null) {
-      return new PropelException(PROPEL_ERROR,
-              "Connection object was null. "
-              . "This could be due to a misconfiguration. "
-              . "Check the logs and Propel properties "
-              . "to better determine the cause.");
-    }
-    if ($con->getAutoCommit() === false) {
-      if (($e = $con->commit()) !== true) {
-        return new PropelException(PROPEL_ERROR_DB, $e);
-      }
-      $con->setAutoCommit(true);
-    }
+	if ($con === null) {
+	  return new PropelException(PROPEL_ERROR,
+			  "Connection object was null. "
+			  . "This could be due to a misconfiguration. "
+			  . "Check the logs and Propel properties "
+			  . "to better determine the cause.");
+	}
+	if ($con->getAutoCommit() === false) {
+	  if (($e = $con->commit()) !== true) {
+		return new PropelException(PROPEL_ERROR_DB, $e);
+	  }
+	  $con->setAutoCommit(true);
+	}
 
-    return true;
+	return true;
   }
 
   /**
@@ -107,45 +107,45 @@ class Transaction
   * transactions, this method will log the attempt and release the
   * connection.
   *
-  * @param Connection $con The Connection for the transaction.
-  * @return mixed TRUE on SUCCESS, PropelException on failure.
+  * @param      Connection $con The Connection for the transaction.
+  * @return     mixed TRUE on SUCCESS, PropelException on failure.
   */
   function rollback(/*Connection*/ &$con)
   {
-    if ($con === null) {
-      return new PropelException(PROPEL_ERROR,
-              "Connection object was null. "
-              . "This could be due to a misconfiguration. "
-              . "Check the logs and Propel properties "
-              . "to better determine the cause.");
-    }
+	if ($con === null) {
+	  return new PropelException(PROPEL_ERROR,
+			  "Connection object was null. "
+			  . "This could be due to a misconfiguration. "
+			  . "Check the logs and Propel properties "
+			  . "to better determine the cause.");
+	}
 
-    if ($con->getAutoCommit() === false) {
-      if (($e = $con->rollback()) !== true) {
-        Propel::log("An attempt was made to rollback a transaction "
-                   . "but the database did not allow the operation to be "
-                   . "rolled back: " . $e->getMessage(), PROPEL_LOG_ERR);
-        return new PropelException(PROPEL_ERROR_DB, $e);
-      }
+	if ($con->getAutoCommit() === false) {
+	  if (($e = $con->rollback()) !== true) {
+		Propel::log("An attempt was made to rollback a transaction "
+				   . "but the database did not allow the operation to be "
+				   . "rolled back: " . $e->getMessage(), PROPEL_LOG_ERR);
+		return new PropelException(PROPEL_ERROR_DB, $e);
+	  }
 
-      /*[MA]: should this be checked as well ?*/
-      $con->setAutoCommit(true);
-    }
+	  /*[MA]: should this be checked as well ?*/
+	  $con->setAutoCommit(true);
+	}
 
-    return true;
+	return true;
   }
 
   /**
   * Roll back a transaction without throwing errors if they occur.
   *
-  * @param Connection $con The Connection for the transaction.
-  * @return void
+  * @param      Connection $con The Connection for the transaction.
+  * @return     void
   */
   function safeRollback(/*Connection*/ &$con)
   {
-    if (Propel::isError($e = Transaction::rollback($con))) {
-      Propel::log("An error occured during rollback: " . $e->getMessage(), PROPEL_LOG_ERR);
-    }
+	if (Propel::isError($e = Transaction::rollback($con))) {
+	  Propel::log("An error occured during rollback: " . $e->getMessage(), PROPEL_LOG_ERR);
+	}
   }
 
 }

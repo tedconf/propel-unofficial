@@ -17,7 +17,7 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
- */ 
+ */
 
 require_once 'propel/Propel.php';
 require_once 'PHPUnit/TestCase.php';
@@ -26,11 +26,11 @@ require_once 'PHPUnit/TestCase.php';
  * Base functionality to be extended by all Propel test cases.  Test
  * case implementations are used to automate unit testing via PHPUnit.
  *
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Daniel Rall <dlr@finemaltcoding.com> (Torque)
- * @author Christopher Elkins <celkins@scardini.com> (Torque)
- * @version $Revision$
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Daniel Rall <dlr@finemaltcoding.com> (Torque)
+ * @author     Christopher Elkins <celkins@scardini.com> (Torque)
+ * @version    $Revision$
  */
 class BaseTestCase extends PHPUnit_TestCase
 {
@@ -51,28 +51,28 @@ class BaseTestCase extends PHPUnit_TestCase
   */
   function BaseTestCase($name)
   {
-    parent::PHPUnit_TestCase($name);
+	parent::PHPUnit_TestCase($name);
   }
 
   /**
   * Initialize Propel on the first setUp().  Subclasses which
   * override setUp() must call super.setUp() as their first action.
   *
-  * @return void
+  * @return     void
   */
   function setUp()
   {
-    static $hasInitialized = false;
+	static $hasInitialized = false;
 
-    if (! $hasInitialized)
-    {
-      $e = Propel::init(BaseTestCase::CONFIG_FILE());
-      $hasInitialized = true;
+	if (! $hasInitialized)
+	{
+	  $e = Propel::init(BaseTestCase::CONFIG_FILE());
+	  $hasInitialized = true;
 
-      if (Propel::isError($e)) {
-        $this->fail("Couldn't initialize Propel: " . $e->getMessage());
-      }
-    }
+	  if (Propel::isError($e)) {
+		$this->fail("Couldn't initialize Propel: " . $e->getMessage());
+	  }
+	}
   }
 
 }

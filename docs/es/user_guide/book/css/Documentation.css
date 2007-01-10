@@ -13,7 +13,7 @@
  * <link rel="Stylesheet" rev="Stylesheet" href="css/Documentation.css" type="text/css" media="All" charset="iso-8859-1" />
  *
  * This CSS provides all necessary style information for the
- * XHTML reduced element set - do not embed custom CSS in 
+ * XHTML reduced element set - do not embed custom CSS in
  * your documents, and do not assign formatting attributes
  * to your elements.
  */
@@ -29,20 +29,20 @@ a
 	color: #003366;
 	font-weight: bold;
 	text-decoration: underline;
-} 
+}
 
-a:visited 
+a:visited
 {
 	color: #003366;
 	text-decoration: underline;
 	font-weight: bold;
-} 
-a:active { color: #ffffff; } 
-a:hover { color: #000000; } 		 
+}
+a:active { color: #ffffff; }
+a:hover { color: #000000; }
 
 h1
 {
-    page-break-before: auto;
+	page-break-before: auto;
 	font-family: arial, sans-serif;
 	font-size: 22px;
 	color: #003366;
@@ -88,18 +88,18 @@ p
 	line-height: 15px;
 }
 
-blockquote 
+blockquote
 {
 	font-family: georgia, serif;
 	font-size: 14px;
 	color: #333333;
 	line-height: 18px;
-    font-style:italic;
+	font-style:italic;
 }
 
 pre
 {
-    page-break-inside: avoid;
+	page-break-inside: avoid;
 	font-family: monospace;
 	font-size: 12px;
 	color: #333333;
@@ -118,7 +118,7 @@ ol
 	font-size: 12px;
 	line-height: 14px;
 }
-	
+
 ul
 {
 	color: #333333;
@@ -141,8 +141,8 @@ li
 
 table
 {
-    caption-side:bottom;
-    page-break-inside: avoid;
+	caption-side:bottom;
+	page-break-inside: avoid;
 	background-color: #FFFFFF;
 	padding: 0px;
 	width: 80%;
@@ -152,18 +152,18 @@ table
 	margin: auto;
 }
 
-caption:before 
+caption:before
 {
-    content:"Table - ";
+	content:"Table - ";
 }
 
 caption
 {
 	font-family: verdana, sans-serif;
 	font-size: 11px;
-    font-weight:bold;
+	font-weight:bold;
 	color: #003366;
-    letter-spacing:2px;
+	letter-spacing:2px;
 }
 
 th

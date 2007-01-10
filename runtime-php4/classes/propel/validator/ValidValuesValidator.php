@@ -24,18 +24,18 @@ require_once 'propel/validator/BasicValidator.php';
 /**
  * A validator for valid values (e.g. for enum fields)
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
  */
 class ValidValuesValidator extends BasicValidator
 {
 
   /**
-  * @see BasicValidator::isValid()
+  * @see        BasicValidator::isValid()
   */
   function isValid (&$map, $str)
   {
-    return in_array($str, explode("|", $map->getValue()));
+	return in_array($str, explode("|", $map->getValue()));
   }
 
 }

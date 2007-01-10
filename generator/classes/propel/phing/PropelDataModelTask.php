@@ -19,7 +19,7 @@
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
- 
+
 require_once 'propel/phing/AbstractPropelDataModelTask.php';
 include_once 'propel/engine/database/model/AppData.php';
 include_once 'propel/engine/database/model/Database.php';
@@ -27,105 +27,105 @@ include_once 'propel/engine/database/transform/XmlToAppData.php';
 
 /**
  * A generic class that simply loads the data model and parses a control template.
- * 
+ *
  * This class exists largely for compatibility with early Propel where this was
  * a CapsuleTask subclass.  This class also makes it easy to quickly add some custom
  * datamodel-based transformations (by allowing you to put the logic in the templates).
- * 
- * @author Hans Lellelid <hans@xmpl.org>
- * @package propel.phing
- * @version $Revision$
+ *
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @package    propel.phing
+ * @version    $Revision$
  */
 class PropelDataModelTask extends AbstractPropelDataModelTask {
-    
-    /**
-     * This is the file where the generated text
-     * will be placed.
-     * @var string
-     */
-    protected $outputFile;
-    
-    /**
-     * This is the control template that governs the output.
-     * It may or may not invoke the services of worker
-     * templates.
-     * @var string
-     */
-    protected $controlTemplate;    
-    
-            
-    /**
-     * [REQUIRED] Set the output file for the
-     * generation process.
-     * @param string $outputFile (TODO: change this to File)
-     * @return void
-     */
-    public function setOutputFile($outputFile) {
-        $this->outputFile = $outputFile;
-    }
 
-    /**
-     * Get the output file for the
-     * generation process.
-     * @return string
-     */
-    public function getOutputFile() {
-        return $this->outputFile;
-    }        
+	/**
+	 * This is the file where the generated text
+	 * will be placed.
+	 * @var        string
+	 */
+	protected $outputFile;
 
-    /**
-     * [REQUIRED] Set the control template for the
-     * generating process.
-     * @param string $controlTemplate
-     * @return void
-     */
-    public function setControlTemplate ($controlTemplate) {
-        $this->controlTemplate = $controlTemplate;
-    }
+	/**
+	 * This is the control template that governs the output.
+	 * It may or may not invoke the services of worker
+	 * templates.
+	 * @var        string
+	 */
+	protected $controlTemplate;
 
-    /**
-     * Get the control template for the
-     * generating process.
-     * @return string
-     */
-    public function getControlTemplate() {
-        return $this->controlTemplate;
-    }
- 
-    protected function validate()
-    {
-        parent::validate();
-        
-        // Make sure the control template is set.
-        if ($this->controlTemplate === null) {
-            throw new BuildException("The control template needs to be defined!");
-        }            
-        // Make sure there is an output file.
-        if ($this->outputFile === null) {
-            throw new BuildException("The output file needs to be defined!");
-        }            
-    
-    }
-    
-    /**
-     * Creates Capsule context and parses control template.
-     * @return void
-     */
-    public function main()
-    {
-        $this->validate();        
-        $context = $this->createContext();        
-        
-        $context->put("dataModels", $this->getDataModels());
-        
-        $path = $this->outputDirectory . DIRECTORY_SEPARATOR . $this->outputFile;
-        $this->log("Generating to file " . $path);
-        
-        try {
-            $this->log("Parsing control template: " . $this->controlTemplate);
-            $context->parse($this->controlTemplate, $path);
-        } catch (Exception $ioe) {
-            throw new BuildException("Cannot write parsed template: ". $ioe->getMessage());
-        }
-    }
+
+	/**
+	 * [REQUIRED] Set the output file for the
+	 * generation process.
+	 * @param      string $outputFile (TODO: change this to File)
+	 * @return     void
+	 */
+	public function setOutputFile($outputFile) {
+		$this->outputFile = $outputFile;
+	}
+
+	/**
+	 * Get the output file for the
+	 * generation process.
+	 * @return     string
+	 */
+	public function getOutputFile() {
+		return $this->outputFile;
+	}
+
+	/**
+	 * [REQUIRED] Set the control template for the
+	 * generating process.
+	 * @param      string $controlTemplate
+	 * @return     void
+	 */
+	public function setControlTemplate ($controlTemplate) {
+		$this->controlTemplate = $controlTemplate;
+	}
+
+	/**
+	 * Get the control template for the
+	 * generating process.
+	 * @return     string
+	 */
+	public function getControlTemplate() {
+		return $this->controlTemplate;
+	}
+
+	protected function validate()
+	{
+		parent::validate();
+
+		// Make sure the control template is set.
+		if ($this->controlTemplate === null) {
+			throw new BuildException("The control template needs to be defined!");
+		}
+		// Make sure there is an output file.
+		if ($this->outputFile === null) {
+			throw new BuildException("The output file needs to be defined!");
+		}
+
+	}
+
+	/**
+	 * Creates Capsule context and parses control template.
+	 * @return     void
+	 */
+	public function main()
+	{
+		$this->validate();
+		$context = $this->createContext();
+
+		$context->put("dataModels", $this->getDataModels());
+
+		$path = $this->outputDirectory . DIRECTORY_SEPARATOR . $this->outputFile;
+		$this->log("Generating to file " . $path);
+
+		try {
+			$this->log("Parsing control template: " . $this->controlTemplate);
+			$context->parse($this->controlTemplate, $path);
+		} catch (Exception $ioe) {
+			throw new BuildException("Cannot write parsed template: ". $ioe->getMessage());
+		}
+	}
 }

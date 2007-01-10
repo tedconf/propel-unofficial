@@ -27,25 +27,25 @@
  * context.  They are simply given an input and some value and asked whether the input
  * is valid.
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class BasicValidator
 {
   /**
   * Determine whether a value meets the criteria specified
   *
-  * @param ValidatorMap $map
-  * @param string $str a <code>String</code> to be tested
+  * @param      ValidatorMap $map
+  * @param      string $str a <code>String</code> to be tested
   *
-  * @return mixed TRUE if valid, error message otherwise
+  * @return     mixed TRUE if valid, error message otherwise
   */
   function isValid(&$map, $str)
   {
-    trigger_error(
-      "Validator::isValid(): abstract function has to be reimplemented !",
-      E_USER_ERROR
-    );
+	trigger_error(
+	  "Validator::isValid(): abstract function has to be reimplemented !",
+	  E_USER_ERROR
+	);
   }
 }

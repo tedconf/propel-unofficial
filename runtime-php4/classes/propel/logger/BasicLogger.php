@@ -19,27 +19,27 @@
  * <http://propel.phpdb.org>.
  */
 
- 
+
 /**
  * This is a minimalistic interface that any logging class must implement for Propel.
- * 
+ *
  * The API for this interface is based on the PEAR::Log interface.  It provides a simple
  * API that can be used by Propel independently of Log backend.
- * 
- * PEAR::Log and perhaps the Log API was developed by Chuck Hagenbuch <chuck@horde.org> 
+ *
+ * PEAR::Log and perhaps the Log API was developed by Chuck Hagenbuch <chuck@horde.org>
  * and Jon Parise <jon@php.net>.
- * 
- * @author Hans Lellelid <hans@xmpl.org>
- * @version $Revision$
- * @package propel.logger
+ *
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
+ * @package    propel.logger
  */
-class BasicLogger 
+class BasicLogger
 {
 
   /**
   * A convenience function for logging an alert event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function alert($message) {}
@@ -47,15 +47,15 @@ class BasicLogger
   /**
   * A convenience function for logging a critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function crit($message) {}
- 
+
   /**
   * A convenience function for logging an error event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function err($message) {}
@@ -63,41 +63,41 @@ class BasicLogger
   /**
   * A convenience function for logging a warning event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function warning($message) {}
   /**
   * A convenience function for logging an critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function notice($message) {}
   /**
   * A convenience function for logging an critical event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function info($message) {}
-  
+
   /**
   * A convenience function for logging a debug event.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
   */
   function debug($message) {}
-  
+
   /**
   * Primary method to handle logging.
   *
-  * @param   mixed   $message    String or Exception object containing the message
+  * @param      mixed   $message    String or Exception object containing the message
   *                              to log.
-  * @param   int     $severity   The numeric severity.  Defaults to null so that no
+  * @param      int     $severity   The numeric severity.  Defaults to null so that no
   *                              assumptions are made about the logging backend.
   */
   function log($message, $severity = null) {}
-  
+
 };

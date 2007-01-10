@@ -29,75 +29,75 @@
  * An array of these objects will be returned by BasePeer::doValidate() if validation
  * failed.
  *
- * @author Hans Lellelid <hans@xmpl.org>
- * @version $Revision$
- * @package propel.validator
- * @see BasePeer::doValidate()
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
+ * @package    propel.validator
+ * @see        BasePeer::doValidate()
  */
 class ValidationFailed
 {
-    /** Column name in tablename.COLUMN_NAME format */
-    var $colname;
+	/** Column name in tablename.COLUMN_NAME format */
+	var $colname;
 
-    /** Message to display to user. */
-    var $message;
+	/** Message to display to user. */
+	var $message;
 
-    /**
-     * Construct a new ValidationFailed object.
-     * @param string $colname Column name.
-     * @param string $message Message to display to user.
-     */
-    function ValidationFailed($colname, $message)
-    {
-        $this->colname = $colname;
-        $this->message = $message;
-    }
+	/**
+	 * Construct a new ValidationFailed object.
+	 * @param      string $colname Column name.
+	 * @param      string $message Message to display to user.
+	 */
+	function ValidationFailed($colname, $message)
+	{
+		$this->colname = $colname;
+		$this->message = $message;
+	}
 
-    /**
-     * Set the column name.
-     * @param string $v
-     */
-    function setColumn($v)
-    {
-        $this->colname = $v;
-    }
+	/**
+	 * Set the column name.
+	 * @param      string $v
+	 */
+	function setColumn($v)
+	{
+		$this->colname = $v;
+	}
 
-    /**
-     * Gets the column name.
-     * @return string Qualified column name (tablename.COLUMN_NAME)
-     */
-    function getColumn()
-    {
-        return $this->colname;
-    }
+	/**
+	 * Gets the column name.
+	 * @return     string Qualified column name (tablename.COLUMN_NAME)
+	 */
+	function getColumn()
+	{
+		return $this->colname;
+	}
 
-    /**
-     * Set the message for user.
-     * @param string $v
-     */
-    function setMessage($v)
-    {
-        $this->message = $v;
-    }
+	/**
+	 * Set the message for user.
+	 * @param      string $v
+	 */
+	function setMessage($v)
+	{
+		$this->message = $v;
+	}
 
-    /**
-     * Gets the message for user.
-     * @return string
-     */
-    function getMessage()
-    {
-        return $this->message;
-    }
+	/**
+	 * Gets the message for user.
+	 * @return     string
+	 */
+	function getMessage()
+	{
+		return $this->message;
+	}
 
-    /**
-     * "magic" method to get string represenation of object.
-     * Maybe someday PHP5 will support the invoking this method automatically
-     * on (string) cast.  Until then it's pretty useless.
-     * @return string
-     */
-    function __toString()
-    {
-        return $this->getMessage();
-    }
+	/**
+	 * "magic" method to get string represenation of object.
+	 * Maybe someday PHP5 will support the invoking this method automatically
+	 * on (string) cast.  Until then it's pretty useless.
+	 * @return     string
+	 */
+	function __toString()
+	{
+		return $this->getMessage();
+	}
 
 }

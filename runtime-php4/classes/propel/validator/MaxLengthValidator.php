@@ -38,15 +38,15 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
  */
 class MaxLengthValidator extends BasicValidator
 {
 
   function isValid (&$map, $str)
   {
-    return strlen($str) <= intval($map->getValue());
+	return strlen($str) <= intval($map->getValue());
   }
 
 }

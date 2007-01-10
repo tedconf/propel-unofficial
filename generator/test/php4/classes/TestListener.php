@@ -17,7 +17,7 @@
  * This software consists of voluntary contributions made by many individuals
  * and is licensed under the LGPL. For more information please see
  * <http://propel.phpdb.org>.
- */ 
+ */
 
 require_once 'PHPUnit/TestListener.php';
 
@@ -25,17 +25,17 @@ class TestListener extends PHPUnit_TestListener
 {
   /**
   * Test cache.
-  * @var array
+  * @var        array
   */
   var $cache = array();
   /**
   * Current test class.
-  * @var string
+  * @var        string
   */
   var $class = '';
   /**
   * Current test name.
-  * @var string
+  * @var        string
   */
   var $name  = '';
 
@@ -43,74 +43,73 @@ class TestListener extends PHPUnit_TestListener
   /**
   * A test started.
   *
-  * @param  object
+  * @param      object
   */
   function startTest(&$test)
   {
-    $this->class = get_class($test);
-    $this->name = $test->getName();
+	$this->class = get_class($test);
+	$this->name = $test->getName();
 
-    print "[{$this->class}]: {$this->name}() ";
+	print "[{$this->class}]: {$this->name}() ";
   }
 
   /**
   * An error occurred.
   *
-  * @param  object
-  * @param  object
+  * @param      object
+  * @param      object
   */
   function addError(&$test, &$t)
   {
-    $class = get_class($test);
-    $name = $test->getName();
+	$class = get_class($test);
+	$name = $test->getName();
 
-    if (! isset($this->cache[$class][$name])) {
-      $this->cache[$class][$name] = 1;
-      print "[ ERROR ]\n\n";
-    }
+	if (! isset($this->cache[$class][$name])) {
+	  $this->cache[$class][$name] = 1;
+	  print "[ ERROR ]\n\n";
+	}
 
-    print "==> $t\n\n";
+	print "==> $t\n\n";
   }
 
   /**
   * A failure occurred.
   *
-  * @param  object
-  * @param  object
+  * @param      object
+  * @param      object
   */
   function addFailure(&$test, &$t)
   {
-    $class = get_class($test);
-    $name = $test->getName();
+	$class = get_class($test);
+	$name = $test->getName();
 
-    if (! isset($this->cache[$class][$name])) {
-      $this->cache[$class][$name] = 1;
-      print "[ FAILED ]\n\n";
-    }
+	if (! isset($this->cache[$class][$name])) {
+	  $this->cache[$class][$name] = 1;
+	  print "[ FAILED ]\n\n";
+	}
 
-    print "==> $t\n\n";
+	print "==> $t\n\n";
   }
 
   /**
   * An error occurred.
   *
-  * @param  object
-  * @param  object
-  * @access public
+  * @param      object
+  * @param      object
+  * @access     public
   * @abstract
   */
   function endTest(&$test)
   {
-    $class = get_class($test);
-    $name = $test->getName();
+	$class = get_class($test);
+	$name = $test->getName();
 
-    if (isset($this->cache[$class][$name]))
-    {
-      exit();
-    }
+	if (isset($this->cache[$class][$name]))
+	{
+	  exit();
+	}
 
-    print "[ PASSED ]\n";
+	print "[ PASSED ]\n";
   }
 
 }
-

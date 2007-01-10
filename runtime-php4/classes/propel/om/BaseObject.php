@@ -49,11 +49,11 @@ define('TYPE_NUM', 'num');
  * This class contains attributes and methods that are used by all
  * business objects within the system.
  *
- * @author Kaspars Jaudzems <kasparsj@navigators.lv> (Propel)
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Frank Y. Kim <frank.kim@clearink.com> (Torque)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @version $Revision$
+ * @author     Kaspars Jaudzems <kasparsj@navigators.lv> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Frank Y. Kim <frank.kim@clearink.com> (Torque)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @version    $Revision$
  */
 
 class BaseObject extends Persistent
@@ -61,20 +61,20 @@ class BaseObject extends Persistent
 
   /**
   * attribute to determine if this object has previously been saved.
-  * @var boolean
+  * @var        boolean
   */
   var $_new = true;
 
   /**
   * attribute to determine whether this object has been deleted.
-  * @var boolean
+  * @var        boolean
   */
   var $_deleted = false;
 
   /**
   * The columns that have been modified in current object.
   * Tracking modified columns allows us to only update modified columns.
-  * @var array
+  * @var        array
   */
   var $modifiedColumns = array();
 
@@ -82,22 +82,22 @@ class BaseObject extends Persistent
   /**
   * Returns whether the object has been modified.
   *
-  * @return boolean True if the object has been modified.
+  * @return     boolean True if the object has been modified.
   */
   function isModified()
   {
-    return ! empty($this->modifiedColumns);
+	return ! empty($this->modifiedColumns);
   }
 
   /**
   * Has specified column been modified?
   *
-  * @param string $col
-  * @return boolean True if $col has been modified.
+  * @param      string $col
+  * @return     boolean True if $col has been modified.
   */
   function isColumnModified($col)
   {
-     return in_array($col, $this->modifiedColumns);
+	 return in_array($col, $this->modifiedColumns);
   }
 
   /**
@@ -105,58 +105,58 @@ class BaseObject extends Persistent
   * be false, if the object was retrieved from storage or was created
   * and then saved.
   *
-  * @return true, if the object has never been persisted.
+  * @return     true, if the object has never been persisted.
   */
   function isNew()
   {
-    return $this->_new;
+	return $this->_new;
   }
 
   /**
   * Setter for the isNew attribute.  This method will be called
   * by Propel-generated children and Peers.
   *
-  * @param boolean $b the state of the object.
+  * @param      boolean $b the state of the object.
   */
   function setNew($b)
   {
-    $this->_new = (boolean) $b;
+	$this->_new = (boolean) $b;
   }
 
   /**
   * Whether this object has been deleted.
-  * @return boolean The deleted state of this object.
+  * @return     boolean The deleted state of this object.
   */
   function isDeleted()
   {
-    return $this->_deleted;
+	return $this->_deleted;
   }
 
   /**
   * Specify whether this object has been deleted.
-  * @param boolean $b The deleted state of this object.
-  * @return void
+  * @param      boolean $b The deleted state of this object.
+  * @return     void
   */
   function setDeleted($b)
   {
-    $this->_deleted = (boolean) $b;
+	$this->_deleted = (boolean) $b;
   }
 
   /**
   * Sets the modified state for the object to be false.
-  * @return void
+  * @return     void
   */
   function resetModified($col = null)
   {
-    if ($col !== null)
-    {
-      while (($offset = array_search($col, $this->modifiedColumns)) !== false)
-        array_splice($this->modifiedColumns, $offset, 1);
-    }
-    else
-    {
-      $this->modifiedColumns = array();
-    }
+	if ($col !== null)
+	{
+	  while (($offset = array_search($col, $this->modifiedColumns)) !== false)
+		array_splice($this->modifiedColumns, $offset, 1);
+	}
+	else
+	{
+	  $this->modifiedColumns = array();
+	}
   }
 
   /**
@@ -164,52 +164,52 @@ class BaseObject extends Persistent
   * <code>obj</code> is an instance of <code>BaseObject</code>, delegates to
   * <code>equals(BaseObject)</code>.  Otherwise, returns <code>false</code>.
   *
-  * @param obj The object to compare to.
-  * @return    Whether equal to the object specified.
+  * @param      obj The object to compare to.
+  * @return     Whether equal to the object specified.
   */
   function equals($obj)
   {
-    if (! is_object($obj)) {
-      return false;
-    }
+	if (! is_object($obj)) {
+	  return false;
+	}
 
-    if ($this === $obj) {
-      return true;
-    }
-    else if ($this->getPrimaryKey() === null || $obj->getPrimaryKey() === null)  {
-      return false;
-    }
-    else {
-      return ($this->getPrimaryKey() === $obj->getPrimaryKey());
-    }
+	if ($this === $obj) {
+	  return true;
+	}
+	else if ($this->getPrimaryKey() === null || $obj->getPrimaryKey() === null)  {
+	  return false;
+	}
+	else {
+	  return ($this->getPrimaryKey() === $obj->getPrimaryKey());
+	}
   }
 
   /**
   * If the primary key is not <code>null</code>, return the hashcode of the
   * primary key.  Otherwise calls <code>Object.hashCode()</code>.
   *
-  * @return int Hashcode
+  * @return     int Hashcode
   */
   function hashCode()
   {
-    $ok = $this->getPrimaryKey();
-    if ($ok === null) {
-        return crc32(serialize($this));
-    }
-    return crc32(serialize($ok)); // serialize because it could be an array ("ComboKey")
+	$ok = $this->getPrimaryKey();
+	if ($ok === null) {
+		return crc32(serialize($this));
+	}
+	return crc32(serialize($ok)); // serialize because it could be an array ("ComboKey")
   }
 
   /**
   * Logs a message to the Propel::log().
   *
-  * @param string $msg
-  * @param int $priority
+  * @param      string $msg
+  * @param      int $priority
   *
-  * @return bool
+  * @return     bool
   */
   function log($msg, $priority = PROPEL_LOG_INFO)
   {
-    return Propel::log($msg, $priority);
+	return Propel::log($msg, $priority);
   }
 
 }

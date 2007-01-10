@@ -35,22 +35,22 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class MaxValueValidator implements BasicValidator
 {
-    
-    /**
-     * @see BasicValidator::isValid()
-     */
-    public function isValid (ValidatorMap $map, $value)
-    {
-        if(is_null($value) == false && is_numeric($value) == true) {
-            return intval($value) <= intval($map->getValue());
-        }
 
-        return false;
-    }
+	/**
+	 * @see        BasicValidator::isValid()
+	 */
+	public function isValid (ValidatorMap $map, $value)
+	{
+		if(is_null($value) == false && is_numeric($value) == true) {
+			return intval($value) <= intval($map->getValue());
+		}
+
+		return false;
+	}
 }

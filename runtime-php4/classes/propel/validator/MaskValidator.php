@@ -35,10 +35,10 @@ require_once 'propel/validator/BasicValidator.php';
  *   </validator>
  * </code>
  *
- * @author Michael Aichler <aichler@mediacluster.de>
- * @author Hans Lellelid <hans@xmpl.org>
- * @version $Revision$
- * @package propel.validator
+ * @author     Michael Aichler <aichler@mediacluster.de>
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
+ * @package    propel.validator
  */
 class MaskValidator extends BasicValidator
 {
@@ -47,19 +47,19 @@ class MaskValidator extends BasicValidator
   * Prepares the regular expression entered in the XML
   * for use with preg_match().
   *
-  * @param string $exp
-  * @return string Prepared regular expession.
+  * @param      string $exp
+  * @return     string Prepared regular expession.
   */
   function prepareRegexp($exp)
   {
-    // remove surrounding '/' marks so that they don't get escaped in next step
-    if ($exp{0} !== '/' || $exp{strlen($exp)-1} !== '/' ) {
-      $exp = '/' . $exp . '/';
-    }
+	// remove surrounding '/' marks so that they don't get escaped in next step
+	if ($exp{0} !== '/' || $exp{strlen($exp)-1} !== '/' ) {
+	  $exp = '/' . $exp . '/';
+	}
 
-    // if they did not escape / chars; we do that for them
-    $exp = preg_replace('/([^\\\])\/([^$])/', '$1\/$2', $exp);
-    return $exp;
+	// if they did not escape / chars; we do that for them
+	$exp = preg_replace('/([^\\\])\/([^$])/', '$1\/$2', $exp);
+	return $exp;
   }
 
   /**
@@ -67,7 +67,7 @@ class MaskValidator extends BasicValidator
   */
   function isValid (&$map, $str)
   {
-    return (preg_match($this->prepareRegexp($map->getValue()), $str) != 0);
+	return (preg_match($this->prepareRegexp($map->getValue()), $str) != 0);
   }
 
 }

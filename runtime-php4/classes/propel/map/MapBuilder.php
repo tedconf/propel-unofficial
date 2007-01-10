@@ -22,64 +22,64 @@
 
 /**
  * MapBuilders are classes that construct a model of a database at runtime.
- * 
- * MapBuilders support a single database, so this class essentially serves as 
+ *
+ * MapBuilders support a single database, so this class essentially serves as
  * a wrapper around the DatabaseMap class.  This interface can be used for any
  * class that needs to construct a runtime database model; by default in Propel
- * the MapBuilder.tpl generates a class for your datamodel that implements this 
- * interface and re-creates your database using the DatabaseMap, TableMap, 
+ * the MapBuilder.tpl generates a class for your datamodel that implements this
+ * interface and re-creates your database using the DatabaseMap, TableMap,
  * ColumnMap, and ValidatorMap classes.
- * 
+ *
  * GENERAL NOTE
  * ------------
  * The propel.map classes are abstract building-block classes for modeling
  * the database at runtime.  These classes are similar (a lite version) to the
  * propel.engine.database.model classes, which are build-time modeling classes.
- * These classes in themselves do not do any database metadata lookups, but instead 
- * are used by the MapBuilder classes that were generated for your datamodel. The 
+ * These classes in themselves do not do any database metadata lookups, but instead
+ * are used by the MapBuilder classes that were generated for your datamodel. The
  * MapBuilder that was created for your datamodel build a representation of your
- * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc. 
+ * database by creating instances of the DatabaseMap, TableMap, ColumnMap, etc.
  * classes. See propel/templates/om/php4/MapBuilder.tpl and the classes generated
- * by that template for your datamodel to further understand how these are put 
+ * by that template for your datamodel to further understand how these are put
  * together.
- * 
- * @author Hans Lellelid <hans@xmpl.org> (Propel)
- * @author Michael Aichler <aichler@mediacluster.de> (Propel)
- * @author John D. McNally <jmcnally@collab.net> (Torque)
- * @author Hans Lellelid <hans@xmpl.org> (Torque)
- * @version $Revision$
- * @package propel.map
+ *
+ * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Michael Aichler <aichler@mediacluster.de> (Propel)
+ * @author     John D. McNally <jmcnally@collab.net> (Torque)
+ * @author     Hans Lellelid <hans@xmpl.org> (Torque)
+ * @version    $Revision$
+ * @package    propel.map
  */
 class MapBuilder
 {
   /**
   * Build up the database mapping.
-  * @return void
-  * @throws Exception Couldn't build mapping.
+  * @return     void
+  * @throws     Exception Couldn't build mapping.
   */
   function doBuild()
   {
-    trigger_error('MapBuilder::doBuild(): must be reimplemented !', E_USER_ERROR);
+	trigger_error('MapBuilder::doBuild(): must be reimplemented !', E_USER_ERROR);
   }
 
   /**
   * Tells us if the database mapping is built so that we can avoid
   * re-building it repeatedly.
   *
-  * @return boolean Whether the DatabaseMap is built.
+  * @return     boolean Whether the DatabaseMap is built.
   */
   function isBuilt()
   {
-    trigger_error('MapBuilder::isBuilt(): must be reimplemented !', E_USER_ERROR);
+	trigger_error('MapBuilder::isBuilt(): must be reimplemented !', E_USER_ERROR);
   }
 
   /**
   * Gets the database mapping this map builder built.
   *
-  * @return DatabaseMap A DatabaseMap.
+  * @return     DatabaseMap A DatabaseMap.
   */
   function getDatabaseMap()
   {
-    trigger_error('MapBuilder::getDatabaseMap(): must be reimplemented !', E_USER_ERROR);
+	trigger_error('MapBuilder::getDatabaseMap(): must be reimplemented !', E_USER_ERROR);
   }
 }
