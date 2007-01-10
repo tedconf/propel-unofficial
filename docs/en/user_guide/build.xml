@@ -27,7 +27,7 @@
 	## conversion
 	##
 	## @author  alex black, enigma@turingstudio.com
-	## @revision $Revision: 1.1 $
+	## @revision $Revision$
 	##==============================================	
 	-->
 	<target name="normalize_linebreaks"
