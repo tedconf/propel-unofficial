@@ -740,7 +740,7 @@ class PropelCreoleTransformTask extends Task {
 
 		// add node
 		$node = $this->doc->createElement('rule');
-		$node->setAttribute('name', $type == 'type' ? 'notMatch' : $rule);
+		$node->setAttribute('name', $rule == 'type' ? 'notMatch' : $rule);
 		$node->setAttribute('message', $msg);
 
 		return $node;
