@@ -1346,9 +1346,9 @@ class Criterion  {
 
 	/**
 	 * Get the list of conjunctions in this Criterion
-	 * @return     array
+	 * @return array
 	 */
-	private function getConjunctions()
+	public function getConjunctions()
 	{
 		return $this->conjunctions;
 	}
