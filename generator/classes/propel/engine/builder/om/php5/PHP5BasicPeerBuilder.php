@@ -403,14 +403,20 @@ if (Propel::isInit()) {
 					$script .= "
 	/** A key representing a particular subclass */
 	const CLASSKEY_".strtoupper($child->getKey())." = '" . $child->getKey() . "';
-
-		/** A key representing a particular subclass */
-		const CLASSKEY_".strtoupper($child->getClassName())." = '" . $child->getKey() . "';
-
+";
+					
+	if (strtoupper($child->getClassname()) != strtoupper($child->getKey())) {
+		$script .= "
+	/** A key representing a particular subclass */
+	const CLASSKEY_".strtoupper($child->getClassname())." = '" . $child->getKey() . "';
+";
+	}
+	
+	$script .= "
 	/** A class that can be returned by this peer. */
 	const CLASSNAME_".strtoupper($child->getKey())." = '". $childBuilder->getClasspath() . "';
 ";
-				} /* foreach children */
+					} /* foreach children */
 			} /* if col->isenumerated...() */
 		} /* if table->getchildrencolumn() */
 
