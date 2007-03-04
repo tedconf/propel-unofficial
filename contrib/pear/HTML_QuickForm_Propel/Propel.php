@@ -638,13 +638,14 @@ class HTML_QuickForm_Propel extends HTML_QuickForm {
 		 *
 		 * Save the form.
 		 *
-		 * @return     void
+		 * @return     object Newly created object.
 		 *
 		 */
 		public function save()
 		{
 				$this->copyToObj();
 				$this->obj->save();
+				return $this->obj;
 		}
 
 		/**
