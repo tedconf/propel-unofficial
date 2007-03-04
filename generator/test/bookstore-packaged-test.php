@@ -47,15 +47,15 @@ set_include_path(
 
 
  // Require classes.
- require_once 'propel/Propel.php';
- require_once 'author/Author.php';
- require_once 'publisher/Publisher.php';
- require_once 'book/Book.php';
- require_once 'review/Review.php';
- include_once 'media/Media.php';
- include_once 'log/BookstoreLog.php';
- include_once 'book_club_list/BookClubList.php';
- include_once 'book_club_list/BookListRel.php';
+require_once 'propel/Propel.php';
+require_once 'core/author/Author.php';
+require_once 'core/publisher/Publisher.php';
+require_once 'core/book/Book.php';
+require_once 'core/review/Review.php';
+require_once 'core/book/Media.php';
+require_once 'util/log/BookstoreLog.php';
+require_once 'addon/club/BookClubList.php';
+require_once 'addon/club/BookListRel.php'; 
 
  include_once 'Benchmark/Timer.php';
 
