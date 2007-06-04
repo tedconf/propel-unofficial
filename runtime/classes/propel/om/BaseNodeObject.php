@@ -184,37 +184,37 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Inserts as first child of destination node $dest
 	 *
-	 * @param      object $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for given destination node
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsFirstChildOf(BaseNodeObject $dest = null, PDO $con = null);
+	public function insertAsFirstChildOf(BaseNodeObject $dest, PDO $con = null);
 
 	/**
 	 * Inserts as last child of destination node $dest
 	 *
-	 * @param      object $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for given destination node
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsLastChildOf(BaseNodeObject $dest = null, PDO $con = null);
+	public function insertAsLastChildOf(BaseNodeObject $dest, PDO $con = null);
 
 	/**
 	 * Inserts $node as previous sibling to destination node $dest
 	 *
-	 * @param      object $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for given destination node
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsPrevSiblingOf(BaseNodeObject $dest = null, PDO $con = null);
+	public function insertAsPrevSiblingOf(BaseNodeObject $dest, PDO $con = null);
 
 	/**
 	 * Inserts $node as next sibling to destination node $dest
 	 *
-	 * @param      object $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for given destination node
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsNextSiblingOf(BaseNodeObject $dest = null, PDO $con = null);
+	public function insertAsNextSiblingOf(BaseNodeObject $dest, PDO $con = null);
 
 } // BaseNodeObject

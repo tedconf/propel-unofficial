@@ -147,9 +147,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 		$this->addGetLeft($script);
 		$this->addGetRight($script);
+		$this->addGetScopeId($script);
 
 		$this->addSetLeft($script);
 		$this->addSetRight($script);
+		$this->addSetScopeId($script);
 	}
 
 	/**
@@ -354,8 +356,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function setParentNode(\$node)
 	{
-		\$this->parentNode = \$node;
-		\$this->hasParentNode = $peerClassname::isValid(\$node);
+		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$node))) ? \$node : null;
 	}
 ";
 	}
@@ -732,15 +733,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Inserts as first child of destination node \$dest
+	 * Inserts as first child of given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsFirstChildOf(BaseNodeObject \$dest = null, PDO \$con = null)
+	public function insertAsFirstChildOf(BaseNodeObject \$dest, PDO \$con = null)
 	{
-		return $peerClassname::insertAsFirstChildOf(\$dest, \$this, \$con);
+		return $peerClassname::insertAsFirstChildOf(\$this, \$dest, \$con);
 	}
 ";
 	}
@@ -750,15 +751,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Inserts as last child of destination node \$dest
+	 * Inserts as last child of given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsLastChildOf(BaseNodeObject \$dest = null, PDO \$con = null)
+	public function insertAsLastChildOf(BaseNodeObject \$dest, PDO \$con = null)
 	{
-		return $peerClassname::insertAsLastChildOf(\$dest, \$this, \$con);
+		return $peerClassname::insertAsLastChildOf(\$this, \$dest, \$con);
 	}
 ";
 	}
@@ -768,15 +769,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Inserts \$node as previous sibling to destination node \$dest
+	 * Inserts \$node as previous sibling to given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsPrevSiblingOf(BaseNodeObject \$dest = null, PDO \$con = null)
+	public function insertAsPrevSiblingOf(BaseNodeObject \$dest, PDO \$con = null)
 	{
-		return $peerClassname::insertAsPrevSiblingOf(\$dest, \$this, \$con);
+		return $peerClassname::insertAsPrevSiblingOf(\$this, \$dest, \$con);
 	}
 ";
 	}
@@ -786,15 +787,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Inserts \$node as next sibling to destination node \$dest
+	 * Inserts \$node as next sibling to given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsNextSiblingOf(BaseNodeObject \$dest = null, PDO \$con = null)
+	public function insertAsNextSiblingOf(BaseNodeObject \$dest = null PDO \$con = null)
 	{
-		return $peerClassname::insertAsNextSiblingOf(\$dest, \$this, \$con);
+		return $peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
 	}
 ";
 	}
@@ -806,6 +807,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetLeftKey()) {
 				$left_col_getter_name = 'get'.$col->getPhpName();
+				break;
 			}
 		}
 
@@ -829,6 +831,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetRightKey()) {
 				$right_col_getter_name = 'get'.$col->getPhpName();
+				break;
 			}
 		}
 
@@ -845,6 +848,30 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 ";
 	}
 
+	protected function addGetScopeId(&$script)
+	{
+		$table = $this->getTable();
+
+		foreach ($table->getColumns() as $col) {
+			if ($col->isNestedSetScopeKey()) {
+				$scope_col_getter_name = 'get'.$col->getPhpName();
+				break;
+			}
+		}
+
+		$script .= "
+	/**
+	 * Wraps the getter for the scope value
+	 *
+	 * @return     int
+	 */
+	public function getScopeIdValue()
+	{
+		return \$this->$scope_col_getter_name();
+	}
+";
+	}
+
 	protected function addSetLeft(&$script)
 	{
 		$table = $this->getTable();
@@ -852,6 +879,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetLeftKey()) {
 				$left_col_setter_name = 'set'.$col->getPhpName();
+				break;
 			}
 		}
 
@@ -876,6 +904,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetRightKey()) {
 				$right_col_setter_name = 'set'.$col->getPhpName();
+				break;
 			}
 		}
 
@@ -889,6 +918,31 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	public function setRightValue(\$v)
 	{
 		\$this->$right_col_setter_name(\$v);
+	}
+";
+	}
+
+	protected function addSetScopeId(&$script)
+	{
+		$table = $this->getTable();
+
+		foreach ($table->getColumns() as $col) {
+			if ($col->isNestedSetScopeKey()) {
+				$scope_col_setter_name = 'set'.$col->getPhpName();
+				break;
+			}
+		}
+
+		$script .= "
+	/**
+	 * Set the value of scope column
+	 *
+	 * @param      int \$v new value
+	 * @return     void
+	 */
+	public function setScopeIdValue(\$v)
+	{
+		\$this->$scope_col_setter_name(\$v);
 	}
 ";
 	}

@@ -34,56 +34,52 @@ interface BaseNodePeer {
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	static function createRoot(BaseNodeObject $node = null, PDO $con = null);
+	static function createRoot(BaseNodeObject $node, PDO $con = null);
 
 	/**
 	 * Returns the root node for a given root id
 	 *
-	 * @param      int $rootId		Root id to determine which root node to return
+	 * @param      int $scopeId		Scope id to determine which root node to return
 	 * @param      PDO $con		Connection to use.
 	 * @return     object			Propel object for root node
 	 */
-	static function retrieveRoot($rootId = 1, PDO $con = null);
+	static function retrieveRoot($scopeId = 1, PDO $con = null);
 
 	/**
 	 * Inserts $child as first child of destination node $parent
 	 *
+	 * @param      object $child	Propel object for child node
 	 * @param      object $parent	Propel object for parent node
-	 * @param      object $child		Propel object for child node
 	 * @param      PDO $con		Connection to use.
-	 * @return     object		Inserted propel object for model
 	 */
-	static function insertAsFirstChildOf(BaseNodeObject $parent = null, BaseNodeObject $child = null, PDO $con = null);
+	static function insertAsFirstChildOf(BaseNodeObject $child, BaseNodeObject $parent, PDO $con = null);
 
 	/**
 	 * Inserts $child as last child of destination node $parent
 	 *
+	 * @param      object $child	Propel object for child node
 	 * @param      object $parent	Propel object for parent node
-	 * @param      object $child		Propel object for child node
 	 * @param      PDO $con		Connection to use.
-	 * @return     object		Inserted propel object for model
 	 */
-	static function insertAsLastChildOf(BaseNodeObject $parent = null, BaseNodeObject $child = null, PDO $con = null);
+	static function insertAsLastChildOf(BaseNodeObject $child, BaseNodeObject $parent, PDO $con = null);
 
 	/**
 	 * Inserts $sibling as previous sibling to destination node $node
 	 *
-	 * @param      object $node	Propel object for destination node
+	 * @param      object $node		Propel object for destination node
 	 * @param      object $sibling	Propel object for source node
 	 * @param      PDO $con		Connection to use.
-	 * @return     object		Inserted propel object for model
 	 */
-	static function insertAsPrevSiblingOf(BaseNodeObject $node = null, BaseNodeObject $sibling = null, PDO $con = null);
+	static function insertAsPrevSiblingOf(BaseNodeObject $node, BaseNodeObject $sibling, PDO $con = null);
 
 	/**
 	 * Inserts $sibling as next sibling to destination node $node
 	 *
-	 * @param      object $node	Propel object for destination node
+	 * @param      object $node		Propel object for destination node
 	 * @param      object $sibling	Propel object for source node
 	 * @param      PDO $con		Connection to use.
-	 * @return     object		Inserted propel object for model
 	 */
-	static function insertAsNextSiblingOf(BaseNodeObject $node = null, BaseNodeObject $sibling = null, PDO $con = null);
+	static function insertAsNextSiblingOf(BaseNodeObject $node, BaseNodeObject $sibling, PDO $con = null);
 
 	/**
 	 * Inserts $node as root node
@@ -92,7 +88,7 @@ interface BaseNodePeer {
 	 * @param      PDO $con		Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	static function insertRoot(BaseNodeObject $node = null, PDO $con = null);
+	static function insertRoot(BaseNodeObject $node, PDO $con = null);
 
 	/**
 	 * Inserts $parent as parent to destination node $child
@@ -107,10 +103,11 @@ interface BaseNodePeer {
 	/**
 	 * Delete root node
 	 *
+	 * @param      int $scopeId		Scope id to determine which root node to delete
 	 * @param      PDO $con		Connection to use.
 	 * @return     boolean		Deletion status
 	 */
-	static function deleteRoot(PDO $con = null);
+	static function deleteRoot($scopeId = 1, PDO $con = null);
 
 	/**
 	 * Delete $dest node
@@ -196,9 +193,10 @@ interface BaseNodePeer {
 	/**
 	 * Retrieves the entire tree from root
 	 *
+	 * @param      int $scopeId		Scope id to determine which scope tree to return
 	 * @param      PDO $con		Connection to use.
 	 */
-	static function retrieveTree(PDO $con = null);
+	static function retrieveTree($scopeId = 1, PDO $con = null);
 
 	/**
 	 * Retrieves the entire tree from parent $node
@@ -241,22 +239,13 @@ interface BaseNodePeer {
 	static function retrieveParent(BaseNodeObject $node = null, PDO $con = null);
 
 	/**
-	 * Gets ancestor for the given node if it exists
-	 *
-	 * @param      object $node	Propel object for src node
-	 * @param      PDO $con		Connection to use.
-	 * @return     mixed 		Propel object if exists else false
-	 */
-	static function retrieveUndefined(PDO $con = null);
-
-	/**
 	 * Gets level for the given node
 	 *
 	 * @param      object $node	Propel object for src node
 	 * @param      PDO $con		Connection to use.
 	 * @return     int			Level for the given node
 	 */
-	static function getLevel(BaseNodeObject $node = null, PDO $con = null);
+	static function getLevel(BaseNodeObject $node, PDO $con = null);
 
 	/**
 	 * Gets number of direct children for given node
