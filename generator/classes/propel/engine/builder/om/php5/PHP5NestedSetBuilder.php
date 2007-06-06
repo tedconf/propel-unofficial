@@ -945,7 +945,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function setScopeIdValue(\$v)
 	{";
-		if($scope_col_getter_name) {
+		if($scope_col_setter_name) {
 			$script .= "
 		\$this->$scope_col_setter_name(\$v);";
 		}
