@@ -278,9 +278,6 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function delete(PDO \$con = null)
 	{
-		\$right = \$this->getRightValue();
-		\$left = \$this->getLeftValue();
-
 		// delete node first
 		parent::delete(\$con);
 
@@ -793,7 +790,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsNextSiblingOf(BaseNodeObject \$dest = null PDO \$con = null)
+	public function insertAsNextSiblingOf(BaseNodeObject \$dest = null, PDO \$con = null)
 	{
 		return $peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
 	}
@@ -852,6 +849,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	{
 		$table = $this->getTable();
 
+		$scope_col_getter_name = null;
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetScopeKey()) {
 				$scope_col_getter_name = 'get'.$col->getPhpName();
@@ -866,8 +864,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @return     int
 	 */
 	public function getScopeIdValue()
-	{
-		return \$this->$scope_col_getter_name();
+	{";
+		if($scope_col_getter_name) {
+			$script .= "
+		return \$this->$scope_col_getter_name();";
+		}
+		$script .= "
 	}
 ";
 	}
@@ -925,7 +927,8 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	protected function addSetScopeId(&$script)
 	{
 		$table = $this->getTable();
-
+		
+		$scope_col_setter_name = null;
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetScopeKey()) {
 				$scope_col_setter_name = 'set'.$col->getPhpName();
@@ -941,10 +944,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @return     void
 	 */
 	public function setScopeIdValue(\$v)
-	{
-		\$this->$scope_col_setter_name(\$v);
+	{";
+		if($scope_col_getter_name) {
+			$script .= "
+		\$this->$scope_col_setter_name(\$v);";
+		}
+		$script .= "
 	}
 ";
+
 	}
 
 } // PHP5NestedSetBuilder
