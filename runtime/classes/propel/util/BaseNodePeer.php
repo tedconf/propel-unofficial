@@ -37,7 +37,7 @@ interface BaseNodePeer {
 	static function createRoot(BaseNodeObject $node, PDO $con = null);
 
 	/**
-	 * Returns the root node for a given root id
+	 * Returns the root node for a given scope id
 	 *
 	 * @param      int $scopeId		Scope id to determine which root node to return
 	 * @param      PDO $con		Connection to use.

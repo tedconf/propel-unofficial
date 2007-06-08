@@ -260,22 +260,22 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Returns the root node for a given root id
+	 * Returns the root node for a given scope id
 	 *
-	 * @param      int \$scopeId		Root id to determine which root node to return
+	 * @param      int \$scopeId		Scope id to determine which root node to return
 	 * @param      PDO \$con		Connection to use.
 	 * @return     $objectClassname			Propel object for root node
 	 */
 	public static function retrieveRoot(\$scopeId = null, PDO \$con = null)
 	{
 		\$c = new Criteria($peerClassname::DATABASE_NAME);
-		
+
 		\$c->add(self::LEFT_COL, 1, Criteria::EQUAL);
-		
-		if(self::SCOPE_COL) {
+
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$scopeId, Criteria::EQUAL);
 		}
-		
+
 		return $peerClassname::doSelectOne(\$c, \$con);
 	}
 ";
@@ -295,20 +295,20 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function insertAsFirstChildOf(BaseNodeObject \$child, BaseNodeObject \$parent, PDO \$con = null)
 	{
-	    // Update \$child node properties
+		// Update \$child node properties
 		\$child->setLeftValue(\$parent->getLeftValue() + 1);
 		\$child->setRightValue(\$parent->getLeftValue() + 2);
 		\$child->setParentNode(\$parent);
-		
+
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$child->setScopeIdValue(\$sidv = \$parent->getScopeIdValue());
 		}
 
 		// Update database nodes
 		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
-	    // Update \$parent nodes properties recursively
+		// Update \$parent nodes properties recursively
 		self::shiftRParent(\$parent, 2, \$con);
 	}
 ";
@@ -328,13 +328,13 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function insertAsLastChildOf(BaseNodeObject \$child, BaseNodeObject \$parent, PDO \$con = null)
 	{
-	    // Update \$child node properties
+		// Update \$child node properties
 		\$child->setLeftValue(\$parent->getRightValue());
 		\$child->setRightValue(\$parent->getRightValue() + 1);
 		\$child->setParentNode(\$parent);
-		
+
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$child->setScopeIdValue(\$sidv = \$parent->getScopeIdValue());
 		}
 
@@ -344,7 +344,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// Update database nodes
 		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
-	    // Update \$parent nodes properties recursively
+		// Update \$parent nodes properties recursively
 		self::shiftRParent(\$parent, 2, \$con);
 	}
 ";
@@ -371,9 +371,9 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$node->setLeftValue(\$sibling->getLeftValue());
 		\$node->setRightValue(\$sibling->getLeftValue() + 1);
 		\$node->setParentNode(\$sibling->getParent());
-		
+
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$node->setScopeIdValue(\$sidv = \$sibling->getScopeIdValue());
 		}
 
@@ -407,7 +407,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$node->setParentNode(\$sibling->getParent());
 
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$node->setScopeIdValue(\$sidv = \$sibling->getScopeIdValue());
 		}
 
@@ -432,7 +432,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertRoot(BaseNodeObject \$node, PDO \$con = null)
 	{
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$sidv = \$node->getScopeIdValue();
 		}
 
@@ -457,7 +457,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertParent(BaseNodeObject \$child, BaseNodeObject \$parent, PDO \$con = null)
 	{
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$sidv = \$child->getScopeIdValue();
 		}
 
@@ -482,7 +482,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function deleteRoot(\$scopeId = null, PDO \$con = null)
 	{
-		if(!$peerClassname::SCOPE_COL) {
+		if (!$peerClassname::SCOPE_COL) {
 			\$scopeId = null;
 		}
 		\$root = $peerClassname::retrieveRoot(\$scopeId, \$con);
@@ -515,7 +515,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		\$sidv = null;
-		if($peerClassname::SCOPE_COL) {
+		if ($peerClassname::SCOPE_COL) {
 			\$sidv = \$dest->getScopeIdValue();
 		}
 
@@ -540,7 +540,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function moveToFirstChildOf(BaseNodeObject \$parent = null, BaseNodeObject \$child = null, PDO \$con = null)
 	{
-		if(\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
+		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$parent->getLeftValue() + 1;
@@ -563,7 +563,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function moveToLastChildOf(BaseNodeObject \$parent = null, BaseNodeObject \$child = null, PDO \$con = null)
 	{
-		if(\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
+		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$parent->getRightValue();
@@ -586,7 +586,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function moveToPrevSiblingOf(BaseNodeObject \$dest = null, BaseNodeObject \$node = null, PDO \$con = null)
 	{
-		if(\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
+		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$dest->getLeftValue();
@@ -609,7 +609,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function moveToNextSiblingOf(BaseNodeObject \$dest = null, BaseNodeObject \$node = null, PDO \$con = null)
 	{
-		if(\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
+		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$dest->getRightValue();
@@ -635,7 +635,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->add(self::LEFT_COL, \$node->getLeftValue() + 1, Criteria::EQUAL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 
@@ -660,7 +660,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->add(self::RIGHT_COL, \$node->getRightValue() - 1, Criteria::EQUAL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 
@@ -685,7 +685,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->add(self::RIGHT_COL, \$node->getLeftValue() - 1, Criteria::EQUAL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$prevSibling = $peerClassname::doSelectOne(\$c, \$con);
@@ -711,7 +711,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->add(self::LEFT_COL, \$node->getRightValue() + 1, Criteria::EQUAL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$nextSibling = $peerClassname::doSelectOne(\$c, \$con);
@@ -734,7 +734,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$scopeId, Criteria::EQUAL);
 		}
 		\$stmt = $peerClassname::doSelectStmt(\$c, \$con);
@@ -788,7 +788,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$c->add(self::LEFT_COL, \$node->getLeftValue(), Criteria::GREATER_THAN);
@@ -815,7 +815,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$c = new Criteria();
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$c->add(self::LEFT_COL, \$node->getLeftValue(), Criteria::GREATER_THAN);
@@ -869,16 +869,16 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		\$c1->addAnd(\$c2);
 
-		\$c->add(\$c1);	 
-		if(self::SCOPE_COL) {
+		\$c->add(\$c1);
+		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$c->addAscendingOrderByColumn(self::RIGHT_COL);
 
 		\$parent = $peerClassname::doSelectOne(\$c, \$con);
-		
+
 		\$node->setParentNode(\$parent);
-		
+
 		return \$parent;
 	}
 ";
@@ -903,15 +903,15 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		\$sql = \"SELECT COUNT(*) AS level FROM \" . self::TABLE_NAME . \" WHERE \" . self::LEFT_COL . \" < ? AND \" . self::RIGHT_COL . \" > ?\";
-		
-		if(self::SCOPE_COL) {
+
+		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
-		
+
 		\$stmt = \$con->prepare(\$sql);
 		\$stmt->bindValue(1, \$node->getLeftValue(), PDO::PARAM_INT);
 		\$stmt->bindValue(2, \$node->getRightValue(), PDO::PARAM_INT);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$stmt->bindValue(3, \$node->getScopeIdValue());
 		}
 		\$stmt->execute();
@@ -1101,7 +1101,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function isEqualTo(BaseNodeObject \$node1 = null, BaseNodeObject \$node2 = null)
 	{
 		\$also = true;
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$also = (\$node1->getScopeIdValue() === \$node2->getScopeIdValue());
 		}
 		return \$node1->getLeftValue() == \$node2->getLeftValue() && \$node1->getRightValue() == \$node2->getRightValue() && \$also;
@@ -1208,7 +1208,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$c1->addAnd(\$c2);
 
 		\$c->add(\$c1);
-		if(self::SCOPE_ID) {
+		if (self::SCOPE_ID) {
 			\$c->add(self::SCOPE_ID, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$c->addAscendingOrderByColumn(self::RIGHT_COL);
@@ -1412,26 +1412,26 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// do that prepared thing so they must both execute to work
 		// Shift left column values
 		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . self::LEFT_COL . \"=\" . self::LEFT_COL . \" + ? WHERE \" . self::LEFT_COL . \" >= ?\";
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 		\$stmt = \$con->prepare(\$sql);
 		\$stmt->bindParam(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindParam(2, \$first, PDO::PARAM_INT);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$stmt->bindParam(3, \$scopeId);
 		}
 		\$result = \$stmt->execute();
 
 		// Shift right column values
 		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . self::RIGHT_COL . \"=\" . self::RIGHT_COL . \" + ? WHERE \" . self::RIGHT_COL . \" >= ?\";
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 		\$stmt = \$con->prepare(\$sql);
 		\$stmt->bindParam(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindParam(2, \$first, PDO::PARAM_INT);
-		if(self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$stmt->bindParam(3, \$scopeId);
 		}
 		\$result = \$stmt->execute();
@@ -1469,7 +1469,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			self::LEFT_COL,
 			self::LEFT_COL);
 
-		if(self::SCOPE_ID) {
+		if (self::SCOPE_ID) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 
@@ -1477,7 +1477,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
 		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if(self::SCOPE_ID) {
+		if (self::SCOPE_ID) {
 			\$stmt->bindValue(4, \$scopeId);
 		}
 		\$stmt->setFetchMode(PDO::FETCH_ASSOC);
@@ -1491,7 +1491,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			self::RIGHT_COL,
 			self::RIGHT_COL);
 
-		if(self::SCOPE_ID) {
+		if (self::SCOPE_ID) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 
@@ -1499,7 +1499,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
 		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if(self::SCOPE_ID) {
+		if (self::SCOPE_ID) {
 			\$stmt->bindValue(4, \$scopeId);
 		}
 		\$stmt->setFetchMode(PDO::FETCH_ASSOC);

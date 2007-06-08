@@ -632,7 +632,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * and retrieveByPK*() calls.
 	 *
 	 * @param      ".$this->getObjectClassname()." \$value A ".$this->getObjectClassname()." object.
-	 * @param      string \$key (optional) key to use for instance map (for performance boost if key was already calculated externally). 
+	 * @param      string \$key (optional) key to use for instance map (for performance boost if key was already calculated externally).
 	 */
 	public static function addInstanceToPool(".$this->getObjectClassname()." \$obj, \$key = null)
 	{
@@ -653,7 +653,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	}
 ";
 	} // addAddInstanceToPool()
-	
+
 	/**
 	 *  Creates a convenience method to remove objects form an instance pool.
 	 * @param      string &$script The script will be modified in this method.
@@ -674,7 +674,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	public static function removeInstanceFromPool(\$value)
 	{";
-                $script .= "
+				$script .= "
 		if (Propel::isInstancePoolingEnabled()) {";
 		$pk = $table->getPrimaryKey();
 

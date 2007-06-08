@@ -865,7 +865,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function getScopeIdValue()
 	{";
-		if($scope_col_getter_name) {
+		if ($scope_col_getter_name) {
 			$script .= "
 		return \$this->$scope_col_getter_name();";
 		}
@@ -927,7 +927,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	protected function addSetScopeId(&$script)
 	{
 		$table = $this->getTable();
-		
+
 		$scope_col_setter_name = null;
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetScopeKey()) {
@@ -945,7 +945,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function setScopeIdValue(\$v)
 	{";
-		if($scope_col_setter_name) {
+		if ($scope_col_setter_name) {
 			$script .= "
 		\$this->$scope_col_setter_name(\$v);";
 		}
