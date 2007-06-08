@@ -108,7 +108,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * @param      object $node	Propel object for node to compare to
 	 * @return     bool
 	 */
-	public function isEqualTo(BaseNodeObject $node = null);
+	public function isEqualTo(BaseNodeObject $node);
 
 	/**
 	 * Tests if object has an ancestor

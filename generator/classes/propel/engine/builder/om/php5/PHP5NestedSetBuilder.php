@@ -534,7 +534,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      object \$node		Propel object for node to compare to
 	 * @return     bool
 	 */
-	public function isEqualTo(BaseNodeObject \$node = null)
+	public function isEqualTo(BaseNodeObject \$node)
 	{
 		return $peerClassname::isEqualTo(\$this, \$node);
 	}
@@ -790,7 +790,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      PDO Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
-	public function insertAsNextSiblingOf(BaseNodeObject \$dest = null, PDO \$con = null)
+	public function insertAsNextSiblingOf(BaseNodeObject \$dest, PDO \$con = null)
 	{
 		return $peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
 	}

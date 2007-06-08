@@ -306,7 +306,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		// Update database nodes
-		self::shiftRLValues(\$node->getLeftValue(), 2, \$con, \$sidv);
+		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
 	    // Update \$parent nodes properties recursively
 		self::shiftRParent(\$parent, 2, \$con);
@@ -342,7 +342,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$newRight = \$parent->getRightValue() + 1;
 
 		// Update database nodes
-		self::shiftRLValues(\$node->getLeftValue(), 2, \$con, \$sidv);
+		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
 	    // Update \$parent nodes properties recursively
 		self::shiftRParent(\$parent, 2, \$con);
