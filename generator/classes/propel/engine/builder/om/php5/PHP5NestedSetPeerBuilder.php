@@ -1409,9 +1409,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
 		}
 
+		\$leftUpdateCol = substr(self::LEFT_COL, strrpos(self::LEFT_COL, '.') + 1);
+		\$rightUpdateCol = substr(self::RIGHT_COL, strrpos(self::RIGHT_COL, '.') + 1);
 		// do that prepared thing so they must both execute to work
 		// Shift left column values
-		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . self::LEFT_COL . \"=\" . self::LEFT_COL . \" + ? WHERE \" . self::LEFT_COL . \" >= ?\";
+		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . \$leftUpdateCol . \"=\" . self::LEFT_COL . \" + ? WHERE \" . self::LEFT_COL . \" >= ?\";
 		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
@@ -1424,7 +1426,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$result = \$stmt->execute();
 
 		// Shift right column values
-		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . self::RIGHT_COL . \"=\" . self::RIGHT_COL . \" + ? WHERE \" . self::RIGHT_COL . \" >= ?\";
+		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . \$rightUpdateCol . \"=\" . self::RIGHT_COL . \" + ? WHERE \" . self::RIGHT_COL . \" >= ?\";
 		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
@@ -1460,11 +1462,13 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
 		}
 
+		\$leftUpdateCol = substr(self::LEFT_COL, strrpos(self::LEFT_COL, '.') + 1);
+		\$rightUpdateCol = substr(self::RIGHT_COL, strrpos(self::RIGHT_COL, '.') + 1);
 		// do that prepared thing so they must both execute to work
 		// Shift left column values
 		\$sql = sprintf('UPDATE %s SET %s = %s + ? WHERE %s >= ? AND %s <= ?',
 			self::TABLE_NAME,
-			self::LEFT_COL,
+			\$leftUpdateCol,
 			self::LEFT_COL,
 			self::LEFT_COL,
 			self::LEFT_COL);
@@ -1486,7 +1490,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// Shift right column values
 		\$sql = sprintf('UPDATE %s SET %s = %s + ? WHERE %s >= ? AND %s <= ?',
 			self::TABLE_NAME,
-			self::RIGHT_COL,
+			\$rightUpdateCol,
 			self::RIGHT_COL,
 			self::RIGHT_COL,
 			self::RIGHT_COL);
