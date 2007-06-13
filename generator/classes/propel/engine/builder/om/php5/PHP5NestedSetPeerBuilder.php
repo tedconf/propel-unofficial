@@ -197,15 +197,15 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetLeftKey()) {
-				$left_colname = $tableName . '.' . strtoupper($col->getName());
+				$left_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
 			if ($col->isNestedSetRightKey()) {
-				$right_colname = $tableName . '.' . strtoupper($col->getName());
+				$right_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
 			if ($col->isNestedSetScopeKey()) {
-				$scope_colname = $tableName . '.' . strtoupper($col->getName());
+				$scope_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
 			if (!empty($right_name) && !empty($left_colname) && !empty($scope_colname)) {
@@ -216,12 +216,12 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	/**
 	 * Left column for the set
 	 */
-	const LEFT_COL = '$left_colname';
+	const LEFT_COL = " . var_export($scope_colname, true) . ";
 
 	/**
 	 * Right column for the set
 	 */
-	const RIGHT_COL = '$right_colname';
+	const RIGHT_COL = " . var_export($scope_colname, true) . ";
 
 	/**
 	 * Scope column for the set
@@ -301,7 +301,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$child->setParentNode(\$parent);
 
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$child->setScopeIdValue(\$sidv = \$parent->getScopeIdValue());
 		}
 
@@ -334,7 +334,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$child->setParentNode(\$parent);
 
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$child->setScopeIdValue(\$sidv = \$parent->getScopeIdValue());
 		}
 
@@ -373,7 +373,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$node->setParentNode(\$sibling->getParent());
 
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if( self::SCOPE_COL) {
 			\$node->setScopeIdValue(\$sidv = \$sibling->getScopeIdValue());
 		}
 
@@ -407,7 +407,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$node->setParentNode(\$sibling->getParent());
 
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$node->setScopeIdValue(\$sidv = \$sibling->getScopeIdValue());
 		}
 
@@ -432,7 +432,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertRoot(BaseNodeObject \$node, PDO \$con = null)
 	{
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$sidv = \$node->getScopeIdValue();
 		}
 
@@ -457,7 +457,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertParent(BaseNodeObject \$child, BaseNodeObject \$parent, PDO \$con = null)
 	{
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$sidv = \$child->getScopeIdValue();
 		}
 
@@ -482,7 +482,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function deleteRoot(\$scopeId = null, PDO \$con = null)
 	{
-		if (!$peerClassname::SCOPE_COL) {
+		if (!self::SCOPE_COL) {
 			\$scopeId = null;
 		}
 		\$root = $peerClassname::retrieveRoot(\$scopeId, \$con);
@@ -515,7 +515,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		\$sidv = null;
-		if ($peerClassname::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$sidv = \$dest->getScopeIdValue();
 		}
 
