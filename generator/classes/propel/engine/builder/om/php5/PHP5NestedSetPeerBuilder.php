@@ -216,12 +216,12 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	/**
 	 * Left column for the set
 	 */
-	const LEFT_COL = " . var_export($scope_colname, true) . ";
+	const LEFT_COL = " . var_export($left_colname, true) . ";
 
 	/**
 	 * Right column for the set
 	 */
-	const RIGHT_COL = " . var_export($scope_colname, true) . ";
+	const RIGHT_COL = " . var_export($right_colname, true) . ";
 
 	/**
 	 * Scope column for the set
