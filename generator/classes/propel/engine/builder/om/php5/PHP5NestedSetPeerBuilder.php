@@ -370,7 +370,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		\$node->setLeftValue(\$sibling->getLeftValue());
 		\$node->setRightValue(\$sibling->getLeftValue() + 1);
-		\$node->setParentNode(\$sibling->getParent());
+		\$node->setParentNode(\$sibling->retrieveParent());
 
 		\$sidv = null;
 		if( self::SCOPE_COL) {
@@ -404,7 +404,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		\$node->setLeftValue(\$sibling->getRightValue() + 1);
 		\$node->setRightValue(\$sibling->getRightValue() + 2);
-		\$node->setParentNode(\$sibling->getParent());
+		\$node->setParentNode(\$sibling->retrieveParent());
 
 		\$sidv = null;
 		if (self::SCOPE_COL) {
