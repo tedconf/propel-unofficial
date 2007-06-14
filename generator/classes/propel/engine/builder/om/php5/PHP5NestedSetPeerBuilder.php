@@ -822,8 +822,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$c->addAnd(self::RIGHT_COL, \$node->getRightValue(), Criteria::LESS_THAN);
 		\$stmt = $peerClassname::doSelectStmt(\$c, \$con);
 
-		$peerClassname::hydrateDescendants(\$node, \$stmt);
-		return \$node->_children;
+		return $peerClassname::hydrateDescendants(\$node, \$stmt);
 	}
 ";
 	}
