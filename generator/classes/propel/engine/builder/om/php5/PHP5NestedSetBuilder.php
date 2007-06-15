@@ -351,7 +351,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$node Propel node object
 	 * @return     void
 	 */
-	public function setParentNode(BaseNodeObject \$node)
+	public function setParentNode(BaseNodeObject \$node = null)
 	{
 		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$node))) ? \$node : null;
 	}
@@ -369,7 +369,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$node Propel node object
 	 * @return     void
 	 */
-	public function setPrevSibling(BaseNodeObject \$node)
+	public function setPrevSibling(BaseNodeObject \$node = null)
 	{
 		\$this->prevSibling = \$node;
 		\$this->hasPrevSibling = $peerClassname::isValid(\$node);
@@ -388,7 +388,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$node Propel node object
 	 * @return     void
 	 */
-	public function setNextSibling(BaseNodeObject \$node)
+	public function setNextSibling(BaseNodeObject \$node = null)
 	{
 		\$this->nextSibling = \$node;
 		\$this->hasNextSibling = $peerClassname::isValid(\$node);

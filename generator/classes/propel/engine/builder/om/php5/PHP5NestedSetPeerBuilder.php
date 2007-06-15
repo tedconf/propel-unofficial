@@ -1000,7 +1000,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$node	Propel object for src node
 	 * @return     bool
 	 */
-	public static function isValid(BaseNodeObject \$node)
+	public static function isValid(BaseNodeObject \$node = null)
 	{
 		if (is_object(\$node) && \$node->getRightValue() > \$node->getLeftValue()) {
 			return true;
