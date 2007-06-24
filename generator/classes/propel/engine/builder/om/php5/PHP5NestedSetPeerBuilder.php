@@ -1276,6 +1276,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 			if (\$child->hasChildren()) {
 				\$descendants = array_merge(\$descendants, $peerClassname::hydrateDescendants(\$child, \$stmt));
+			} else {
+				\$child->setChildren(array());
 			}
 
 			\$children[] = \$child;
