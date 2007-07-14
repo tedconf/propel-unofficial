@@ -8,33 +8,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Propel Guide</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="Stylesheet" rev="Stylesheet" href="../css/Documentation.css" type="text/css" charset="iso-8859-1"/>
 </head>
 <body>
 
-<h1>Finding Persisted Objects</h1>
+<h1>Pobieranie Utrwalonych Obiektów</h1>
 
-<p>Once your objects have been stored in the database, you need a way to get them back out.  
-You've alredy seen a brief example of how to find objects using Propel Criteria objects.  In this
-chapter we're going to look at other methods of retrieving objects and examine the Criteria/Criterion
-system in more detail.</p>
+<p>Gdy zapiszesz jakiś obiekt w bazie danych, musisz znac sposób na jego późniejsze pozyskanie z bazy. Nauczyłeś się się już pobierać rekordy używając obiektów <strong>Criteria</strong>.  W tym rozdziale przyjrzymy się bliżej innym metodom pozyskiwania obiektów i dokładniej przetestujemy systemy <strong>Criteria</strong> i <strong>Criterion</strong>.</p>
 
-<h2><a name="FindingRecords.byPK"></a>Getting a Specific Record</h2>
+<h2><a name="FindingRecords.byPK"></a>Pobieranie Określonego Rekordu</h2>
 
-<p>You can find a specific object (record) by using the <strong>retrieveByPK()</strong> method of the Peer class.  
-As the name implies, this method will search for a specific record based on the simple or composite 
-primary key provided.</p>
+<p>Możesz znaleźć określony obiekt (rekord) używając metody <strong>retrieveByPK()</strong> dostępnej w klasie Peer. Jak sama nazwa wskazuje, metoda ta szuka rekordu bazując na dostarczonym - prostym bądź złożonym - kluczu głównym.</p>
 
 <pre title="retrieveByPk() simple key">
-// The book table has a single primary key column: book_id
-// Assuming that War &amp; Peace was first book added to the table:
+// Tabela book posiada pojedynczy klucz główny, którym jest kolumna book_id
+// Przyjmnijemy też, że War &amp; Peace (Wojna i Pokój) było pierwszą książką dodaną do tabeli
 $warAndPeace = BookPeer::retrieveByPK(1);
 </pre>
 
-<p>Of course, in some cases you may have a table where the primary key is actually defined by
-the values of several columns.  Take for example, the following cross reference table for many-to-many 
-relationships:</p>
+<p>Oczywiście w wielu przypadkach możesz posiadać tabelę, której klucz główny jest zdefiniowany przez wartości kilku kolumn. Poniżej tabela przedstawiająca relację wiele do wielu:</p>
 
 <pre title="xref schema">
 &lt;table name=&quot;book_author_xref&quot; 
@@ -54,24 +47,16 @@ relationships:</p>
 &lt;/table&gt;	
 </pre>
 
-<p>In this case, retrieving a specific reference (clearly a less useful exercise), would be accomplished
-by passing an array to the <strong>retreiveByPK()</strong> method.  <strong>Note that the order of keys is critical
-and must correspond to the order in which the columns are defined in the XML.</strong></p>
+<p>W tym przypadku, rekord można pozyskać poprzez przekazanie do metody <strong>retreiveByPK()</strong> tablicy.<strong> Należy przy tym pamiętać,  iż kolejność kluczy w tablicy musi być zgodna z kolejnością kolumn zdefiniowaną w pliku XML.</strong></p>
 <pre title="retriveByPK() composite">
 // Gets the book_id=1,author_id=2 record
 $obj = BookAuthorXrefPeer::retrieveByPK(array(1,2));
 </pre>
 
-<h2><a name="FindingRecods.Criteria"></a>Select Using Criteria</h2>
+<h2><a name="FindingRecods.Criteria"></a>Pozyskiwanie Przy Użyciu Obiektu Criteria</h2>
 
-<p><strong>Note: </strong>some of the ideas and examples for this section came 
-  from the <em>Criteria HOWTO</em> on the <a href="Bibliography.html#bib.torque">Torque</a> 
-  website.</p>
-<p>To find records meeting specified criteria, you will use a Criteria object 
-  in conjunction with the Peer's <strong>doSelect()</strong> method. This is a 
-  very powerful means of locating records, as you can construct almost any SQL 
-  query using the Criteria/Criterion system. The <strong>doSelect()</strong> method 
-  will return an array of objects of the appropriate type.</p>
+<p><strong>Note: </strong> niekóre z pomysłów i przykładów w tej części pochodzą z HOWTO Criterii dostepnego na stronach <em>Criteria HOWTO</em> on the <a href="Bibliography.html#bib.torque">Torque</a>.</p>
+<p>Aby znaleźć rekordy spełniające określone wymagania, możesz użyć obiektu Criteria w połączeniu z metodą <strong>doSelect()</strong> klasy Peer. To potężny sposób na odnajdywanie rekordów, bo przy pomocy systemu Criteria/Criterion możesz skonstruować niemal każde zapytanie SQL. Metoda <strong>doSelect()</strong> zwraca tablicę obiektów określonego typu.</p>
 <pre title="doSelect() example">$c = new Criteria();
 $c-&gt;add(AuthorPeer::FIRST_NAME, &quot;Leo&quot;);
 
@@ -82,55 +67,50 @@ foreach($results as $author) {
 
 } </pre>
 
-<p>Getting the select results is easy, and you'll find that with a bit of practice 
-  representing even very complicated queries is quite simple using the Criteria 
-  approach.</p>
-<h3>Simple Criteria</h3>
+<p>Pobieranie rekordów przy użyciu Criteria jest proste nawet dla najbardziej skomplikowanych zapytań. Wymaga jedynie odrobiny praktyki.</p>
+<h3>Proste Użycie Criteria</h3>
 
-<p> In the simplest form, the Criteria system is where you control the conditions 
-  for selecting records:</p>
+<p>W najprostszej postaci, system Criteria jest miejscem, w którym kontrolujesz warunki jakie mają spełniać wybierane rekordy:</p>
 
 <pre title="Criteria: simple">
 $c = new Criteria();
 // Find all authors with first name Karl but
-// last name is _not_ Marx.
+// Znajdz wszytskich autorów  o imieniu Karl, ale
+// którzy nie nazywają się Marx.
 $c-&gt;add(AuthorPeer::FIRST_NAME, &quot;Karl&quot;);
 $c-&gt;add(AuthorPeer::LAST_NAME, &quot;Marx&quot;, Criteria::NOT_EQUAL);
 
-// Find all authors with last name of Tolstoy, Dostoevsky, or Bakhtin
+// Znajdź wszytskich autorów, których nazwisko to Tolstoy, Dostoevsky, lub Bakhtin
 $c2 = new Criteria();
 $c2-&gt;add(AuthorPeer::LAST_NAME, array(&quot;Tolstoy&quot;, &quot;Dostoevsky&quot;, &quot;Bakhtin&quot;), Criteria::IN);
 
 </pre>
 
-<h3>Combining Criteria</h3>
+<h3>Łączenie Criteria i Criterion</h3>
 
-<p>You cannot combine Criteria objects directly, but you can combine Criterion objects in order
-to specify logical relationships between clauses.</p>
+<p>Nie możesz łaczyć obiektów Criteria ze sobą bezpośrednio, ale możesz łaczyć obiekty Criterion, aby uzyskać logiczne powiązania między nimi.</p>
 
 <pre title="Criteria: combining">
-// Find all authors with first name &quot;Leo&quot; OR last name of
-// &quot;Tolstoy&quot;, &quot;Dostoevsky&quot;, or &quot;Bakhtin&quot;
+//Znajdź wszystkich autorów o imieniu &quot;Leo&quot; lub nazwisku
+// &quot;Tolstoy&quot;, &quot;Dostoevsky&quot;, lub &quot;Bakhtin&quot;
  
 $c = new Criteria();
 $cton1 = $c-&gt;getNewCriterion(AuthorPeer::FIRST_NAME, "Leo");
 $cton2 = $c-&gt;getNewCriterion(AuthorPeer::LAST_NAME, 
                       array(&quot;Tolstoy&quot;, &quot;Dostoevsky&quot;, &quot;Bakhtin&quot;), Criteria::IN);
  
-// combine them
+// połącz Criteriony
 $cton1-&gt;addOr($cton2);
  
-// add to Criteria
+// dodaj do obiektu Criteria
 $c-&gt;add($cton1);
 </pre>
 
-<h3>Specifying Multiple Conditions for a Column</h3>
+<h3>Określanie Wielu Warunków dla Kolumny</h3>
 
-<p>In the examples above we see how to specify single conditions for a column (e.g. author.FIRST_NAME = "Leo"). 
-Importantly, specifying multiple conditions for a single column, is more complicated because Propel stores
-criteria in a hashtable (for performance reasons).</p>
+<p>W przykładzie powyżej, zobaczyliśmy, jak można określać pojedyncze warunki dla kolumny (np. author.FIRST_NAME = "Leo"). W istocie, określanie wielu warunków dla pojedynczej kolumny jest bardziej złożone, bo Propel przechowuje warunki w tzw. "hashtable" (ze względów wydajnościowych).[kupy się nie trzyma to tłumaczenie]</p>
 
-<p><strong>This is WRONG:</strong></p>
+<p><strong>Poniżej przykłąd błędnego użycia Criteria</strong></p>
 <pre title="Criteria: WRONG use of multiple conditions">
 $c = new Criteria();
 $c-&gt;add(AuthorPeer::FIRST_NAME, &quot;Leo%&quot;, Criteria::LIKE);
@@ -138,8 +118,7 @@ $c-&gt;add(AuthorPeer::FIRST_NAME, &quot;Leonardo&quot;, Criteria::NOT_EQUAL);
 // second add() just overwrote the LIKE condition already in place!
 </pre>
 
-<p>The correct way to do this involves creating <em>Criterion</em> objects and using the
-<strong>Criterion::addOr()</strong> method to relate them:</p>
+<p>Poprawnie, należy zaangażować w to obiekt Criterion. Należy stworzyć obiekt Criterion i wywołać jego metodę - <strong>Criterion::addOr()</strong> aby je powiązać:</p>
 
 <pre title="Criteria: CORRECT use of multiple conditions">
 $c = new Criteria();
@@ -150,33 +129,27 @@ $c->add($criterion);
 </pre>
 
 
-<h3>Controlling Other Aspects of Query</h3>
+<h3>Kontrolowanie Innych Aspektów Zapytania</h3>
 
-<p>The Criteria object can do more than simply control the conditions expressed in the SQL query.  The other 
-aspects of the query that can be controlled include: the number of records returned, case-sensitivty, and 
-the ordering of records.</p>
+<p>Obiekt Criteria potrafi więcej, niż tylko kontrolować warunki zapytania SQL. Inne aspekty zapytania, które może obsługiwać, to: ilość zwracanych rekordów, rozróżnianie wielkości liter, układanie rekordów w różnej kolejności.</p>
 
 <pre title="">
-// find first 10 authors, alphabetically
+// Znajdź pierwszych dziesiąciu autorów - alfabetycznie
 $c = new Criteria();
 $c-&gt;setLimit(10);
 $c-&gt;addAscendingOrderByColumn(AuthorPeer::LAST_NAME);
 
-// find all authors named &quot;max&quot;, case-insensitive
+// Znajdź wszystkich autorów o imieniu &quot;max&quot;  - rozróżnij wielkośc liter
 $c = new Criteria();
 $c-&gt;add(AuthorPeer::FIRST_NAME, &quot;max&quot;);
 $c-&gt;setIgnoreCase(true);
 </pre>
 
-<p><strong>Note: </strong>some databases support limiting queries in the SQL (e.g. MySQL and PostgreSQL support 
-the LIMIT keyword); in these cases the BasePeer class will use native limiting, while in other cases
-emulating the limit support (by fetching entire recordset but only adding specified limit to result array).</p>
+<p><strong>Note: </strong> Niektóre bazy danych wspierają limitowanie zwracanych rekordów. (	np. MySQL i PostgreSQL wspierają klauzulę LIMIT w zapytaniu); W tym przypadkach klasa BasePeer użyje natywnego limitowania, podczas gdy w innych będzie emulowała wsparcie dla LIMIT (poprzez pobranie normalnego zestawu rekordów, a następnie zwrócenie tylko tych określonych przez LIMIT).</p>
 
-<h3>Advanced Criteria Features</h3>
+<h3>Zaawansowane Możliwości Criteria</h3>
 
-<p>The Criteria object can come in handy even if you want to write code that returns raw query results
-(rather than instantiating objects).  For example, if you needed some very efficient code that would
-return a list of all ISBNs in the database, filtered on specific criteria:</p>
+<p>Obiekt Criteria przychodzi z pomocą nawet wtedy, gdy chcesz napisać kod, który zwróci surowy (bez inicjowania obiektów) wynik zapytania. Np. jeśli potrzebujesz bardzo wydajnego kodu, który zwróci listę wszystkich numerów ISBN z bazy danych wg. pewnych kryteriów.</p>
 
 <pre title="Specyfing select columns in criteria">
 class BookPeer extends BaseBookPeer {
@@ -184,9 +157,9 @@ class BookPeer extends BaseBookPeer {
   .
   .
   /**
-   * Get just the ISBN numbers for books.
-   * @param Criteria $c Criteria to filter results.
-   * @return array Array of ISBN numbers.
+   * Pobierz tylko numery ISBN książek
+   * @param Criteria $c kryteria filtrowania
+   * @return array Tablica numerów ISBN
    */
   function getJustISBN(Criteria $c) {
     $c-&gt;clearSelectColumns()-&gt;addSelectColumn(self::ISBN);
@@ -198,20 +171,15 @@ class BookPeer extends BaseBookPeer {
     return $isbns;
   }
 </pre>
-<h2><a name="WritingSQL"></a>Select Using SQL</h2>
-<p>The Criteria class is able to build commonly used queries, but it does not 
-  pretend to be capable of building any query. In cases where you need to perform 
-  particularly complex queries you will need to write your own SQL statements. 
-  The recommended way to do this is to use your stubclass. To ensure that your 
-  query will not break if table columns are renamed you may also want to use the 
-  Peer::COLUMN_NAME and Peer::TABLENAME constants.</p>
+<h2><a name="WritingSQL"></a>Pobieranie Rekordów z Użyciem SQL</h2>
+<p>Klasa Criteria jest w stanie &quot;skompilować&quot; najczęściej używane zapytania SQL, ale na pewno nie każde. W przypadku, gdy musisz wykonać szczególnie złożone zapytanie, będziesz musiał sam napisać kod SQL. Najlepiej w odpowiedniej klasie dziedziczącej po Base*Peer. Aby się upewnić, żę zapytanie wykona się nawet, gdy zmianie ulegną nazwy kolumn, możesz użyć stałych <strong>Peer::COLUMN_NAME</strong> i <strong>Peer::TABLENAME</strong>.</p>
 <pre title="Writing SQL example">
 class BookPeer extends BaseBookPeer {
   .
   .
   .
   /**
-   * Get just the Books that have not been reviewed.
+   * Pobierz tylko książki, które nie zostały sprawdzone
    * @return array Book[]
    */
   function getUnreviewedBooks() {
@@ -219,6 +187,8 @@ class BookPeer extends BaseBookPeer {
 	
     // if not using a driver that supports sub-selects
     // you must do a cross join (left join w/ NULL)
+    // jeśli używasz sterownka, który nie obsługuje podzapytań
+    // musisz wykonać join (left join w/ NULL) [wtf to znaczy?]
     $sql = "SELECT books.* FROM books WHERE ".
            "NOT EXISTS (SELECT id FROM review WHERE book_id = book.id)";
     
@@ -227,36 +197,24 @@ class BookPeer extends BaseBookPeer {
     
     return parent::populateObjects($rs);	
   }</pre>
-<p><em>Note: in the example above it is assumed that the column in your table 
-  are defined in the same order as the columns in your XML schema. This will generally 
-  be the case if you have not modified the table. You can use the <strong>Peer::addSelectColumns(Criteria)</strong> 
-  and<strong> Criteria-&gt;getSelectColumns()</strong> to remove this dependency.</em></p>
-<p>In our example we did not use the column constants (to keep it simple), but 
-    you could easily do so to the SQL above to avoid needing to change your SQL 
-    if you change the column or table names:</p>
+<p><em>Note: w powyższym przykładzie zakładamy, że kolumny w tabeli są zdefiniowane tak samo jak w pliku XML. Zazwyczaj tak jest, jeśli nie modyfikowałeś tabeli. Aby jednak usunąć i tą zależność, możesz użyć metod <strong>Peer::addSelectColumns(Criteria)</strong> 
+  i<strong> Criteria-&gt;getSelectColumns()</strong></em></p>
+<p>W naszym przykładzie nie użyliśmy zdefiniowanych stałych dla kolumn (aby uprościć przykład), ale możesz to łatwo wykonać, wstawiając je w powyższe zapytanie SQL. Unikniesz potrzeby zmieniania tego zapytania, gdy zmienisz nazwę kolumny lub tabeli:</p>
 <pre title="SQL example using constants">$sql = &quot;SELECT b.* FROM &quot;.BookPeer::TABLE_NAME.&quot; b WHERE &quot;.
        &quot;NOT EXISTS (SELECT r.&quot;.ReviewPeer::ID.&quot; FROM &quot;.ReviewPeer::TABLE_NAME.&quot; r &quot;.
        &quot;            WHERE r.&quot;.ReviewPeer::BOOK_ID.&quot; = b.&quot;.BookPeer::ID.&quot;)&quot;;</pre>
-<p>It's clearly your decision whether the flexibility of the SQL above is worth 
-  the additional readability challenges it introduces.</p>
-<h2><a name="PopulatingSingleObjects"></a>Fetching Large Result Sets</h2>
-<p>In some cases you will not want the Peer to populate all objects and return 
-  them in an array. In particular, when fetching large result sets PHP may run 
-  out of memory if you ask it to return an array of hydrated objects. To get around 
-  this issue, you can iterate through the resultset and populate single objects 
-  using the <strong>Entity-&gt;hydrate() </strong>method, disposing of them when 
-  you are finished.</p>
-<pre title="populate single object">// fetch entire list of books (we'll pretend this is huge)
+<p>Oczywiście to Twoja decyzja, czy opłaca się osiagnąć większą elastycznośc zapytania kosztem jego czytelności. Zrób jak uważasz.</p>
+<h2><a name="PopulatingSingleObjects"></a>Pobieranie Dużych Porcji Danych</h2>
+<p>W niektórych przypadkach nie bedziesz chciał, aby Peer tworzyłl wszystkie obiekty i zwracał ich tablicę. Szczególnie, pobieranie dużych porcji danych może stworzyć problemy z pamięcią (w PHP), gdy każesz zwrócić taką tablicę obiektów. Aby obejść ten problem możesz przeglądać (iterować) wyniki i pobierać pojedyncze obiekty przy użyciu metody <strong>Entity-&gt;hydrate() </strong> i pozbywać się ich, gdy nie są Ci już potrzebne.</p>
+<pre title="populate single object">// Pobierz listę książek (udawajmy że jest ich dużo)
 $rs = BookPeer::doSelectRS(new Criteria());
-while($rs-&gt;next()) { // use Creole ResultSet methods to iterate over resultset
+while($rs-&gt;next()) { // Użyj metody Creole ResultSet aby przeiterować przez wyniki
   $book = new Book();
   $book-&gt;hydrate($rs);
   
-  // read $book values, save $book, etc.
+  // czytaj wartości $book , zapisz $book, itp..
   ...
 }</pre>
-<p>Of course this works whether using Criteria to perform the SELECT (as in example) 
-  or using custom SQL. The important thing to note is that the results are only 
-  retrieved from the database and the object hydrated when requested.</p>
+<p>Oczywiście działa to niezależnie od tego, czy używasz Criteria do wykonania zapytań, czy zwykłych zapytań SQL. Najważniejszą rzeczą do zapamiętania jest fakt, że rekordy są pobierane z bazy dopiero gdy są potrzebne. Obiekty też są tworzone dopiero na życzenie.</p>
 </body>
 </html>
