@@ -76,7 +76,7 @@ propel/generator
   </tbody>
 </table>
 
-<h2><a name="GettingStarted.XMLSchema"></a>Opisywanie Bazy Danych w XML</h2>
+<h2><a name="GettingStarted.XMLSchema"></a>Opisywanie bazy danych w XML</h2>
 <p>Aby stworzyć klasy, które ściśle będą odpowiadały Twoim tabelom w bazie danych i ich relacjom, musisz dostarczyć propelowi XML, który jest ich reprezentacją. Przeanalizujemy teraz plik <tt>projects/bookstore/schema.xml</tt>, dostarczony razem z Propelem</p>
 <p><strong>Note:</strong> Jeśli chcesz użyć Propela z już istniejącą bazą danych, możesz kazać mu wygenerować plik XML przy pomocy Creole[nie całe]. Ciagle jednak będziesz musiał poprawić nieco ten plik (np. zdefiniować, które kolumny mają mieć autoincrement, zmienić nazwy PHP dla kolumn, dodać ralacje oparte o klucze obce dla baz, które ich nie wspierają itp.). Zobacz <a href="appendices/AppendixA-PropelOperations.html">DodatekA  - Operacje Propela[zmienic tłumaczenie]</a>, aby dowiedzieć sie więcej.
 </p>
@@ -178,10 +178,10 @@ Na przykład, typ &quot;TIMESTAMP&quot; zostanie zastąpiony przez &quot;DATETIM
 <p>Możesz zastąpić domyślny schemat, ustalając swoje własne nazwy przy pomocy atrybutu <strong>phpName</strong></p>
 
 </p>
-<h2><a name="GettingStarted.BuildProps"></a>Konfigurowanie właściwości kompilacji</h2>
-<p>Należy wyraźnie rozdzielić właściwości <em>kompilacji</em> od właściwości <em>uruchomieniowych</em>. Te perwsze zawierają informacje o projekcie, których Propel potrzebuje aby zbudować (skompilować) klasy i SQL. Nie wszystkie właściwości są wymagane: np, Propel nie musi wiedzieć jak połaczyć się z bazą danych do czasu, gdy nie zechesz, aby stworzył bazę danych lub wyeksportował z niej dane.
+<h2><a name="GettingStarted.BuildProps"></a>Konfigurowanie opcji kompilacji</h2>
+<p>Należy wyraźnie rozdzielić opcje <em>kompilacji</em> od właściwości <em>uruchomieniowych</em>. Te pierwsze zawierają informacje o projekcie, których Propel potrzebuje aby zbudować (skompilować) klasy i SQL. Nie wszystkie opcje są wymagane: np, Propel nie musi wiedzieć, jak połaczyć się z bazą danych do czasu, gdy nie zechesz, aby stworzył bazę danych lub wyeksportował z niej dane.
 </p>
-<p>Propel będzie szukał ustawień kompilacji w plikach <tt>build.properties</tt> i <tt>default.properties</tt> w swoim katalogu głównym oraz w katalogu projektu, który aktualnie jest kompilowany. <em>Ci, kŧórzy używają Propel z SVN muszą zmienić nazwę pliku <tt>build.properties-sample</tt> na <tt>build.properties</tt>. Możesz chcieć zmienić ustawienia w tym pliku, ale nie jest to zalecane</em>. Lepiej zmieniać zawartosć pliku <tt>build.properties</tt> w katalogu projektu. (np. <tt>projects/bookstore/build.properties</tt>).
+<p>Propel będzie szukał opcji kompilacji w plikach <tt>build.properties</tt> i <tt>default.properties</tt> w swoim katalogu głównym oraz w katalogu projektu, który aktualnie jest kompilowany. <em>Ci, kŧórzy używają Propel z SVN muszą zmienić nazwę pliku <tt>build.properties-sample</tt> na <tt>build.properties</tt>. Możesz chcieć zmienić opcje w tym pliku, ale nie jest to zalecane</em>. Lepiej zmieniać zawartosć pliku <tt>build.properties</tt> w katalogu projektu. (np. <tt>projects/bookstore/build.properties</tt>).
 Poniżej przykadowy plik <tt>build.properties</tt> projektu:</p>
 <pre title="sample build.properties">
 # The name of the project 
@@ -194,7 +194,7 @@ propel.database = mssql
 propel.database.url = mssql://localhost/bookstore
 </pre>
 
-<h2><a name="GettingStarted.RuntimeProps"></a>Właściwości Uruchomieniowe</h2>
+<h2><a name="GettingStarted.RuntimeProps"></a>Właściwości uruchomieniowe</h2>
 <p>Właściwości uruchomieniowe najczęsciej są takie same jak podane przy kompilacji właściwości dotyczące połaczeń z bazą danych. Mogą oczywiście być inne.
 Aby je zmienić musisz edytować plik <tt>runtime-conf.xml</tt>. Zauważ, że musisz podać te dane w stylu PEAR'a jako tablicę[DSN array], w przeciwieństwie do właściwości kompilacji, gdzie podawałeś je w postaci URL w pliku <tt>build.properties</tt></p>
 <pre title="sample bookstore.properties">&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;
