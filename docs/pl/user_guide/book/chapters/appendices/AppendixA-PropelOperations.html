@@ -3,75 +3,67 @@
 -License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
 -Copyright    2003, Propel project
 -Author       Hans Lellelid, hans@xmpl.org
+-Translation  Tomasz Budzyński tommibi@gmail.com
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Propel Guide</title> 
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="Stylesheet" rev="Stylesheet" href="../../css/Documentation.css" type="text/css" media="All" charset="iso-8859-1" />
 </head>
 <body>
-<h1>Appendix A- Propel Build Targets</h1>
-<p>Propel provides <a href="../Bibliography.html#bib.phing">Phing</a> tasks to 
-  perform supporting database and documentation operations. Not all of these are 
-  implemented in the current version. You can always use Phing to see an up-to-date 
-  list of targets and descriptions: </p>
+<h1>Dodatek A - Propel Build Targets</h1>
+<p>Propel korzysta z zadań <a href="../Bibliography.html#bib.phing">Phing'a</a> do wspierania operacji na bazie danych i dokumentacji. Nie wszystkie z nich sa dołączone do aktualnej(stabilnej) wersji. Zawsze możesz użyć Phing'a aby liste zadań oraz opisy: </p>
 <pre title="Using Phing to view build targets.">$&gt; phing -f build-propel.xml -list</pre>
-<p>The following table shows targets with their current status.</p>
+<p>Nastepna tabela pokazuje zadania oraz ich aktualny ststus.</p>
 <table>
   <thead>
     <tr> 
-      <th>Target</th>
-      <th>Description</th>
-      <th>Completed?</th>
+      <th>Zadanie</th>
+      <th>Opis</th>
+      <th>Zakończone?</th>
     </tr>
   </thead>
   <tbody>
     <tr> 
       <td>convert-props</td>
-      <td> converts properties file to PHP array</td>
-      <td>Yes</td>
+      <td> przekształca plik 'properties' do tablicy PHP</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>create-db</td>
-      <td>generates the target database</td>
-      <td>Yes</td>
+      <td>tworzy baze danych</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>datadtd</td>
-      <td> generates the DATA DTD for your project</td>
-      <td>Yes</td>
+      <td> generuje 'DATA DTD' dla twojego projektu</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>datadump</td>
-      <td>dump data from database into xml file</td>
-      <td>Yes</td>
+      <td>zrzuca dane z bazy danych do pliku xml</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>datasql</td>
-      <td>generates sql from data xml</td>
-      <td>Yes</td>
+      <td>generuje zapytania sql z danych xml</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>insert-sql</td>
-      <td> inserts the generated sql</td>
-      <td>Yes</td>
-    </tr>
-    <tr> 
-      <td>insert-sql</td>
-      <td> inserts the generated sql</td>
-      <td>Yes</td>
+      <td> wykonuje wygenerowane zapytanie</td>
+      <td>Tak</td>
     </tr>
     <tr> 
       <td>om</td>
-      <td>generates the Peer-based object model for your project</td>
-      <td>Yes</td>
+      <td>generuje obiekty Peer dla twojego projektu</td>
+      <td>Tak</td>
     </tr>
   </tbody>
 </table>
-<p> Any of these targets may be invoked by specifying the target name when running 
-  phing:</p>
+<p> Każdy z tych zadań moze byc przywołany popraz sprecyzowanie zadania podeczas uruchamiania phing'a:</p>
 <pre title="Using Phing to view build targets.">$&gt; phing -f build-propel.xml targetname</pre>
 <p>&nbsp;</p>
 </body>

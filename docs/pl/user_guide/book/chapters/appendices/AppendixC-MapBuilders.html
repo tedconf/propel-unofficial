@@ -3,25 +3,20 @@
 -License      GNU FDL (http://www.gnu.org/copyleft/fdl.html)
 -Copyright    2003, Propel project
 -Author       Hans Lellelid, hans@xmpl.org
+-Translation  Tomasz Budzyński tommibi@gmail.com
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/2000/REC-xhtml1-20000126/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>Propel Guide</title> 
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="Stylesheet" rev="Stylesheet" href="../../css/Documentation.css" type="text/css" media="All" charset="iso-8859-1" />
 </head>
 <body>
-<h1>Appendix C - Using MapBuilder Classes</h1>
-<p>When Propel generates the object model for you project, it also generates MapBuilder 
-  classes which are &quot;static&quot; classes that represent your database structure. 
-  These classes are used for determining, e.g., which columns ar primary keys, 
-  foreign keys, etc. at runtime without requiring any metadata operations on your 
-  database.</p>
-<p>While you don't need to know anything about these classes -- since they are 
-  only used inside the generated base peer classes and core Propel classes -- 
-  they do provide an quick and powerful way to get metadata for your database.</p>
-<pre>require_once("propel/Propel.php");
+<h1>Dodatek C - Używanie z klas MapBuilder</h1>
+<p>Kiedy Propel generuje obiekty dla twojego projectu, generuje także klasy MapBuilder'a, które są &quot;statycznymi&quot; klasami reprezentującymi strukture twojej bazy danych. Te klasy są używane do opisania np. które kolumny są podstawowymi kluczami (Primary Keys), kluczami obcymi (Foreing Keys) itd. bez konieczności wykonywania zadnych operacji na bazie danych, które odczytają ich własności.</p>
+<p>Kiedy ty nie potrzebujesz wiedziec czegokolwiek na temat tych klas -- to są one wykorzystywane tylko wewnątrz wygenerowanych klass Peer oraz w głównych klasach Propela -- pozwalają one na szybki i dokładny opis twojej bazy danych.</p>
+<pre>require_once("propel/Propel.php");file:///home/shadzik/Dokumenty/Propel1.3%20PL/AppendixC-MapBuilders.html
 
 Propel::init("bookstore-conf.php");
 
