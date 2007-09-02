@@ -31,32 +31,27 @@
   PEAR jest idealny, jeśli chce się od razu działającą aplikację, ale trudniej
   się go konfiguruje. </p>
 <h2><a name="Installation.PEAR"></a>Instalacja poprzez PEAR</h2>
-<p>It is now possible to install both the Propel generator and runtime components 
-  as PEAR packages. This is by far the easiest way to get Propel running, but 
-  may not be quite as easy to configure as the more traditional install. These 
-  packages actually do not depend on each other, so you can install only the generator 
-  or only the runtime classes. Note that the runtime classes do depend on the 
-  Creole package. </p>
+<p>Obecnie jest możliwa instalacja zarówno generatora, jak i komponentu uruchomieniowego (ang. runtime),
+  jako pakietów PEAR. Jest to najszybsza i najprostsza możliwość, by zainstalować te komponenty, ale konfiguracja nie jest
+  tak prosta, jak podczas instalacji tradycyjnej. Oba pakiety nie są od siebie wzajemnie zależne, więc można zainstalować
+  tylko generator lub komponent uruchomieniowy, bądź też oba naraz. Komponent uruchomieniowy zależy od pakietu Creole.</p>
 <h3>Generator</h3>
 <pre title="pear install generator">
 $&gt; pear install http://propel.phpdb.org/pear/propel_generator-current.tgz</pre>
-<p>The generator package comes with a convenient propel-gen shell script which 
-  you can use to actually build the project.
+<p>Do generatora jest dostarczany wygodny plik propel-gen, którego można używać do budowania modelu obiektowego.</p>
 <pre title="pear run propel-gen">
 $&gt; propel-gen /path/to/your/projectdir [target]</pre>
-<p> As you can see in that example, you must create a project directory. You can 
-  look at the the provided sample <em>bookstore</em> project directory (in your 
-  PEAR data directory). This topic is also covered in more detail in the the next 
-  chapter, <a href="GettingStarted.html">Getting Started</a>. </p>
-<h3>Runtime</h3>
-<p>The runtime classes are installed in the same way as the generator classes.</p>
+<p>Jak widać na powyższym przykładzie trzeba stworzyć katalog z projektem. Można też przejrzeć dostarczony przykład
+  projektu w katalogu <em>bookstore</em>, który znajduje się w katalogu danych (and. data) PEAR. Ten temat jest dokładniej
+  omówiony w rozdziale <a href="GettingStarted.html">Początek</a>.</p>
+<h3>Komponent uruchomieniowy (ang. runtime)</h3>
+<p>Komponent uruchomieniowy instaluje się w taki sam sposób, jak generator.</p>
 <pre title="pear install runtime">
 $&gt; pear install http://propel.phpdb.org/pear/propel_runtime-current.tgz</pre>
-<p>No further configuration is necessary (assuming your PEAR php directory is 
-  on your <em>include_path</em>).</p>
-<p><strong>You're done.</strong> Reading the traditional install is probably a 
-  good idea anyway, especially as most examples are written for the traditionally 
-  installed Propel.</p>
+<p>Żadna dodatkowa konfiguracja nie jest potrzebna (pod warunkiem, że katalog PEAR w katalogu, gdzie jest zainstalowane PHP
+  został dodany do zmiennej <em>include_path</em>).</p>
+<p><strong>To by było na tyle.</strong> Przeczytanie następnego rozdziału jest dobrym pomysłem zwłaszcza, że
+  większość przykładów została napisana dla instalacji tradycyjnej.</p>
 <h2><a name="Installation.Conventional"></a>Instalacja tradycyjna</h2>
 <p>For the sake of simplicity this chapter will make some assumptions about file 
   locations. We assume your setup will probably differ, so these should just serve 
