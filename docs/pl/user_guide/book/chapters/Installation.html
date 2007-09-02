@@ -53,46 +53,49 @@ $&gt; pear install http://propel.phpdb.org/pear/propel_runtime-current.tgz</pre>
 <p><strong>To by było na tyle.</strong> Przeczytanie następnego rozdziału jest dobrym pomysłem zwłaszcza, że
   większość przykładów została napisana dla instalacji tradycyjnej.</p>
 <h2><a name="Installation.Conventional"></a>Instalacja tradycyjna</h2>
-<p>For the sake of simplicity this chapter will make some assumptions about file 
-  locations. We assume your setup will probably differ, so these should just serve 
-  as a reference for the instructions that follow.</p>
+<p>Aby ułatwić przejście przez proces instalacji oraz by nie pogubić się, gdzie i co mamy zainstalowane przygotowaliśmy
+  przykładowe rozmieszczenie katalogów dla odpowiednich aplikacji. Zdajemy sobie sprawę, że u użytkownika układ ten może być
+  inny, ale będziemy go używać w dalszej części.</p>
 <table>
   <caption>
-  Some assumptions for sake of example. 
+    Przykładowe rozmieszczenie katalogów aplikacji
   </caption>
   <thead>
     <tr> 
-      <th>Path </th>
-      <th>Unix (Linux, FreeBSD, etc.)</th>
+      <th>Ścieżka </th>
+      <th>*nix (Linux, FreeBSD, etc.)</th>
       <th>Windows</th>
     </tr>
     <tr> 
-      <td>Propel runtime</td>
+      <td>Komponent uruchomieniowy</td>
       <td>/usr/local/propel/runtime</td>
       <td>C:\PHP\apps\propel\runtime</td>
     </tr>
   </thead>
   <tbody>
     <tr> 
-      <td>Propel generator</td>
+      <td>Generator</td>
       <td>/usr/local/propel/generator</td>
       <td>C:\PHP\apps\propel\generator</td>
     </tr>
     <tr> 
-      <td>PEAR libraries</td>
+      <td>Bibilioteka PEAR</td>
       <td>/usr/local/lib/php</td>
       <td>C:\PHP\PEAR </td>
     </tr>
   </tbody>
 </table>
-<h3>Obtaining</h3>
+<h3>Pobieranie</h3>
 <p>You can install Propel from a released package (or snapshot distribution) or 
   from CVS. Installing from a release or snapshot will always be simpler, but 
   if you would like to keep up with and (hopefully!) help with Propel development, 
   then you should checkout a copy of the source from CVS.</p>
-<h4>Package</h4>
-<p>If you obtained a tar.gz or .zip of Propel, then you can simply uncompress 
-  the archive and move the resulting folder to the right location. For example:</p>
+<p>Propela można zainstalować z archiwum (lub pakietu w dystrybucji *nix) oraz z CVS. Instalacja z archiwum lub pakietu
+  jest zawsze prostsza, ale jeśli chcemy mieć zawsze najnowszy kod oraz (miejmy nadzieję!) pomagać w rozwijaniu Propela,
+  wtedy powinno się wybrać wersję z CVS.</p>
+<h4>Pakiet</h4>
+<p>Jeśli mamy już archiwum Propela w formacie tar.gz lub .zip należy je rozpakować i przenieść w odpowiednie miejsce.
+  Na przykład:</p>
 <pre title="unix unpacking">
 $&gt; cd /usr/local
 
@@ -101,8 +104,8 @@ $&gt; tar zxvf propel-x.x.x.tar.gz
 $&gt; ln -s propel-x.x.x propel
 </pre>
 <h4>CVS</h4>
-<p>Installing from CVS ensures that you have the most up-to-date source code. 
-  (Of course CVS code is not stable and should not be used in production.) </p>
+<p>Instalacja z CVS powoduje, że mamy najnowszą wersję kodu źródłowego. (Oczywiście kod źródłowy z CVS nie jest stabilny
+  i nie powinien być używany z produkcyjnymi rozwiązaniami.)</p>
 <p>Note: the <em>propel</em> module in CVS has a slightly different directory 
   structure due to legacy considerations and limitations imposed by tigris.org. 
   Notably, all &quot;modules&quot; are actually in a top-level <tt>propel</tt> 
@@ -122,8 +125,8 @@ $&gt; mv propel/propel /usr/local/propel/runtime
 
 $&gt; mv propel/propel-generator /usr/local/propel/generator</pre>
 
-<p> For Windows users, there are a number of graphical CVS clients available such 
-  as the very capable and easy-to-use <a href="http://www.tortoisecvs.org" target="_blank">TortoiseCVS</a>.</p>
+<p>Dla użytkowników systemów Windows jest dostępna spora liczba graficznych klientów CVS, np. bardzo dobry i łatwy
+  w użyciu <a href="http://www.tortoisecvs.org" target="_blank">TortoiseCVS</a>.</p>
 <h3>Konfiguracja PHP</h3>
 <p>Kiedy Propel zostanie rozpakowany, należy poprawnie skonfigurować PHP.</p>
 <h4>Zmienna include_path</h4>
@@ -154,7 +157,7 @@ Propel::init( MY_CONF_DIR . '/propel/runtime-conf.php');</pre>
 <p>Powinno się sprawdzić, czy poniższe zmienne w pliku php.ini są ustawione, jak te poniżej:</p>
 <table>
   <caption>
-  pozostałe zmienne w pliku php.ini 
+  Pozostałe zmienne w pliku php.ini 
   </caption>
   <thead>
     <tr> 
