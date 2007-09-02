@@ -132,22 +132,12 @@ $&gt; mv propel/propel-generator /usr/local/propel/generator</pre>
 <h3>Konfiguracja PHP</h3>
 <p>Kiedy Propel zostanie rozpakowany, należy poprawnie skonfigurować PHP.</p>
 <h4>Zmienna include_path</h4>
-<p>You need to add the <tt>propel/runtime/classes</tt> directory to your PHP include 
-  path. Note that you only need to add the <em>runtime</em> classes to your <em>include_path</em>, 
-  as the build process calculates the <em>include_path</em> for the generator 
-  classes automatically. In other words, this step is not required to build your 
-  object model, but it is required to actually use your generated code from a 
-  PHP script. The easiest and most permanent way to set your <em>include_path</em> 
-  is to simply edit your <tt>php.ini</tt> file and add this directory to the <em>include_path</em> 
-  variable:</p>
-<p>Katalog <tt>propel/runtime/classes</tt> powinien zostać na stał 
-  path. Note that you only need to add the <em>runtime</em> classes to your <em>include_path</em>, 
-  as the build process calculates the <em>include_path</em> for the generator 
-  classes automatically. In other words, this step is not required to build your 
-  object model, but it is required to actually use your generated code from a 
-  PHP script. The easiest and most permanent way to set your <em>include_path</em> 
-  is to simply edit your <tt>php.ini</tt> file and add this directory to the <em>include_path</em> 
-  variable:</p>
+<p>Katalog <tt>propel/runtime/classes</tt> powinien zostać na stałe dodany do 
+  zmiennej <em>include_path</em>. Warto zapamiętać, że wymagane jest dodanie tylko klas <em>uruchomieniowych</em>,
+  ponieważ podczas budowania tych klas generator automatycznie ustawia zmienną <em>include_path</em>.Innymi
+  słowy ten krok nie jest wymagany, aby wygenerować model obiektowy, ale po to, by móc używać ten kod w
+  swoich aplikacjach PHP. Najprostszą i jednocześnie najbardziej stałą metodą jest ustawienie w pliku
+  <tt>php.ini</tt> zmiennej <em>include_path</em>:</p>
 <pre title="php.ini settings">
 # Unix
 include_path=&quot;/usr/local/lib/php:/usr/local/propel/classes&quot;
@@ -164,10 +154,6 @@ set_include_path(&quot;/usr/local/propel/runtime/classes:&quot; . get_include_pa
 
 require_once 'propel/Propel.php';
 Propel::init( MY_CONF_DIR . '/propel/runtime-conf.php');</pre>
-<p>Now the Propel runtime environment is ready to be used by your object model. 
-  As you will learn in subsequent sections, you will also need to modify the <em>include_path 
-  </em>to account for your object model PHP classes (i.e. the classes that the 
-  Propel generator builds for you).</p>
 <p>Po tym kroku środowisko Propela jest gotowe do użycia z modelem obiektowym.</p>
 <h4>Pozostałe ustawienia</h4>
 <p>Powinno się sprawdzić, czy poniższe zmienne w pliku php.ini są ustawione, jak te poniżej:</p>
