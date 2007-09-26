@@ -19,32 +19,22 @@
 <p>Ten rozdział przedstawia zaawansowane opcje modelu obiektowego Propela.</p>
 <h2><a name="AdvancedOM.OverridingBaseClasses"></a>Nadpisywanie Klass 'Base'</h2>
 <h3>Dla Obiektów</h3>
-<p>Domyślnie wszystkie obiekty 'Base' rozszerzają klasę <strong>propel.om.BaseObject</strong>, która dostarcza zbór współdzielonych metod i atrybutów które śledzą ich modyfikacje. W niektórych przypadkach nizesz wyszczególnić klasę rozszerzającą <strong>BaseObject</strong>; możesz to wykonać z poziomu definicji XML bazy danych:</p>
+<p>Domyślnie wszystkie obiekty 'Base' rozszerzają klasę <strong>propel.om.BaseObject</strong>, która dostarcza zbiór współdzielonych metod i atrybutów które śledzą ich modyfikacje. W niektórych przypadkach możesz wyszczególnić klasę rozszerzającą <strong>BaseObject</strong>; możesz to wykonać z poziomu definicji XML bazy danych:</p>
 <pre title="Overriding base object class">&lt;table name=&quot;book&quot; idMethod=&quot;native&quot; baseClass=&quot;bookstore.BookstoreComponent&quot;&gt;</pre>
-<p>Pamietaj że musisz korzystać z zapisu "kropkowanej ścieżki" kiedy definiujesz nowa klase bazową, która musi być wcześniej dołączona do skryptu przed odwołaniem się do niej. Zapis ścieżki określa ścieżkę relatywnie do położenia <em>include_path</em> w PHP. Teraz wygenerowana klasa BaseBook będzie rozszerzać BookstoreComponent. Pamiętaj że <strong>BookstoreComponent</strong> musi rozszerzać <strong>BaseObject</strong> albo PHP zwróci błąd krytyczny(fatal errors) kiedy spróbujesz użyć wygenerowanego Obiektu lub klasy peer. </p>
+<p>Pamietaj że musisz korzystać z zapisu "kropkowanej ścieżki" kiedy definiujesz nową klasę bazową, która musi być wcześniej dołączona do skryptu przed odwołaniem się do niej. Zapis ścieżki określa ścieżkę relatywnie do położenia <em>include_path</em> w PHP. Teraz wygenerowana klasa BaseBook będzie rozszerzać BookstoreComponent. Pamiętaj że <strong>BookstoreComponent</strong> musi rozszerzać <strong>BaseObject</strong> albo PHP zwróci błąd krytyczny(fatal errors) kiedy spróbujesz użyć wygenerowanego Obiektu lub klasy peer. </p>
 <pre title="overriding base object class PHP code">require_once 'bookstore/BookstoreComponent.php';
  
 class BaseBook extends BookstoreComponent {</pre>
 <h3>Dla klas Peer</h3>
-<p>Domyślnie wszystkie klasy 'Base Peer' nie posiadają żadnej super klasu. Możesz sprecyzować klase 'base peer' -- np. aby udostępnić dodatkową funkcjonalność uzywaną przez twoj obiekt.</p>
-<p>Podobnie jak w klasach obiektów 'Base', klasy 'Base' peer' mozna zmienic w definicji XML:</p>
+<p>Domyślnie wszystkie klasy 'Base Peer' nie posiadają żadnej superklasy. Możesz sprecyzować klasę 'base peer' -- np. aby udostępnić dodatkową funkcjonalność używaną przez twój obiekt.</p>
+<p>Podobnie jak w klasach obiektów 'Base', klasy 'Base peer' można zmienić w definicji XML:</p>
 <pre title="Overriding base object class">&lt;table name=&quot;book&quot; idMethod=&quot;native&quot; basePeer=&quot;BookstorePeer&quot;&gt;</pre>
-<p>Jak możesz się spodziewać teraz klasa <strong>BaseBookPeer</strong> rozszerza klasę <strong>BookstorePeer</strong> zamiast <strong>BasePeer</strong>. Ta klasa musi udostępnić wszystkie metody (public/protected) jak w <strong>BasePeer</strong>.</p>
+<p>Jak możesz się spodziewać, teraz klasa <strong>BaseBookPeer</strong> rozszerza klasę <strong>BookstorePeer</strong> zamiast <strong>BasePeer</strong>. Ta klasa musi udostępnić wszystkie metody (public/protected) jak w <strong>BasePeer</strong>.</p>
 <h2><a name="AdvancedOM.Inheritance"></a>Dziedziczenie</h2>
 
-<p>Propel udostępnia podstawowe wsparcie dla dziedziczenia obiektów w twoim modelu obiektów. Jest kilka sposobów na implementację klas i klas dziedziczacych do tabel bazy danych. Propel korzysta z najbardziej skutecznego modelu z perspektywy wydajności zapytań i SQL'a: jedna tabela jest użyta dla wszystkich klas dziedziczących. 
+<p>Propel udostępnia podstawowe wsparcie dla dziedziczenia obiektów w twoim modelu obiektów. Jest kilka sposobów na implementację klas i klas dziedziczących do tabel bazy danych. Propel korzysta z najbardziej skutecznego modelu z perspektywy wydajności zapytań i SQL'a: jedna tabela jest użyta dla wszystkich klas dziedziczących. W związku z tym twoja tabela musi posiadać wszystkie kolumny wymagane przez główną klasę i podklasy. Propel utworzy szkielet podklas, jednak musisz dodać logikę do klasy peer jeśli chcesz, żeby podklasy zawierały jedynie podzbiór informacji – tzn. domyślnie wszystkie podklasy będą zapełnione całym wierszem kolumn.
 
-Propel provides basic support for implementing object-oriented inheritance 
-  (subclassing) your object model. There are several implementation options for 
-  mapping entity classes and subclasses to database tables. Propel uses the most 
-  efficient model from a SQL and query performance perspective: one table is used 
-  for all subclasses.
- This has the implication that your table must have all columns 
-  needed by main class and subclasses. Propel will create stub subclasses, but 
-  you must add logic to the peer class if you require that subclasses only contain 
-  a subset of the information -- i.e. by default all subclasses will be populated 
-  with the entire column row.</p>
-<p>Musisz zdefiniować kolumne która będzie identyfikować która klasa ma reprezentować dany rekord; aby to uczynić użyj atrybutu strong>inheritance=&quot;single&quot;</strong> (aktualnie &quot;single&quot; jest jedyną opcją inną niż domyślne &quot;false&quot;). Także jeśli drzewo dziedziczenia jest znane, powinieneś użyć tagu <strong>&lt;inheritance&gt;</strong> aby opisać hierarchie klas. <em>Pamiętaj, że 'kluczowa' kolumna musi byc rzeczywistą kolumną w tabeli</em></p>
+<p>Musisz zdefiniować kolumnę, która będzie identyfikować klasę reprezentującą dany rekord; aby to uczynić użyj atrybutu strong>inheritance=&quot;single&quot;</strong> (aktualnie &quot;single&quot; jest jedyną opcją inną niż domyślne &quot;false&quot;). Także jeśli drzewo dziedziczenia jest znane, powinieneś użyć tagu <strong>&lt;inheritance&gt;</strong> aby opisać hierarchie klas. <em>Pamiętaj, że 'kluczowa' kolumna musi byc rzeczywistą kolumną w tabeli</em></p>
   
 <pre title="example of inheritance definition">&lt;table name=&quot;publication&quot;&gt;
  &lt;column name=&quot;id&quot; type=&quot;INTEGER&quot; primaryKey=&quot;true&quot;/&gt;
@@ -54,17 +44,16 @@ Propel provides basic support for implementing object-oriented inheritance
  &lt;/column&gt;
  &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;100&quot;/&gt;
 &lt;/table&gt;</pre>
-<p><em><strong>Ważne:</strong> musisz sprecyzować prefiks dla paczki kiedy wskazujesz klase dziedziczoną (extends=&quot;package.ClassName&quot;) tak aby te klasy mogły byc prawidłowo dodane na początku definicji klasy dziedziczącej; jednak nie mozesz sprecyzować paczki dla klasy dziedziczonej, ponieważ Propel buduje jednocześnie tylko jedna paczke (wyszczególnioną poprzez zmienna ${propel.targetPackage} w pliku <tt>build.properties</tt>) i jest wymogiem żeby klasa dziedziczona była częścią paczki którą własnie budujesz. Niewykluczone, że klasa dziedziczona moze być częścią oddzielnej paczki.</em></p>
+<p><em><strong>Ważne:</strong> musisz sprecyzować prefiks dla paczki kiedy wskazujesz klase dziedziczoną (extends=&quot;package.ClassName&quot;) tak aby te klasy mogły być prawidłowo dodane na początku definicji klasy dziedziczącej; jednak nie mozesz sprecyzować paczki dla klasy dziedziczonej, ponieważ Propel buduje jednocześnie tylko jedną paczkę (wyszczególnioną poprzez zmienną ${propel.targetPackage} w pliku <tt>build.properties</tt>) i jest wymogiem żeby klasa dziedziczona była częścią paczki którą własnie budujesz. Niewykluczone, że klasa dziedziczona może być częścią oddzielnej paczki.</em></p>
 <p>Wynikiem kodu powyżej będzie stworzenie 2 klas -- <strong>BasePublicationPeer</strong> i <strong>BasePublication</strong> -- oraz 4 [stub] klas -- <strong>PublicationPeer</strong>, <strong>Publication</strong>, <strong>Journal</strong> (dziedziczy po <strong>Publication</strong>), 
   i <strong>Magazine</strong> (dziedziczy po <strong>Journal</strong>).</p>
 <p align="center"><img src="../images/inheritance.gif" width="113" height="385" /></p>
 
-<p> Zauważ że tylko klasa Peer została stworzona. Jeśli chcesz sie upewnić że twoje klasy dziedziczone będą działac jedynie zestawem kolumnami dla każdego rekordu, powinieneś nadpisać metode <strong>BasePublicationPeer::populateObject()</strong> aby zapewnic [custom population] bazujące na klasie obiektu. [In many cases, however, the fact that objects of the correct class are returned may be sufficient in 
-  and of itself for your application needs.]</p>
-<p>Jesli dziedziczenie jest dynamiczne lub nieznane możesz pominąć tag <strong>&lt;inheritance&gt;</strong> i kolumna powinna posiadasz nazwe klasu -- kozystajac z zapisu ściezki "kropkowanej" (np. &quot;bookstore.Journal&quot;, &quot;myapp.entity.MyClassName&quot;). Także możesz nadpisać <strong>getOMClass()</strong> aby zwracała nazwe klasy do wykonania bardziej słożonej logiki (lub zapytań).</p>
+<p> Zauważ że tylko klasa Peer została stworzona. Jeśli chcesz sie upewnić że twoje klasy dziedziczone będą działać jedynie zestawem kolumnami dla każdego rekordu, powinieneś nadpisać metodę <strong>BasePublicationPeer::populateObject()</strong> aby zapewnic indywidualne wypełnienie bazujące na klasie obiektu. Jednakże w wielu wypadkach sam fakt, że zwracane są obiekty prawidłowej klasy, jest wystarczający dla potrzeb twojej aplikacji.</p>
+<p>Jeśli dziedziczenie jest dynamiczne lub nieznane możesz pominąć tag <strong>&lt;inheritance&gt;</strong> i przyjmuje się, że kluczowa kolumna powinna zawierać nazwę klasy -- korzystając z zapisu ścieżki "kropkowanej" (np. &quot;bookstore.Journal&quot;, &quot;myapp.entity.MyClassName&quot;). Możesz także nadpisać <strong>getOMClass()</strong> aby zwracała nazwę klasy do wykonania bardziej złożonej logiki (lub zapytań).</p>
 <h3>Abstract Entities</h3>
-<p>Jeżeli chcesz narzuić uzywanie klas dziedziczonych [subclasses of an entity] , możesz zdeklarować tabele jako &quot;abstract&quot; w modelu danych XML.</p>
+<p>Jeżeli chcesz narzucić używanie klas dziedziczonych, możesz zadeklarować &quot;abstrakt&quot; tabeli w modelu danych XML.</p>
 <pre title="abstract table example">&lt;table name=&quot;publication&quot; abstract=&quot;true&quot;&gt;</pre>
-<p>Ustalając tablice jako abstrakcyjną wygeneruje obiekt abstrakcyjny w koncówce klasy i będzie wymagać abyś zaimplementował metode <strong>getOMClass()</strong> w twojej klasie peer (jesli tego nie zrobisz, będzie wyrzucany wyjątek).</p>
+<p>Ustalenie tablicy jako abstrakcyjnej wygeneruje obiekt abstrakcyjny w końcówce klasy i będzie wymagać abyś zaimplementował metodę <strong>getOMClass()</strong> w twojej klasie peer (jesli tego nie zrobisz, będzie wyrzucany wyjątek).</p>
 </body>
 </html>

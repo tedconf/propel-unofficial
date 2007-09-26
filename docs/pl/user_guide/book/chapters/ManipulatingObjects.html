@@ -68,7 +68,7 @@ $book-&gt;setAuthorId($author-&gt;getId());
  .</pre>
 <h2><a name="ManipulatingObjects.Updating"></a>Aktualizowanie Obiektów</h2>
 
-<p>Prosta aktualizacja jest dokonywana, gdy obiekt zostanie zmodyfikowany poprzez użycie metod tzw. "setterów" (set*()) i wywołaniu metody <strong>save()</strong>. Kod wygląda podobnie jak kod odpowiadający za wstawianie nowych rekordów z ta różnicą, że klucz główny (primary key) jest juz ustawiony (w praktyce trzeba go pobrać z bazy).</p>
+<p>Prosta aktualizacja jest dokonywana, gdy obiekt zostanie zmodyfikowany poprzez użycie metod tzw. "setterów" (set*()) i wywołaniu metody <strong>save()</strong>. Kod wygląda podobnie jak kod odpowiadający za wstawianie nowych rekordów z ta różnicą, że klucz główny (primary key) jest już ustawiony (w praktyce trzeba go pobrać z bazy).</p>
 
 <pre title="Criteria: simple">
 $obj = AuthorPeer::retrieveByPK(1); // pobierz autora o primary key = 1
@@ -88,7 +88,7 @@ $author-&gt;delete();
 
 // DELETE FROM author WHERE author.AUTHOR_ID = 1</pre>
 
-<p>Gdy używasz metody Peer <strong>doDelete()</strong>, możesz określić kryteria  wg. jakoch zostaną usunięte obiekty. W tym przykładzie usuniemy pojedynczy rekord z tabeli <em>author</em>.</p>
+<p>Gdy używasz metody Peer <strong>doDelete()</strong>, możesz określić kryteria wg. jakich zostaną usunięte obiekty. W tym przykładzie usuniemy pojedynczy rekord z tabeli <em>author</em>.</p>
 
 <pre title="Using Peer::doDelete()">$crit = new Criteria();
 $crit-&gt;add(AuthorPeer::AUTHOR_ID, 1);
@@ -96,7 +96,7 @@ AuthorPeer::doDelete($crit);
 // DELETE FROM author WHERE author.AUTHOR_ID = 1</pre>
  
 
-<p>Propel wspiera również kaskadowe usuwanie rekordów (właczając w to bazy danych, które tego nie wspierają - Propel emuluje wówczas ten proces). Więcej na ten temat w rozdziale Relacje -  [<a href="Relationships.html#Relationships.CascadingDelete">Usuwanie Kaskadowe</a>].</p>
+<p>Propel wspiera również kaskadowe usuwanie rekordów (włączając w to bazy danych, które tego nie wspierają - Propel emuluje wówczas ten proces). Więcej na ten temat w rozdziale Relacje - [<a href="Relationships.html#Relationships.CascadingDelete">Usuwanie Kaskadowe</a>].</p>
 <p>&nbsp;</p>
 </body>
 </html>

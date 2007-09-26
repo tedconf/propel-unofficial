@@ -14,9 +14,9 @@
 </head>
 <body>
 <h1>Dodatek C - Używanie z klas MapBuilder</h1>
-<p>Kiedy Propel generuje obiekty dla twojego projectu, generuje także klasy MapBuilder'a, które są &quot;statycznymi&quot; klasami reprezentującymi strukture twojej bazy danych. Te klasy są używane do opisania np. które kolumny są podstawowymi kluczami (Primary Keys), kluczami obcymi (Foreing Keys) itd. bez konieczności wykonywania zadnych operacji na bazie danych, które odczytają ich własności.</p>
-<p>Kiedy ty nie potrzebujesz wiedziec czegokolwiek na temat tych klas -- to są one wykorzystywane tylko wewnątrz wygenerowanych klass Peer oraz w głównych klasach Propela -- pozwalają one na szybki i dokładny opis twojej bazy danych.</p>
-<pre>require_once("propel/Propel.php");file:///home/shadzik/Dokumenty/Propel1.3%20PL/AppendixC-MapBuilders.html
+<p>Kiedy Propel generuje obiekty dla twojego projektu, generuje także klasy MapBuilder'a, które są &quot;statycznymi&quot; klasami reprezentującymi strukturę twojej bazy danych. Te klasy są używane do opisania np. które kolumny są podstawowymi kluczami (Primary Keys), kluczami obcymi (Foreign Keys) itd. bez konieczności wykonywania żadnych operacji na bazie danych, które odczytają ich własności.</p>
+<p>Mimo że nie musisz wiedzieć niczego o tych klasach – ponieważ są używane wewnątrz podstawowych wygenerowanych klas Peer i głównych klas Propela – pozwalają one na szybki i dogłębny dostęp do metadanych twojej bazy.</p>
+<pre>require_once("propel/Propel.php");
 
 Propel::init("bookstore-conf.php");
 

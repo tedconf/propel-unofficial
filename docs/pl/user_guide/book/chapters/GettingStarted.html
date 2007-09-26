@@ -63,7 +63,7 @@ propel/generator
     </tr>
     <tr> 
       <td><p>projects</p></td>
-      <td> <p>Repozytorium wszystkich projektów (każdy katalog, to jeden projekt). Propel czyta pliki chematów (XML) i konfiguracyjne z tego katalogu i zapisuje w nim to, co wygeneruje.</p></td>
+      <td> <p>Repozytorium wszystkich projektów (każdy katalog, to jeden projekt). Propel czyta pliki schematów (XML) i konfiguracyjne z tego katalogu i zapisuje w nim to, co wygeneruje.</p></td>
     </tr>
     <tr> 
       <td><p>templates</p></td>
@@ -78,7 +78,7 @@ propel/generator
 
 <h2><a name="GettingStarted.XMLSchema"></a>Opisywanie bazy danych w XML</h2>
 <p>Aby stworzyć klasy, które ściśle będą odpowiadały Twoim tabelom w bazie danych i ich relacjom, musisz dostarczyć propelowi XML, który jest ich reprezentacją. Przeanalizujemy teraz plik <tt>projects/bookstore/schema.xml</tt>, dostarczony razem z Propelem</p>
-<p><strong>Note:</strong> Jeśli chcesz użyć Propela z już istniejącą bazą danych, możesz kazać mu wygenerować plik XML przy pomocy Creole[nie całe]. Ciagle jednak będziesz musiał poprawić nieco ten plik (np. zdefiniować, które kolumny mają mieć autoincrement, zmienić nazwy PHP dla kolumn, dodać ralacje oparte o klucze obce dla baz, które ich nie wspierają itp.). Zobacz <a href="appendices/AppendixA-PropelOperations.html">DodatekA  - Operacje Propela[zmienic tłumaczenie]</a>, aby dowiedzieć sie więcej.
+<p><strong>Uwaga:</strong> Jeśli chcesz użyć Propela z już istniejącą bazą danych, możesz kazać mu wygenerować plik XML przy pomocy klas metadanych Creole. Ciagle jednak będziesz musiał poprawić nieco ten plik (np. zdefiniować, które kolumny mają mieć autoincrement, zmienić nazwy PHP dla kolumn, dodać relacje oparte o klucze obce dla baz, które ich nie wspierają itp.). Zobacz <a href="appendices/AppendixA-PropelOperations.html">DodatekA  - Operacje Propela[zmienic tłumaczenie]</a>, aby dowiedzieć sie więcej.
 </p>
 <p>Oto fragment pliku <tt>schema.xml</tt>. Jak widzisz, definicje modelu danych są ściśle związane z aktualną strukturą bazy danych (Ciagle dodajemy nowe rzeczy, więc Twoja wersja może się nieco różnić od poniższej)
 </p>
@@ -167,11 +167,11 @@ propel/generator
   ... &gt;</h3>
 <p>Element <strong>&lt;table&gt;</strong> wspiera atrybut <strong>idMethod</strong>; Jeśli nie zostanie on zdefiniowany, wówczas zostanie domyślnie wybrany atrybut <strong>defaultIdMethod</strong> elementu <strong>&lt;database&gt;<em> </em></strong>. Poprawnymi wartościami <strong>idMethod</strong> są &quot;native&quot oraz &quot;none&quot. Ustawienie wartości &quot;native&quot spowoduje, że zostanie użyta domyślna metoda generowania ID -- np. autoincrement dla MySQL, czy sequences dla PostgreSQL
 </p>
-<p><strong>Note:</strong>w Torque jest jeszcze &quot;id-broker&quot;, opcja ta używa tabeli bazy danych do emulowania sekwencji (podobna do emulacji sekwencji z  PEAR::DB albo MDB). Od tego miejsca Propel nie wspiera metody id-broker, bo wszystkie wspierane bazy danych mają wbudowaną obsługę autoincement lub sequence dla kolumn (mniejszy strata wydajności niż poprzez emulację).
+<p><strong>Uwaga:</strong>w Torque jest jeszcze &quot;id-broker&quot;, opcja ta używa tabeli bazy danych do emulowania sekwencji (podobna do emulacji sekwencji z  PEAR::DB albo MDB). Od tego miejsca Propel nie wspiera metody id-broker, bo wszystkie wspierane bazy danych mają wbudowaną obsługę autoincrement lub sequence dla kolumn (mniejsza strata wydajności niż poprzez emulację).
 </p>
 <h4>&lt;column type=&quot;&quot;&gt;</h4>
-<p>Atrybut <strong>type</strong> w tagu <strong>&lt;column&gt;</strong> jest używany do określenia metatypu Propela. Metatypy sa podobne do typów SQL, ale nie nie odpowiadaja sobie bezpośrednio. Są to standardowe typy, konwertowane przez Propel do typu najbardziej odpowiadającego Twojej bazie danych (RDBMS).
-Na przykład, typ &quot;TIMESTAMP&quot; zostanie zastąpiony przez &quot;DATETIME&quot;  dla bazy MySQL (dlatego, że natywny typ TIMESTAMP w MySQL jest specfyficzny i kłopotliwy przy przetwarzaniu). Zobacz rozdział <a href="ColumnTypes.html">Typy Kolumn w Propelu</a> aby uzyskać więcej informacji
+<p>Atrybut <strong>type</strong> w tagu <strong>&lt;column&gt;</strong> jest używany do określenia metatypu Propela. Metatypy sa podobne do typów SQL, ale nie nie odpowiadają sobie bezpośrednio. Są to standardowe typy, konwertowane przez Propel do typu najbardziej odpowiadającego Twojej bazie danych (RDBMS).
+Na przykład, typ &quot;TIMESTAMP&quot; zostanie zastąpiony przez &quot;DATETIME&quot;  dla bazy MySQL (dlatego, że natywny typ TIMESTAMP w MySQL jest specyficzny i kłopotliwy przy przetwarzaniu). Zobacz rozdział <a href="ColumnTypes.html">Typy Kolumn w Propelu</a> aby uzyskać więcej informacji
 </p>
 <h4>&lt;column phpName=&quot;&quot; ... /&gt;</h4>
 <p>Podczas tworzenia klas, Propel automatycznie &quot;PEAR-uje&quot; nazwy kolumn dla swojego modelu obiektowego. Domyślnie konwertuje podkreślenia &quot;_&quot; w nazwach kolumn do formatu odpowiadającego konwencji nazwniczej PEAR dla metod. Np. <strong>book.my_column_name</strong> da w efekcie metody <strong>Book::getMyColumnName()</strong>, <strong>Book::setMyColumnName()</strong>, itd.
@@ -181,7 +181,7 @@ Na przykład, typ &quot;TIMESTAMP&quot; zostanie zastąpiony przez &quot;DATETIM
 <h2><a name="GettingStarted.BuildProps"></a>Konfigurowanie opcji kompilacji</h2>
 <p>Należy wyraźnie rozdzielić opcje <em>kompilacji</em> od właściwości <em>uruchomieniowych</em>. Te pierwsze zawierają informacje o projekcie, których Propel potrzebuje aby zbudować (skompilować) klasy i SQL. Nie wszystkie opcje są wymagane: np, Propel nie musi wiedzieć, jak połaczyć się z bazą danych do czasu, gdy nie zechesz, aby stworzył bazę danych lub wyeksportował z niej dane.
 </p>
-<p>Propel będzie szukał opcji kompilacji w plikach <tt>build.properties</tt> i <tt>default.properties</tt> w swoim katalogu głównym oraz w katalogu projektu, który aktualnie jest kompilowany. <em>Ci, kŧórzy używają Propel z SVN muszą zmienić nazwę pliku <tt>build.properties-sample</tt> na <tt>build.properties</tt>. Możesz chcieć zmienić opcje w tym pliku, ale nie jest to zalecane</em>. Lepiej zmieniać zawartosć pliku <tt>build.properties</tt> w katalogu projektu. (np. <tt>projects/bookstore/build.properties</tt>).
+<p>Propel będzie szukał opcji kompilacji w plikach <tt>build.properties</tt> i <tt>default.properties</tt> w swoim katalogu głównym oraz w katalogu projektu, który aktualnie jest kompilowany. <em>Ci, którzy używają Propel z SVN muszą zmienić nazwę pliku <tt>build.properties-sample</tt> na <tt>build.properties</tt>. Możesz chcieć zmienić opcje w tym pliku, ale nie jest to zalecane</em>. Lepiej zmieniać zawartość pliku <tt>build.properties</tt> w katalogu projektu. (np. <tt>projects/bookstore/build.properties</tt>).
 Poniżej przykadowy plik <tt>build.properties</tt> projektu:</p>
 <pre title="sample build.properties">
 # The name of the project 
@@ -219,10 +219,10 @@ Aby je zmienić musisz edytować plik <tt>runtime-conf.xml</tt>. Zauważ, że mu
   &lt;/datasources&gt;
  &lt;/propel&gt;
 &lt;/config&gt;</pre>
-<p>Podczas kompilacji, plik ten zostanie skonwertowany do postaci czytego kodu PHP i jako tablica umieszczony w pliku <tt>projects/bookstore/build/conf/runtime-conf.php</tt>, dzięki czemu nie będzie konieczne każdorazowe parsowanie pliku XML.
+<p>Podczas kompilacji, plik ten zostanie skonwertowany do postaci czystego kodu PHP i jako tablica umieszczony w pliku <tt>projects/bookstore/build/conf/runtime-conf.php</tt>, dzięki czemu nie będzie konieczne każdorazowe parsowanie pliku XML.
 Zauważ, że obecnie wygenerowana tablica nie odpowiada ściśle formatowi pliku XML. Dzieje się tak, bo konieczene jest zachowanie wstecznej zgodności ze starym formatem plików .properties</p>
 <pre>&lt;?php<br />// This file generated by Propel convert-props target on 09/08/05 20:23:27<br />// from XML runtime conf file .\projects\bookstore\runtime-conf.xml<br />return array (<br />  'log' =&gt; <br />  array (<br />    'ident' =&gt; 'propel-bookstore',<br />    'level' =&gt; '7',<br />  ),<br />  'propel' =&gt; <br />  array (<br />    'datasources' =&gt; <br />    array (<br />      'bookstore' =&gt; <br />      array (<br />        'adapter' =&gt; 'sqlite',<br />        'connection' =&gt; <br />        array (<br />          'phptype' =&gt; 'sqlite',<br />          'hostspec' =&gt; 'localhost',<br />          'database' =&gt; './bookstore.db',<br />          'username' =&gt; '',<br />          'password' =&gt; '',<br />        ),<br />      ),<br />      'default' =&gt; 'bookstore',<br />    ),<br />  ),<br />);</pre>
-<p>Klasy Propela moga teraz czytać informacje z tego pliku z minimalną stratą wydajności.
+<p>Klasy Propela mogą teraz czytać informacje z tego pliku z minimalną stratą wydajności.
 Później okaże się, że po prostu przekazujesz ścieżkę do tego pliku metodzie <strong>Propel::init()</strong>, aby rozpocząć pracę.</p>
 <h2><a name="GettingStarted.Building"></a>Kompilacja</h2>
 
@@ -261,10 +261,10 @@ Plik <tt>build.xml</tt> jest wygodną bramą[convinient wrapper] do skryptu <tt>
 
 <hr/>
   
-<p>Zaczyna się proces kompilacji, podczas którego generowane są pliki SQL oraz klasy. Wszystko to na podstawie omówionych wcześniej plików schamatów XML z katalogu <tt>projects/bookstore/</tt> -  w tym przypadku jest to jeden plik <tt>schema.xml</tt></p>
+<p>Zaczyna się proces kompilacji, podczas którego generowane są pliki SQL oraz klasy. Wszystko to na podstawie omówionych wcześniej plików schematów XML z katalogu <tt>projects/bookstore/</tt> -  w tym przypadku jest to jeden plik <tt>schema.xml</tt></p>
 <p>Wynik kompilacji zostanie umieszczony w katalogu <tt>projects/bookstore/<strong>build</strong></tt></p>
   
-<p>Na ekranie powinieneś zobaczyć coś <em>podobnego</em> jak poniżej (inne będą ściezki i inne ustawienia, w zależności od wersji Propela i instalatora Phing):</p>
+<p>Na ekranie powinieneś zobaczyć coś <em>podobnego</em> jak poniżej (inne będą ścieżki i inne ustawienia, w zależności od wersji Propela i instalatora Phing):</p>
 
 <pre title="build output">
 C:\sandbox\propel-generator>phing -Dproject=bookstore
@@ -383,7 +383,7 @@ BUILD FINISHED
 
 Total time: 5.9279 seconds
 </pre>
-<p><strong>Note:</strong> Jeśli napotkasz jakieś błędy, spróbuj dodać opcje <em>-verbose</em> lub <em>-debug</em>, aby otrzymać więcej informacji o procesie kompilacji od generatora. </p>
+<p><strong>Uwaga:</strong> Jeśli napotkasz jakieś błędy, spróbuj dodać opcje <em>-verbose</em> lub <em>-debug</em>, aby otrzymać więcej informacji o procesie kompilacji od generatora. </p>
 <h2><a name="GettingStarted.UsingSQL"></a>Użycie plików SQL</h2>
 <p>Definicje SQL wygenerowane przez Propel znajdziesz w pliku <tt>projects/bookstore/build/schema.sql</tt>. Plik ten zawiera kod SQL służący do stworzenia tabel i innych obiektów w utworzonej bazie danych. Możesz użyć polecenia &quot;create-db&quot; aby utworzyć tą bazę danych, ale niektóre bazy jak np. MS SQL Server nie wspierają tego.</p>
 <p>Np. Aby stworzyć i wypełnić (tabelami) bazę MySQL użyj tego kodu:</p>

@@ -16,9 +16,9 @@
 
 <h1>Zależności</h1>
 
-<p>Propel wspiera podstawowe zależności jeden-do-jednego. Są możliwe również bardziej złożone zależności wiele-do-wielu poprzez zdefiniowanie tabeli łączącej w twoim modelu danych i używać tej zależności podczas wybierania rekordow. Ten rodział opisuje jak tworzyć wewnątrz zależne wpisy oraz korzystać z optymalnych metod do zwracania zależnych wpisów.</p>
+<p>Propel wspiera podstawowe zależności jeden-do-jednego. Są możliwe również bardziej złożone zależności wiele-do-wielu poprzez zdefiniowanie tabeli łączącej w twoim modelu danych i używanie tej zależności podczas wybierania rekordow. Ten rodział opisuje jak tworzyć wewnątrz zależne wpisy oraz korzystać z optymalnych metod do zwracania zależnych wpisów.</p>
 <h2><a name="Relationships.Defining"></a>Definiowanie wpisów zależności</h2>
-<p>Wpisy reprezentujące wpisy o zależnościach w Propelu są bardzo podobnie do sposobu ich prezentacji na poziomie bazy danych: mianowicie poprzez klucze obce. W modelu bazy danych XML, możesz używać znacznikiem <strong>&lt;foreign-key&gt;</strong> do określenia kolumny z obcym kluczem.</p>
+<p>Wpisy reprezentujące wpisy o zależnościach w Propelu są bardzo podobnie do sposobu ich prezentacji na poziomie bazy danych: mianowicie poprzez klucze obce. W modelu bazy danych XML, możesz używać znacznika <strong>&lt;foreign-key&gt;</strong> do określenia kolumny z obcym kluczem.</p>
 <pre title="example fkey schema">&lt;table name=&quot;book&quot;&gt;
  &lt;column name=&quot;book_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
  &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;100&quot; required=&quot;true&quot;/&gt;
@@ -33,9 +33,9 @@
  &lt;column name=&quot;author_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
  &lt;column name=&quot;fullname&quot; type=&quot;VARCHAR&quot; size=&quot;40&quot; required=&quot;true&quot;/&gt;
 &lt;/table&gt;</pre>
-<p>Propel wygeneruja definicje SQL, która używa natywnie kluczy obcych w twojej bazie danych jeżeli są przez nią wpierane.  Propel będzie wykożystywać informacje o kluczach obcych do wygenerowania metod w klasach obiektów oraz 'Peer' do pobierania zależnych obiektów.</p>
+<p>Propel wygeneruje definicje SQL, które używają natywnie kluczy obcych w twojej bazie danych jeżeli są przez nią wspierane. Propel będzie wykorzystywać informacje o kluczach obcych do wygenerowania metod w klasach obiektów oraz 'Peer' do pobierania zależnych obiektów.</p>
 <h2><a name="Relationships.FetchingRelated"></a>Pobieranie Zależnych Obiektów</h2>
-<p>Korzystając z przykładu powyżej (bazując na dostarczonym schemacie 'bookstore'), otrzymasz metode <strong>Book-&gt;getAuthor()</strong>, która zwróci obiekt Author korzystając z określonego klucza obcego.</p>
+<p>Korzystając z przykładu powyżej (bazując na dostarczonym schemacie 'bookstore'), otrzymasz metodę <strong>Book-&gt;getAuthor()</strong>, która zwróci obiekt Author korzystając z określonego klucza obcego.</p>
 <pre title="example fetching fkey object">$books = BookPeer::doSelect(new Criteria());
 foreach($books as $book) {
  $author = $book-&gt;getAuthor();
@@ -54,7 +54,7 @@ foreach($books as $book) {
 <ol>
   <li>SELECT * FROM book INNER JOIN author ON author.author_id = book.author_id</li>
 </ol>
-<p>Przypis: aby ograniczym metody dostępne poprzez API, <em>metody łączące tablic są metodami 'protected' w klasach 'base peer'</em>; jeżeli chcesz ich używać musisz stworzyć publiczne(public) metody w klasie 'Peer' która przywołają metode 'protected'.</p>
+<p>Przypis: aby ograniczyć metody dostępne poprzez API, <em>metody łączące tablic są metodami 'protected' w klasach 'base peer'</em>; jeżeli chcesz ich używać musisz stworzyć publiczne (public) metody w klasie 'Peer', przywołujące metodę 'protected'.</p>
   
 <pre title="example of invoking protected join method from stub class">class BookPeer {
  public function doSelectJoinAuthor(Criteria $c) {
@@ -64,7 +64,7 @@ foreach($books as $book) {
 }</pre>
 <h2><a name="Relationships.ManyToMany"></a>Zależności Wiele-do-Wielu</h2>
 <p>Jak można przeczytać we wstępie, Propel obsługuje zależności wiele-do-wielu angażując pośredni krok: definiowanie tablicy łączącej w modelu bazy danych oraz wykonanie wyszukań.</p>
-<p>Weźmy na przykład zależność pomiędzy książkami i osobami je czytającymi -- wiele osob czyta jedną książke, jedna osoba czyta wiele książek:</p>
+<p>Weźmy na przykład zależność pomiędzy książkami i osobami je czytającymi -- wiele osób czyta jedną książke, jedna osoba czyta wiele książek:</p>
 <pre title="example of invoking protected join method from stub class">&lt;table name=&quot;book_reader_ref&quot;&gt;
  &lt;column name=&quot;book_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
  &lt;column name=&quot;reader_id&quot; type=&quot;INTEGER&quot; required=&quot;true&quot; primaryKey=&quot;true&quot;/&gt;
@@ -79,7 +79,7 @@ foreach($books as $book) {
      foreign=&quot;reader_id&quot;/&gt;
  &lt;/foreign-key&gt;
 &lt;/table&gt;</pre>
-<p>W twoim skrypcie PHP będziesz musiał skozystać z "pośrednika" tablicy łączącej aby wyszukać zależne wpisy:</p>
+<p>W twoim skrypcie PHP będziesz musiał skorzystać z "pośrednika" tablicy łączącej aby wyszukać zależne wpisy:</p>
   
 <pre title="Using middleman class from PHP">$books = BookPeer::doSelect(new Criteria());
 
@@ -93,14 +93,14 @@ foreach($books as $book) {
   <li>SELECT * FROM book_reader_ref INNER JOIN reader ON reader.reader_id = book_reader_ref.reader_id 
     WHERE book_reader_ref.book_id = $book-&gt;getBookId()</li>
 </ol>
-<p>Metoda ta nie jest zbytnio rozrzutna -- w porównaniu z wykonywaniem pojedyńczych zapytań łączących zależność wiele do wielu ktora zazwyczaj nie ma sensu -- ale także jest &quot;mniej elegancka&quot; niż obsluga zależności jeden-do-jednego. Wymagana wyraźna referecnja do tablicy łączącej jest przeszkodą w użyciu modelowania  dużych danych typu string zastosowanych w propelu (dziedziczone z Torque).
+<p>Metoda ta nie jest zbytnio rozrzutna -- w porównaniu z wykonywaniem pojedyńczych zapytań łączących zależność wiele do wielu ktora zazwyczaj nie ma sensu -- ale także jest &quot;mniej elegancka&quot; niż obsluga zależności jeden-do-jednego. Wymagana wyraźna referencja do tablicy łączącej jest przeszkodą w użyciu modelowania  dużych danych typu string zastosowanych w propelu (dziedziczone z Torque).
 [niejestem tego pewienRequiring the explicitly reference of the cross-reference table is a drawback to using the very literal data modeling approach adopted by Propel (inherited from Torque).] </p>
 <h2><a name="Relationships.CascadingDelete"></a>Usuwanie kaskadowe</h2>
-<p>Propel także wspiera kasowanie kaskadowe, które moze byc ustawione poprzez atrybut <strong>onDelete=&quot;cascade&quot;</strong> w tagu <strong>&lt;foreign-key&gt;</strong>. Torque takze wspierał onUpdate=&quot;cascade&quot;, ale od kiedy Propel nie zezwala na aktualizacje 'PrimaryKey' opcja nie zostanie dodana, dodatkowo niektóre bazy danych poprostu niewspierają. Dla baz które nie posiadają takiej funkcji, Propel wspiera je emulując kasowanie kaskadowe. (np.MySQL v4.x).</p>
+<p>Propel także wspiera kasowanie kaskadowe, które może być ustawione poprzez atrybut <strong>onDelete=&quot;cascade&quot;</strong> w tagu <strong>&lt;foreign-key&gt;</strong>. Torque także wspierał onUpdate=&quot;cascade&quot;, ale od kiedy Propel nie zezwala na aktualizacje 'PrimaryKey' opcja nie zostanie dodana, dodatkowo niektóre bazy danych po prostu nie wspierają. Dla baz które nie posiadają takiej funkcji, Propel wspiera je emulując kasowanie kaskadowe. (np.MySQL v4.x).</p>
 <pre title="Example of cascade delete definition">&lt;table name=&quot;review&quot;&gt;
  &lt;column name=&quot;review_id&quot; type=&quot;INTEGER&quot; primaryKey=&quot;true&quot; required=&quot;true&quot;/&gt;
  &lt;column name=&quot;reviewer&quot; type=&quot;VARCHAR&quot; size=&quot;50&quot; required=&quot;true&quot;/&gt;
  &lt;column name=&quot;book_id&quot; required=&quot;true&quot; type=&quot;INTEGER&quot;/&gt;<br />	&lt;foreign-key foreignTable=&quot;book&quot; onDelete=&quot;CASCADE&quot;&gt;<br />   &lt;reference local=&quot;book_id&quot; foreign=&quot;book_id&quot;/&gt;<br /> &lt;/foreign-key&gt;	  <br />&lt;/table&gt;</pre>
-<p>W przykładzie powyżej, rekordy 'reciew' będą automatycznie kasowane jeżeli zostanie skasowana zależna książka(book).</p>
+<p>W przykładzie powyżej, rekordy 'review' będą automatycznie kasowane jeżeli zostanie skasowana zależna książka(book).</p>
 </body>
 </html>

@@ -44,7 +44,7 @@
   <li>FLOAT</li>
   <li>REAL</li>
 </ul>
-<p>Możesz użyć atrybutów <strong>scale</strong> i <strong>size</strong> dla odpowiednich typów kolumn, ale to, czy jednak zostaną dołączone do wygenerowanych plików SQL zeleży od typu Twojej bazy danych.</p>
+<p>Możesz użyć atrybutów <strong>scale</strong> i <strong>size</strong> dla odpowiednich typów kolumn, ale to, czy jednak zostaną dołączone do wygenerowanych plików SQL zależy od typu Twojej bazy danych.</p>
 <pre title="Numeric column XML declaration">&lt;table name=&quot;num_test&quot;&gt;
   &lt;column name=&quot;num&quot; type=&quot;FLOAT&quot; size=&quot;10&quot; scale=&quot;2&quot;/&gt;
 &lt;/table&gt;</pre>
@@ -65,16 +65,16 @@
   <li>VARCHAR</li>
   <li>LONGVARCHAR</li>
 </ul>
-<p>Kolumny tych typów są konwertowane do tych wspieranych przrz bazę danych. CHAR reprezentuje ciągi znakowe o niezmiennej długości, podczas gdy VARCHAR potrafi ta wielkośc rozrózniać. Dla obu typów możesz zastosowac atrybut <strong>size</strong>. Generalnie atrybut <strong>size</strong> dla typu LONGVARCHAR zostanie zignorowany. Niektóre bazy danych (np. MySQL, PostgreSQL, MS SQL Server) używają typu TEXT zamiast LONGVARCHAR.</p>
+<p>Kolumny tych typów są konwertowane do tych wspieranych przez bazę danych. CHAR reprezentuje ciągi znakowe o niezmiennej długości, podczas gdy VARCHAR potrafi tą wielkość rozróżniać. Dla obu typów możesz zastosować atrybut <strong>size</strong>. Generalnie atrybut <strong>size</strong> dla typu LONGVARCHAR zostanie zignorowany. Niektóre bazy danych (np. MySQL, PostgreSQL, MS SQL Server) używają typu TEXT zamiast LONGVARCHAR.</p>
 <p>Kolumny tych typów zawsze zawierają wartości będące ciągami znaków i jako takie będą zwracane. Warto zauważyć, że zwracane wartości są zawsze pozbawione tzw. whitespaces. Niektóre bazy danych (np. MySQL) robią to automatycznie, inne nie (np. PostgreSQL).</p>
 <h2><a name="ColumnTypes.LOB"></a>Kolumny Typu LOB</h2>
-<p>LOB to skrót od <strong>L</strong>ocator <strong>OB</strong>ject. W Propelu istnieją dwa typu LOB:</p>
+<p>LOB to skrót od <strong>L</strong>ocator <strong>OB</strong>ject. W Propelu istnieją dwa typy kolumn LOB:</p>
 <ul>
   <li>CLOB</li>
   <li>BLOB</li>
 </ul>
-<p>Typy te zasługują na szczególna uwagę, ponieważ są traktowanę trochę inaczej niż inne typy w Propelu. Wyniki dla typów LOB są zwracane jako obiekty typu <strong>creole.util.Blob</strong> lub <strong>creole.util.Clob</strong>. Te klasy dostarczają kilku użytecznych metod (np.  pozwalających zapisać do pliku, lub do bufora). Dodatkowo implementują metode <strong>__toSring()</strong>, więc kod użytkujący może zignorować obiekty.
-<em>Note: W PHP5.0.0RC1 automatyczne wywołanie metody <strong>__toSring()</strong> zostało wyłączone. Od teraz musisz jawnie wywołać metodę <strong>__toSring()</strong> wybranego obiektu.</em></p>
+<p>Typy te zasługują na szczególną uwagę, ponieważ są traktowane trochę inaczej niż inne typy w Propelu. Wyniki dla typów LOB są zwracane jako obiekty typu <strong>creole.util.Blob</strong> lub <strong>creole.util.Clob</strong>. Te klasy dostarczają kilku użytecznych metod (np.  pozwalających zapisać do pliku, lub do bufora). Dodatkowo implementują metodę <strong>__toString()</strong>, więc kod użytkujący może zignorować obiekty.
+<em>Uwaga: W PHP5.0.0RC1 automatyczne wywołanie metody <strong>__toString()</strong> zostało wyłączone. Od teraz musisz jawnie wywołać metodę <strong>__toSring()</strong> wybranego obiektu.</em></p>
 <p>Spójrz na poniższy przykład:</p>
 <pre title="LOB column declaration">&lt;table name=&quot;lob_test&quot;&gt;
   &lt;column name=&quot;photo&quot; type=&quot;BLOB&quot;/&gt;
@@ -85,7 +85,7 @@ $bits = $lob-&gt;getPhoto()->__toString(); // yuk, we know; convince php devs to
 <p>albo wywołujemy metodę<strong>Lob::getContents()</strong> bezpośrednio:</p>
 <pre title="Explicitly retrieving LOB contents">$bits = $lob-&gt;getPhoto()-&gt;getContents();
 </pre>
-<p>albo wkorzystujemy zaawansowane możliwości i zapisujemy obiekt do pliku:</p>
+<p>albo wykorzystujemy zaawansowane możliwości i zapisujemy obiekt do pliku:</p>
 <pre title="Writing LOB contents to file">$lob-&gt;getPhoto()-&gt;writeToFile('/tmp/photo.gif');
 </pre>
 <p>albo zrzucamy zawartość do bufora:</p>
@@ -98,7 +98,7 @@ $bits = $lob-&gt;getPhoto()->__toString(); // yuk, we know; convince php devs to
   <li>TIME</li>
   <li>TIMESTAMP</li>
 </ul>
-<p>Większość baz danych wspiera te typy. Warto zauważyć, że MySQL mapuje typ TIMESTAMP do DATETIME. Creole transformuje daty i czas do domyslnych wartości dla Twojej lokalizacji, wprowadzając spójność pomiedzy {backends} bazy danych.</p>
+<p>Większość baz danych wspiera te typy. Warto zauważyć, że MySQL mapuje typ TIMESTAMP do DATETIME. Creole transformuje daty i czas do domyślnych wartości dla Twojej lokalizacji, wprowadzając spójność pomiędzy {backends} bazy danych.</p>
 <pre title="numeric column declaration">&lt;table name=&quot;date_test&quot;&gt;
   &lt;column name=&quot;birth_date&quot; type=&quot;DATE&quot;/&gt;
   &lt;column name=&quot;birth_time&quot; type=&quot;TIME&quot;/&gt;
