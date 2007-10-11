@@ -376,10 +376,9 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	 */
 	public function get".$this->getFKPhpNameAffix($fk, $plural = false)."(\$con = null)
 	{
-		// include the related Peer class
-		include_once '".$fkPeerBuilder->getClassFilePath()."';
-
 		if (\$this->$varName === null && ($conditional)) {
+			// include the related Peer class
+			include_once '".$fkPeerBuilder->getClassFilePath()."';
 ";
 		$script .= "
 			\$this->$varName = ".$fkPeerBuilder->getPeerClassname()."::".$fkPeerBuilder->getRetrieveMethodName()."($arglist, \$con);
