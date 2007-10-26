@@ -120,6 +120,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$this->addInsertAsLastChildOf($script);
 		$this->addInsertAsPrevSiblingOf($script);
 		$this->addInsertAsNextSiblingOf($script);
+		$this->addInsertAsParentOf($script);
 
 		$this->addInsertRoot($script);
 		$this->addInsertParent($script);
@@ -153,7 +154,6 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$this->addIsRoot($script);
 		$this->addIsLeaf($script);
 		$this->addIsChildOf($script);
-		$this->addIsChildOfOrSiblingTo($script);
 		$this->addIsEqualTo($script);
 
 		$this->addHasParent($script);
@@ -194,6 +194,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$left_colname = '';
 		$right_colname = '';
 		$scope_colname = null;
+		$parent_colname = '';
 
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetLeftKey()) {
@@ -208,7 +209,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 				$scope_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
-			if (!empty($right_name) && !empty($left_colname) && !empty($scope_colname)) {
+			if ($col->isNestedSetParentKey()) {
+				$parent_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
+			}
+
+			if (!empty($right_name) && !empty($left_colname) && !empty($scope_colname) && !empty($parent_colname)) {
 				break;
 			}
 		}
@@ -227,6 +232,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * Scope column for the set
 	 */
 	 const SCOPE_COL = " . var_export($scope_colname, true) . ";
+
+	/**
+	 * Parent column for the set
+	 */
+	 const PARENT_COL = " . var_export($parent_colname, true) . ";
 ";
 	}
 
@@ -249,6 +259,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		\$node->setLeftValue(1);
 		\$node->setRightValue(2);
+		\$node->setParentIdValue(0);
 	}
 ";
 	}
@@ -291,6 +302,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$child	Propel object for child node
 	 * @param      $objectClassname \$parent	Propel object for parent node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsFirstChildOf(BaseNodeObject \$child, BaseNodeObject \$parent, PropelPDO \$con = null)
 	{
@@ -324,6 +336,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$child		Propel object for child node
 	 * @param      $objectClassname \$parent	Propel object for parent node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsLastChildOf(BaseNodeObject \$child, BaseNodeObject \$parent, PropelPDO \$con = null)
 	{
@@ -360,6 +373,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$node		Propel object for destination node
 	 * @param      $objectClassname \$sibling	Propel object for source node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsPrevSiblingOf(BaseNodeObject \$node, BaseNodeObject \$sibling, PropelPDO \$con = null)
 	{
@@ -372,7 +386,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$node->setParentNode(\$sibling->retrieveParent());
 
 		\$sidv = null;
-		if ( self::SCOPE_COL) {
+		if (self::SCOPE_COL) {
 			\$node->setScopeIdValue(\$sidv = \$sibling->getScopeIdValue());
 		}
 
@@ -393,7 +407,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$node		Propel object for destination node
 	 * @param      $objectClassname \$sibling	Propel object for source node
 	 * @param      PropelPDO \$con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public static function insertAsNextSiblingOf(BaseNodeObject \$node, BaseNodeObject \$sibling, PropelPDO \$con = null)
 	{
@@ -416,6 +430,47 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 ";
 	}
 
+	protected function addInsertAsParentOf(&$script)
+	{
+		$objectClassname = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Inserts node as parent of given node.
+	 *
+	 * @param      $objectClassname \$parent	Propel object for given parent node
+	 * @param      $objectClassname \$node	Propel object for given destination node
+	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
+	 * @throws     Exception      When trying to insert node as parent of a root node
+	 */
+	public function insertAsParentOf(BaseNodeObject \$parent, BaseNodeObject \$node, PropelPDO \$con = null)
+	{
+		if (\$node->isRoot())
+		{
+			throw new Exception('Impossible to insert a node as parent of a root node');
+		}
+
+		self::shiftRLValues(\$node->getLeftValue(), 1, \$con, \$node->getScopeIdValue());
+		self::shiftRLValues(\$node->getRightValue() + 2, 1, \$con, \$node->getScopeIdValue());
+
+		\$sidv = null;
+		if (self::SCOPE_COL) {
+			\$parent->setScopeIdValue(\$sidv = \$node->getScopeIdValue());
+		}
+
+		\$parent->setLeftValue(\$node->getLeftValue());
+		\$parent->setRightValue(\$node->getRightValue() + 2);
+
+		\$previous_parent = \$node->retrieveParent();
+		\$parent->setParentNode(\$previous_parent);
+		\$node->setParentNode(\$parent);
+
+		\$node->save();
+	}
+";
+	}
+
 	protected function addInsertRoot(&$script)
 	{
 		$objectClassname = $this->getStubObjectBuilder()->getClassname();
@@ -426,7 +481,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 *
 	 * @param      $objectClassname \$node	Propel object as root node
 	 * @param      PropelPDO \$con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public static function insertRoot(BaseNodeObject \$node, PropelPDO \$con = null)
 	{
@@ -451,7 +506,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$child	Propel object to become child node
 	 * @param      $objectClassname \$parent	Propel object as parent node
 	 * @param      PropelPDO \$con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public static function insertParent(BaseNodeObject \$child, BaseNodeObject \$parent, PropelPDO \$con = null)
 	{
@@ -1061,25 +1116,6 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function isChildOf(BaseNodeObject \$child, BaseNodeObject \$parent)
 	{
 		return ((\$child->getLeftValue()>\$parent->getLeftValue()) && (\$child->getRightValue()<\$parent->getRightValue()));
-	}
-";
-	}
-
-	protected function addIsChildOfOrSiblingTo(&$script)
-	{
-		$objectClassname = $this->getStubObjectBuilder()->getClassname();
-		$peerClassname = $this->getStubPeerBuilder()->getClassname();
-		$script .= "
-	/**
-	 * Tests if \$node1 is a child of or equal to \$node2
-	 *
-	 * @param      $objectClassname \$node1		Propel object for node
-	 * @param      $objectClassname \$node2		Propel object for node
-	 * @return     bool
-	 */
-	public static function isChildOfOrSiblingTo(BaseNodeObject \$node1, BaseNodeObject \$node2)
-	{
-		return ((\$node1->getLeftValue()>=\$node2->getLeftValue()) && (\$node1->getRightValue()<=\$node2->getRightValue()));
 	}
 ";
 	}

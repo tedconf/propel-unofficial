@@ -106,7 +106,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Sets the children array of the node in the tree
 	 *
-	 * @param      array of Menu $children	array of Propel node object
+	 * @param      array of Node $children	array of Propel node object
 	 * @return     void
 	 */
 	public function setChildren(array $children);
@@ -114,15 +114,15 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Sets the parentNode of the node in the tree
 	 *
-	 * @param      Menu $node Propel node object
+	 * @param      Node $parent Propel node object
 	 * @return     void
 	 */
-	public function setParentNode(BaseNodeObject $node = null);
+	public function setParentNode(BaseNodeObject $parent = null);
 
 	/**
 	 * Sets the previous sibling of the node in the tree
 	 *
-	 * @param      Menu $node Propel node object
+	 * @param      Node $node Propel node object
 	 * @return     void
 	 */
 	public function setPrevSibling(BaseNodeObject $node);
@@ -130,7 +130,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Sets the next sibling of the node in the tree
 	 *
-	 * @param      Menu $node Propel node object
+	 * @param      Node $node Propel node object
 	 * @return     void
 	 */
 	public function setNextSibling(BaseNodeObject $node);
@@ -233,7 +233,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 *
 	 * @param      object $parent	Propel object for given destination node
 	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsFirstChildOf(BaseNodeObject $parent, PropelPDO $con = null);
 
@@ -242,27 +242,37 @@ interface BaseNodeObject extends IteratorAggregate {
 	 *
 	 * @param      object $parent	Propel object for given destination node
 	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsLastChildOf(BaseNodeObject $parent, PropelPDO $con = null);
 
 	/**
-	 * Inserts $node as previous sibling to destination node $dest
+	 * Inserts node as previous sibling to destination node $dest
 	 *
 	 * @param      object $dest	Propel object for given destination node
 	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsPrevSiblingOf(BaseNodeObject $dest, PropelPDO $con = null);
 
 	/**
-	 * Inserts $node as next sibling to destination node $dest
+	 * Inserts node as next sibling to destination node $dest
 	 *
 	 * @param      object $dest	Propel object for given destination node
 	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsNextSiblingOf(BaseNodeObject $dest, PropelPDO $con = null);
+
+	/**
+	 * Inserts node as parent of given node.
+	 *
+	 * @param      object $node  Propel object for given destination node
+	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
+	 * @throws     Exception      When trying to insert node as parent of a root node
+	 */
+	public function insertAsParentOf(BaseNodeObject $node, PropelPDO $con = null);
 
 	/**
 	 * Wraps the getter for the left value
@@ -284,6 +294,13 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * @return     int
 	 */
 	public function getScopeIdValue();
+
+	/**
+	 * Wraps the getter for the parent value
+	 *
+	 * @return     int
+	 */
+	public function getParentIdValue();
 
 	/**
 	 * Set the value left column
@@ -308,4 +325,12 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * @return     void
 	 */
 	public function setScopeIdValue($v);
+
+	/**
+	 * Set the value of parent column
+	 *
+	 * @param      int $v new value
+	 * @return     void
+	 */
+	public function setParentIdValue($v);
 } // BaseNodeObject

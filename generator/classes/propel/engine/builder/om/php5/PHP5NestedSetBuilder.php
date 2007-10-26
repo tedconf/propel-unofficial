@@ -120,8 +120,6 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$this->addGetChildren($script);
 		$this->addGetDescendants($script);
 
-
-
 		$this->addSetLevel($script);
 
 		$this->addSetChildren($script);
@@ -150,13 +148,17 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$this->addInsertAsPrevSiblingOf($script);
 		$this->addInsertAsNextSiblingOf($script);
 
+		$this->addInsertAsParentOf($script);
+
 		$this->addGetLeft($script);
 		$this->addGetRight($script);
 		$this->addGetScopeId($script);
+		$this->addGetParent($script);
 
 		$this->addSetLeft($script);
 		$this->addSetRight($script);
 		$this->addSetScopeId($script);
+		$this->addSetParent($script);
 	}
 
 	/**
@@ -369,12 +371,16 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Sets the parentNode of the node in the tree
 	 *
-	 * @param      $objectClassName \$node Propel node object
+	 * @param      $objectClassName \$parent Propel node object
 	 * @return     void
 	 */
-	public function setParentNode(BaseNodeObject \$node = null)
+	public function setParentNode(BaseNodeObject \$parent = null)
 	{
-		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$node))) ? \$node : null;
+		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$parent))) ? \$parent : null;
+		if(\$this->hasParentNode)
+		{
+			\$this->setParentIdValue(\$parent->getPrimaryKey());
+		}
 	}
 ";
 	}
@@ -755,11 +761,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 *
 	 * @param      object \$parent	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsFirstChildOf(BaseNodeObject \$parent, PropelPDO \$con = null)
 	{
-		return $peerClassname::insertAsFirstChildOf(\$this, \$parent, \$con);
+		$peerClassname::insertAsFirstChildOf(\$this, \$parent, \$con);
 	}
 ";
 	}
@@ -773,11 +779,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 *
 	 * @param      object \$parent	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsLastChildOf(BaseNodeObject \$parent, PropelPDO \$con = null)
 	{
-		return $peerClassname::insertAsLastChildOf(\$this, \$parent, \$con);
+		$peerClassname::insertAsLastChildOf(\$this, \$parent, \$con);
 	}
 ";
 	}
@@ -791,11 +797,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsPrevSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
 	{
-		return $peerClassname::insertAsPrevSiblingOf(\$this, \$dest, \$con);
+		$peerClassname::insertAsPrevSiblingOf(\$this, \$dest, \$con);
 	}
 ";
 	}
@@ -809,11 +815,30 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 *
 	 * @param      object \$dest	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public function insertAsNextSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
 	{
-		return $peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
+		$peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
+	}
+";
+	}
+
+	protected function addInsertAsParentOf(&$script)
+	{
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Inserts node as parent of given node.
+	 *
+	 * @param      object \$node Propel object for destination node
+	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
+	 * @throws     Exception      When trying to insert node as parent of a root node
+	 */
+	public function insertAsParentOf(BaseNodeObject \$node, PropelPDO \$con = null)
+	{
+		$peerClassname::insertAsParentOf(\$this, \$node, \$con);
 	}
 ";
 	}
@@ -889,6 +914,35 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		if ($scope_col_getter_name) {
 			$script .= "
 		return \$this->$scope_col_getter_name();";
+		}
+		$script .= "
+	}
+";
+	}
+
+	protected function addGetParent(&$script)
+	{
+		$table = $this->getTable();
+
+		$parent_col_getter_name = null;
+		foreach ($table->getColumns() as $col) {
+			if ($col->isNestedSetParentKey()) {
+				$parent_col_getter_name = 'get'.$col->getPhpName();
+				break;
+			}
+		}
+
+		$script .= "
+	/**
+	 * Wraps the getter for the parent value
+	 *
+	 * @return     int
+	 */
+	public function getParentIdValue()
+	{";
+		if ($parent_col_getter_name) {
+			$script .= "
+		return \$this->$parent_col_getter_name();";
 		}
 		$script .= "
 	}
@@ -973,7 +1027,35 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$script .= "
 	}
 ";
-
 	}
 
+	protected function addSetParent(&$script)
+	{
+		$table = $this->getTable();
+
+		$parent_col_setter_name = null;
+		foreach ($table->getColumns() as $col) {
+			if ($col->isNestedSetParentKey()) {
+				$parent_col_setter_name = 'set'.$col->getPhpName();
+				break;
+			}
+		}
+
+		$script .= "
+	/**
+	 * Set the value of parent column
+	 *
+	 * @param      int \$v new value
+	 * @return     void
+	 */
+	public function setParentIdValue(\$v)
+	{";
+		if ($parent_col_setter_name) {
+			$script .= "
+		\$this->$parent_col_setter_name(\$v);";
+		}
+		$script .= "
+	}
+";
+	}
 } // PHP5NestedSetBuilder
