@@ -444,7 +444,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @return     void
 	 * @throws     Exception      When trying to insert node as parent of a root node
 	 */
-	public function insertAsParentOf(BaseNodeObject \$parent, BaseNodeObject \$node, PropelPDO \$con = null)
+	public static function insertAsParentOf(BaseNodeObject \$parent, BaseNodeObject \$node, PropelPDO \$con = null)
 	{
 		if (\$node->isRoot())
 		{

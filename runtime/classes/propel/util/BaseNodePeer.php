@@ -88,7 +88,7 @@ interface BaseNodePeer {
 	 * @param      PropelPDO $con	Connection to use.
 	 * @throws     Exception      When trying to insert node as parent of a root node
 	 */
-	public function insertAsParentOf(BaseNodeObject $parent, BaseNodeObject $node, PropelPDO $con = null);
+	public static function insertAsParentOf(BaseNodeObject $parent, BaseNodeObject $node, PropelPDO $con = null);
 
 	/**
 	 * Inserts $node as root node
