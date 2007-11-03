@@ -186,10 +186,6 @@ class DefaultPlatform implements Platform {
 	}
 
 	/**
-	 *
-	 */
-
-	/**
 	 * @see        Platform::quoteIdentifier()
 	 */
 	public function quoteIdentifier($text)
@@ -207,13 +203,13 @@ class DefaultPlatform implements Platform {
 
 	/**
 	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
-	 * @return     boolean 
+	 * @return     boolean
 	 */
 	public function hasStreamBlobImpl()
 	{
 		return false;
 	}
-	
+
 	/**
 	 * @see        Platform::getBooleanString()
 	 */
@@ -221,5 +217,14 @@ class DefaultPlatform implements Platform {
 	{
 		$b = ($b === true || strtolower($b) === 'true' || $b === 1 || $b === '1' || strtolower($b) === 'y' || strtolower($b) === 'yes');
 		return ($b ? '1' : '0');
+	}
+	
+	/**
+	 * Gets the preferred timestamp formatter for setting date/time values.
+	 * @return string
+	 */
+	public function getTimestampFormatter()
+	{
+		return DateTime::ISO8601;
 	}
 }

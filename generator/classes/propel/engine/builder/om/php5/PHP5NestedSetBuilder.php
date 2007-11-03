@@ -314,11 +314,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the level of the node in the tree
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setLevel(\$level)
 	{
 		\$this->level = \$level;
+		return \$this;
 	}
 ";
 	}
@@ -331,11 +332,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the children array of the node in the tree
 	 *
 	 * @param      array of $objectClassName \$children	array of Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setChildren(array \$children)
 	{
 		\$this->_children = \$children;
+		return \$this;
 	}
 ";
 	}
@@ -349,11 +351,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the parentNode of the node in the tree
 	 *
 	 * @param      $objectClassName \$node Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setParentNode(BaseNodeObject \$node = null)
 	{
 		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$node))) ? \$node : null;
+		return \$this;
 	}
 ";
 	}
@@ -367,12 +370,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the previous sibling of the node in the tree
 	 *
 	 * @param      $objectClassName \$node Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setPrevSibling(BaseNodeObject \$node = null)
 	{
 		\$this->prevSibling = \$node;
 		\$this->hasPrevSibling = $peerClassname::isValid(\$node);
+		return \$this;
 	}
 ";
 	}
@@ -386,12 +390,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the next sibling of the node in the tree
 	 *
 	 * @param      $objectClassName \$node Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setNextSibling(BaseNodeObject \$node = null)
 	{
 		\$this->nextSibling = \$node;
 		\$this->hasNextSibling = $peerClassname::isValid(\$node);
+		return \$this;
 	}
 ";
 	}
@@ -548,7 +553,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Tests if object has an ancestor
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
 	public function hasParent(PropelPDO \$con = null)
@@ -584,7 +589,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Determines if the node has previous sibling
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
 	public function hasPrevSibling(PropelPDO \$con = null)
@@ -604,7 +609,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Determines if the node has next sibling
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
 	public function hasNextSibling(PropelPDO \$con = null)
@@ -624,7 +629,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets ancestor for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
 	public function retrieveParent(PropelPDO \$con = null)
@@ -645,7 +650,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets first child if it exists
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
 	public function retrieveFirstChild(PropelPDO \$con = null)
@@ -669,7 +674,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets last child if it exists
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
 	public function retrieveLastChild(PropelPDO \$con = null)
@@ -693,7 +698,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets prev sibling for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
 	public function retrievePrevSibling(PropelPDO \$con = null)
@@ -712,7 +717,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets next sibling for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con      Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
 	public function retrieveNextSibling(PropelPDO \$con = null)
@@ -733,7 +738,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts as first child of given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
 	public function insertAsFirstChildOf(BaseNodeObject \$dest, PropelPDO \$con = null)
@@ -751,7 +756,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts as last child of given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
 	public function insertAsLastChildOf(BaseNodeObject \$dest, PropelPDO \$con = null)
@@ -769,7 +774,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts \$node as previous sibling to given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
 	public function insertAsPrevSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
@@ -787,7 +792,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts \$node as next sibling to given destination node \$dest
 	 *
 	 * @param      object \$dest	Propel object for destination node
-	 * @param      PropelPDO Connection to use.
+	 * @param      PropelPDO \$con Connection to use.
 	 * @return     object		Inserted propel object for model
 	 */
 	public function insertAsNextSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
@@ -890,11 +895,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value left column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setLeftValue(\$v)
 	{
 		\$this->$left_col_setter_name(\$v);
+		return \$this;
 	}
 ";
 	}
@@ -915,11 +921,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value of right column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setRightValue(\$v)
 	{
 		\$this->$right_col_setter_name(\$v);
+		return \$this;
 	}
 ";
 	}

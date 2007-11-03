@@ -492,7 +492,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 *
 	 * @param      Criteria \$criteria
 	 * @param      boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
-	 * @param      PropelPropelPDO \$con
+	 * @param      PropelPDO \$con
 	 * @return     int Number of matching rows.
 	 */
 	public static function doCount(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
@@ -898,7 +898,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 			foreach ($col->getChildren() as $child) {
 				$script .= "
-				case self::CLASSKEY_".$child->getKey().":
+				case self::CLASSKEY_".strtoupper($child->getKey()).":
 					\$omClass = self::CLASSNAME_".strtoupper($child->getKey()).";
 					break;
 ";

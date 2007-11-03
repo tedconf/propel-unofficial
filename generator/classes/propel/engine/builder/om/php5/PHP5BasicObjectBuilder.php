@@ -529,7 +529,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 				\$this->$clo = fopen('php://memory', 'r+');
 				fwrite(\$this->$clo, \$row[0]);
 				rewind(\$this->$clo);
-			} else { 
+			} else {
 				\$this->$clo = null;
 			}";
 		} elseif ($col->isPhpPrimitiveType()) {
@@ -542,7 +542,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			$script .= "
 			\$this->$clo = \$row[0];";
 		}
-		
+
 		$script .= "
 			\$this->".$clo."_isLoaded = true;
 		} catch (Exception \$e) {
@@ -577,7 +577,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * Set the value of [$clo] column.
 	 * ".$col->getDescription()."
 	 * @param      ".$col->getPhpType()." \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	".$visibility." function set$cfc(\$v)
 	{";
@@ -602,6 +602,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	protected function addMutatorClose(&$script, Column $col)
 	{
 		$script .= "
+		return \$this;
 	} // set".$col->getPhpName()."()
 ";
 	}
@@ -617,9 +618,9 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$this->addMutatorOpen($script, $col);
 		$clo = strtolower($col->getName());
 		$script .= "
-		// Because BLOB columns are streams in PDO we have to assume that they are 
+		// Because BLOB columns are streams in PDO we have to assume that they are
 		// always modified when a new value is passed in.  For example, the contents
-		// of the stream itself may have changed externally.		
+		// of the stream itself may have changed externally.
 		if (!is_resource(\$v)) {
 			\$this->$clo = fopen('php://memory', 'r+');
 			fwrite(\$this->$clo, \$v);
@@ -644,24 +645,26 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$clo = strtolower($col->getName());
 
 		$this->addMutatorOpen($script, $col);
-
+		
+		$fmt = var_export($this->getPlatform()->getTimestampFormatter(), true);
+		
 		$script .= "
 		if (\$v === null) {
 			\$date = null;
 		} elseif (\$v instanceof DateTime) {
-			\$date = \$v->format(DateTime::ISO8601);
+			\$date = \$v->format($fmt);
 		} else {
 			// some string/numeric value passed
 			try {
 				if (is_numeric(\$v)) { // if it's a unix timestamp
-					\$dt = new PropelDateTime(date(DateTime::ISO8601, \$v));
+					\$dt = new PropelDateTime(date($fmt, \$v));
 				} else {
 					\$dt = new PropelDateTime(\$v);
 				}
 			} catch (Exception \$x) {
 				throw new PropelException('Error parsing date/time value: ' . var_export(\$v, true), \$x);
 			}
-			\$date = \$dt->format(DateTime::ISO8601);
+			\$date = \$dt->format($fmt);
 		}
 
 		// For date/time columns we have to compare the formatting
@@ -709,10 +712,10 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 ";
 		} elseif ($col->getPhpType() === "boolean") {
 			$script .= "
-		// Make sure that the value will be a boolean (to keep the instance to 
+		// Make sure that the value will be a boolean (to keep the instance to
 		// think it has changed when it went for instance from true to 1
 		\$v = \$v ? true : false;
-";		
+";
 		}
 
 		$script .= "
@@ -837,7 +840,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 				\$this->$clo = fopen('php://memory', 'r+');
 				fwrite(\$this->$clo, \$row[\$startcol + $n]);
 				rewind(\$this->$clo);
-			} else { 
+			} else {
 				\$this->$clo = null;
 			}";
 				} elseif ($col->isPhpPrimitiveType()) {
@@ -1213,7 +1216,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 ";
 
 		// support for lazy load columns
-		foreach($this->getTable()->getColumns() as $col) {
+		foreach ($this->getTable()->getColumns() as $col) {
 			if ($col->isLazyLoad()) {
 				$clo = strtolower($col->getName());
 				$script .= "
