@@ -30,19 +30,24 @@
 interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * If object is saved without left/right values, set them as undefined (0)
+	 *
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public function save(PropelPDO $con = null);
 
 	/**
 	 * Delete node and descendants
+	 *
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public function delete(PropelPDO $con = null);
 
 	/**
 	 * Sets node properties to make it a root node.
 	 *
+	 * @return     $this
 	 * @throws     PropelException
 	 */
 	public function makeRoot();
@@ -99,7 +104,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Sets the level of the node in the tree
 	 *
 	 * @param      int $v new value
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setLevel($level);
 
@@ -107,7 +112,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Sets the children array of the node in the tree
 	 *
 	 * @param      array of Node $children	array of Propel node object
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setChildren(array $children);
 
@@ -115,7 +120,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Sets the parentNode of the node in the tree
 	 *
 	 * @param      Node $parent Propel node object
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setParentNode(BaseNodeObject $parent = null);
 
@@ -123,7 +128,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Sets the previous sibling of the node in the tree
 	 *
 	 * @param      Node $node Propel node object
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setPrevSibling(BaseNodeObject $node);
 
@@ -131,7 +136,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Sets the next sibling of the node in the tree
 	 *
 	 * @param      Node $node Propel node object
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setNextSibling(BaseNodeObject $node);
 
@@ -292,7 +297,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Set the value of scope column
 	 *
 	 * @param      int $v new value
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setScopeIdValue($v);
 
@@ -300,7 +305,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * Set the value of parent column
 	 *
 	 * @param      int $v new value
-	 * @return     void
+	 * @return     $this
 	 */
 	public function setParentIdValue($v);
 } // BaseNodeObject
