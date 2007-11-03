@@ -116,4 +116,13 @@ class PgsqlPlatform extends DefaultPlatform {
 	{
 		return !("BYTEA" == $sqlType || "TEXT" == $sqlType);
 	}
+
+	/**
+	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
+	 * @return     boolean 
+	 */
+	public function hasStreamBlobImpl()
+	{
+		return true;
+	}
 }

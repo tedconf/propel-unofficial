@@ -194,7 +194,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$con = Propel::getConnection(BookstoreEmployeeAccountPeer::DATABASE_NAME);
 		$con->exec("UPDATE " . BookPeer::TABLE_NAME . " SET "
 						. " publisher_id = " . $pub2->getId()
-						. " WHERE id = " . $book->getId());
+		. " WHERE id = " . $book->getId());
 
 
 		$book2 = BookPeer::retrieveByPK($book->getId());
@@ -207,7 +207,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$con->exec("UPDATE " . BookPeer::TABLE_NAME . " SET "
 						. " publisher_id = " . $pub1->getId()
-						. " WHERE id = " . $book->getId());
+		. " WHERE id = " . $book->getId());
 
 		$book->reload();
 
@@ -233,6 +233,33 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$a->reload();
 
 		$this->assertEquals($origName, $a->getFirstName());
+		$this->assertFalse($a->isModified());
+		
+	}
+	
+	/**
+	 * Test reload(deep=true) method.
+	 */
+	public function testReloadDeep()
+	{
+		// arbitrary book
+		$b = BookPeer::doSelectOne(new Criteria());
+		
+		// arbitrary, different author
+		$c = new Criteria();
+		$c->add(AuthorPeer::ID, $b->getAuthorId(), Criteria::NOT_EQUAL);
+		$a = AuthorPeer::doSelectOne($c);
+
+		$origAuthor = $b->getAuthor();
+			
+		$b->setAuthor($a);
+		
+		$this->assertNotEquals($origAuthor, $b->getAuthor(), "Expected just-set object to be different from obj from DB");
+		$this->assertTrue($b->isModified());
+
+		$b->reload($deep=true);
+
+		$this->assertEquals($origAuthor, $b->getAuthor(), "Expected object in DB to be restored");
 		$this->assertFalse($a->isModified());
 	}
 
@@ -272,13 +299,13 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		// modify the related author
 		$author->setLastName("Kurlanski");
-  		$affected = $book->save();
+		$affected = $book->save();
 		$this->assertEquals(1, $affected, "Expected 1 affected row when saving book with updated author.");
 
 		// modify both the related author and the book
 		$author->setLastName("Kurlansky");
 		$book->setTitle("Salt: A World History");
-  		$affected = $book->save();
+		$affected = $book->save();
 		$this->assertEquals(2, $affected, "Expected 2 affected rows when saving updated book with updated author.");
 
 	}
@@ -520,5 +547,169 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$acct->setPassword("bar");
 		$this->assertFalse($acct->hasOnlyDefaultValues(), "Expected BookstoreEmployeeAccount to have at one non-default value after setting one value to non-default.");
 	}
+	
+	/**
+	 * Test the LOB results returned in a resultset.
+	 */
+	public function testLobResults()
+	{
 
+		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
+		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
+		
+		$book = BookPeer::doSelectOne(new Criteria());
+		
+		$m1 = new Media();
+		$m1->setBook($book);
+		$m1->setCoverImage(file_get_contents($blob_path));
+		$m1->setExcerpt(file_get_contents($clob_path));
+		$m1->save();
+		$m1_id = $m1->getId();
+		
+		$m1->reload();
+		
+		$img = $m1->getCoverImage();
+		$txt = $m1->getExcerpt();
+		
+		$this->assertType('resource', $img, "Expected results of BLOB method to be a resource.");
+		$this->assertType('string', $txt, "Expected results of CLOB method to be a string.");
+		
+		$stat = fstat($img);
+		$size = $stat['size'];
+		
+		$this->assertEquals(filesize($blob_path), $size, "Expected filesize to match stat(blobrsc)");
+		$this->assertEquals(filesize($clob_path), strlen($txt), "Expected filesize to match clob strlen");
+	}
+	
+	/**
+	 * Tests the setting of LOB (BLOB and CLOB) values.
+	 */
+	public function testLobSetting()
+	{
+		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
+		$blob2_path = TESTS_BASE_DIR . '/etc/lob/propel.gif';
+		
+		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
+		$book = BookPeer::doSelectOne(new Criteria());
+		
+		$m1 = new Media();
+		$m1->setBook($book);
+		$m1->setCoverImage(file_get_contents($blob_path));
+		$m1->setExcerpt(file_get_contents($clob_path));
+		$m1->save();
+		$m1_id = $m1->getId();
+		
+		// 1) Assert that we've got a valid stream to start with
+		$img = $m1->getCoverImage();
+		$this->assertType('resource', $img, "Expected results of BLOB method to be a resource.");
+		
+		// 2) Test setting a BLOB column with file contents
+		$m1->setCoverImage(file_get_contents($blob2_path));
+		$this->assertType('resource', $m1->getCoverImage(), "Expected to get a resource back after setting BLOB with file contents.");
+		
+		// commit those changes & reload
+		$m1->save();
+		
+		// 3) Verify that we've got a valid resource after reload
+		$m1->reload();
+		$this->assertType('resource', $m1->getCoverImage(), "Expected to get a resource back after setting reloading object.");
+		
+		// 4) Test isModified() behavior
+		$fp = fopen("php://temp", "r+");
+		fwrite($fp, file_get_contents($blob2_path));
+		
+		$m1->setCoverImage($fp);
+		$this->assertTrue($m1->isModified(), "Expected Media object to be modified, despite fact that stream is to same data");
+		
+		// 5) Test external modification of the stream (and re-setting it into the object)
+		$stream = $m1->getCoverImage();
+		fwrite($stream, file_get_contents($blob_path)); // change the contents of the stream
+		
+		$m1->setCoverImage($stream);
+		
+		$this->assertTrue($m1->isModified(), "Expected Media object to be modified when stream contents changed.");
+		$this->assertNotEquals(file_get_contents($blob2_path), stream_get_contents($m1->getCoverImage()));
+		
+		$m1->save();
+		
+		// 6) Assert that when we call the setter with a stream, that the file in db gets updated.
+
+		$m1->reload(); // start with a fresh copy from db
+		
+		// Ensure that object is set up correctly
+		$this->assertNotEquals(file_get_contents($blob_path), stream_get_contents($m1->getCoverImage()), "The object is not correctly set up to verify the stream-setting test.");
+		
+		$fp = fopen($blob_path, "r");
+		$m1->setCoverImage($fp);
+		$m1->save();
+		$m1->reload(); // refresh from db
+		
+		// Assert that we've updated the db
+		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($m1->getCoverImage()), "Expected the updated BLOB value after setting with a stream.");
+		
+		// 7) Assert that 'w' mode works
+		
+	}
+	
+	public function testLobSetting_WriteMode()
+	{
+		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
+		$blob2_path = TESTS_BASE_DIR . '/etc/lob/propel.gif';
+		
+		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
+		$book = BookPeer::doSelectOne(new Criteria());
+		
+		$m1 = new Media();
+		$m1->setBook($book);
+		$m1->setCoverImage(file_get_contents($blob_path));
+		$m1->setExcerpt(file_get_contents($clob_path));
+		$m1->save();
+		
+		MediaPeer::clearInstancePool();
+		
+		// make sure we have the latest from the db:
+		$m2 = MediaPeer::retrieveByPK($m1->getId());
+		
+		// now attempt to assign a temporary stream, opened in 'w' mode, to the db
+		
+		$stream = fopen("php://memory", 'w');
+		fwrite($stream, file_get_contents($blob2_path));
+		$m2->setCoverImage($stream);
+		$m2->save();
+		fclose($stream);
+		
+		$m2->reload();
+		$this->assertEquals(file_get_contents($blob2_path), stream_get_contents($m2->getCoverImage()), "Expected contents to match when setting stream w/ 'w' mode");		
+		
+		$stream2 = fopen("php://memory", 'w+');
+		fwrite($stream2, file_get_contents($blob_path));
+		rewind($stream2);
+		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($stream2), "Expecting setup to be correct");
+		
+		$m2->setCoverImage($stream2);
+		$m2->save();
+		$m2->reload();
+		
+		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($m2->getCoverImage()), "Expected contents to match when setting stream w/ 'w+' mode");
+		
+	}
+	
+	
+	public function testDefaultFkColVal()
+	{
+		$sale = new BookstoreSale();
+		$this->assertEquals(1, $sale->getBookstoreId(), "Expected BookstoreSale object to have a default ID.");
+		
+		$bookstore = BookstorePeer::doSelectOne(new Criteria());
+		
+		$sale->setBookstore($bookstore);
+		$this->assertEquals($bookstore->getId(), $sale->getBookstoreId(), "Expected FK id to have changed when assigned a valid FK.");
+		
+		$sale->setBookstore(null);
+		$this->assertEquals(1, $sale->getBookstoreId(), "Expected BookstoreSale object to have reset to default ID.");
+		
+		$sale->setPublisher(null);
+		$this->assertEquals(null, $sale->getPublisherId(), "Expected BookstoreSale object to have reset to NULL publisher ID.");
+	}
+	
 }

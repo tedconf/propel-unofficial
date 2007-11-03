@@ -57,11 +57,11 @@ class PHP5BasicObjectBuilder extends ObjectBuilder {
 	/**
 	 * Returns the type-casted and stringified default value for the specified Column.
 	 * This only works for scalar default values currently.
-	 * @return     string The default value or NULL if there is none.
+	 * @return     string The default value or 'NULL' if there is none.
 	 */
 	protected function getDefaultValueString(Column $col)
 	{
-		$defaultValue = null;
+		$defaultValue = var_export(null, true);
 		if (($val = $col->getPhpDefaultValue()) !== null) {
 			if ($col->isPhpPrimitiveType()) {
 				settype($val, $col->getPhpType());
@@ -345,7 +345,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			$script .= "
 		\$this->".$clo." = ".$this->getDefaultValueString($col).";";
 		}
-	$script .= "
+		$script .= "
 	}
 ";
 
@@ -367,6 +367,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		$cfc=$col->getPhpName();
 		$clo=strtolower($col->getName());
+		$visibility=$col->getAccessorVisibility();
 
 		// these default values are based on the Creole defaults
 		// the date and time default formats are locale-sensitive
@@ -403,7 +404,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$script .= "
 	 * @throws     PropelException - if unable to convert the date/time value to DateTime object.
 	 */
-	public function get$cfc(\$format = ".var_export($defaultfmt, true)."";
+	".$visibility." function get$cfc(\$format = ".var_export($defaultfmt, true)."";
 		if ($col->isLazyLoad()) $script .= ", \$con = null";
 		$script .= ")
 	{
@@ -457,6 +458,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		$cfc=$col->getPhpName();
 		$clo=strtolower($col->getName());
+		$visibility=$col->getAccessorVisibility();
 
 		$script .= "
 	/**
@@ -469,7 +471,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$script .= "
 	 * @return     ".$col->getPhpType()."
 	 */
-	public function get$cfc(";
+	".$visibility." function get$cfc(";
 		if ($col->isLazyLoad()) $script .= "PDO \$con = null";
 		$script .= ")
 	{
@@ -496,6 +498,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 */
 	protected function addLazyLoader(&$script, $col)
 	{
+		$platform = $this->getPlatform();
 		$cfc=$col->getPhpName();
 		$clo=strtolower($col->getName());
 
@@ -507,40 +510,39 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * the [$clo] column, since it is not populated by
 	 * the hydrate() method.
 	 *
-	 * @param      \$con PDO
+	 * @param      \$con PDO (optional) The PDO connection to use.
 	 * @return     void
 	 * @throws     PropelException - any underlying error will be wrapped and re-thrown.
 	 */
-	protected function load$cfc(\$con = null)
+	protected function load$cfc(PDO \$con = null)
 	{
 		\$c = \$this->buildPkeyCriteria();
 		\$c->addSelectColumn(".$this->getColumnConstant($col).");
 		try {
 			\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$c, \$con);
-			\$row = \$stmt->fetch(PDO::FETCH_NUM);
-";
-		$clo = strtolower($col->getName());
-		switch($col->getType()) {
-			case PropelTypes::SMALLINT:
-			case PropelTypes::INTEGER:
-				$script .= "
-			\$this->$clo = (\$row[0] !== null) ? (int) \$row[\$startcol + $n] : null;";
-				break;
-			case PropelTypes::BOOLEAN:
-				$script .= "
-			\$this->$clo = (\$row[0] !== null) ? (boolean) \$row[\$startcol + $n] : null;";
-				break;
-			case PropelTypes::REAL:
-			case PropelTypes::DOUBLE:
-			case PropelTypes::FLOAT:
-				$script .= "
-			\$this->$clo = (\$row[0] !== null) ? (float) \$row[\$startcol + $n] : null;";
-				break;
-			default:
-				$script .= "
-			\$this->$clo = \$row[0];";
-		} // switch
+			\$row = \$stmt->fetch(PDO::FETCH_NUM);";
 
+		$clo = strtolower($col->getName());
+		if ($col->isLobType() && !$platform->hasStreamBlobImpl()) {
+			$script .= "
+			if (\$row[0] !== null) {
+				\$this->$clo = fopen('php://memory', 'r+');
+				fwrite(\$this->$clo, \$row[0]);
+				rewind(\$this->$clo);
+			} else { 
+				\$this->$clo = null;
+			}";
+		} elseif ($col->isPhpPrimitiveType()) {
+			$script .= "
+			\$this->$clo = (\$row[0] !== null) ? (".$col->getPhpType().") \$row[0] : null;";
+		} elseif ($col->isPhpObjectType()) {
+			$script .= "
+			\$this->$clo = (\$row[0] !== null) ? new ".$col->getPhpType()."(\$row[0]) : null;";
+		} else {
+			$script .= "
+			\$this->$clo = \$row[0];";
+		}
+		
 		$script .= "
 			\$this->".$clo."_isLoaded = true;
 		} catch (Exception \$e) {
@@ -568,6 +570,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		$cfc=$col->getPhpName();
 		$clo=strtolower($col->getName());
+		$visibility=$col->getMutatorVisibility();
 
 		$script .= "
 	/**
@@ -576,7 +579,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @param      ".$col->getPhpType()." \$v new value
 	 * @return     void
 	 */
-	public function set$cfc(\$v)
+	".$visibility." function set$cfc(\$v)
 	{";
 		if ($col->isLazyLoad()) {
 			$script .= "
@@ -598,7 +601,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 */
 	protected function addMutatorClose(&$script, Column $col)
 	{
-				$script .= "
+		$script .= "
 	} // set".$col->getPhpName()."()
 ";
 	}
@@ -614,14 +617,19 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$this->addMutatorOpen($script, $col);
 		$clo = strtolower($col->getName());
 		$script .= "
-		// FIXME - LOBs need to be streams in PDO; I'm sure there will be special handling here.
-		if (\$this->$clo !== \$v) {
+		// Because BLOB columns are streams in PDO we have to assume that they are 
+		// always modified when a new value is passed in.  For example, the contents
+		// of the stream itself may have changed externally.		
+		if (!is_resource(\$v)) {
+			\$this->$clo = fopen('php://memory', 'r+');
+			fwrite(\$this->$clo, \$v);
+			rewind(\$this->$clo);
+		} else { // it's already a stream
 			\$this->$clo = \$v;
-			\$this->modifiedColumns[] = ".$this->getColumnConstant($col).";
 		}
+		\$this->modifiedColumns[] = ".$this->getColumnConstant($col).";
 ";
 		$this->addMutatorClose($script, $col);
-
 	} // addLobMutatorSnippet
 
 
@@ -678,8 +686,6 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		$clo = strtolower($col->getName());
 
-		$defaultValue = $this->getDefaultValueString($col);
-
 		$this->addMutatorOpen($script, $col);
 
 		// Perform some smart checking here to handle possible type discrepancies
@@ -701,11 +707,18 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			\$v = (string) \$v;
 		}
 ";
+		} elseif ($col->getPhpType() === "boolean") {
+			$script .= "
+		// Make sure that the value will be a boolean (to keep the instance to 
+		// think it has changed when it went for instance from true to 1
+		\$v = \$v ? true : false;
+";		
 		}
 
 		$script .= "
 		if (\$this->$clo !== \$v";
-		if ($defaultValue !== null) {
+		if ($col->getDefaultValue() !== null) {
+			$defaultValue = $this->getDefaultValueString($col);
 			$script .= " || \$v === $defaultValue";
 		}
 		$script .= ") {
@@ -775,8 +788,8 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 				return false;
 			}
 ";
-				} // if value instanceof DateTime
-			}
+			} // if value instanceof DateTime
+		}
 		$script .= "
 		// otherwise, everything was equal, so return TRUE
 		return true;";
@@ -793,6 +806,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	protected function addHydrate(&$script)
 	{
 		$table = $this->getTable();
+		$platform = $this->getPlatform();
 
 		$script .= "
 	/**
@@ -813,32 +827,40 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		try {
 ";
-			$n = 0;
-			foreach ($table->getColumns() as $col) {
-				if (!$col->isLazyLoad()) {
-					// $affix = CreoleTypes::getAffix(CreoleTypes::getCreoleCode($col->getType()));
-					$clo = strtolower($col->getName());
-					if ($col->isPhpPrimitiveType()) {
-						$script .= "
+		$n = 0;
+		foreach ($table->getColumns() as $col) {
+			if (!$col->isLazyLoad()) {
+				$clo = strtolower($col->getName());
+				if ($col->isLobType() && !$platform->hasStreamBlobImpl()) {
+					$script .= "
+			if (\$row[\$startcol + $n] !== null) {
+				\$this->$clo = fopen('php://memory', 'r+');
+				fwrite(\$this->$clo, \$row[\$startcol + $n]);
+				rewind(\$this->$clo);
+			} else { 
+				\$this->$clo = null;
+			}";
+				} elseif ($col->isPhpPrimitiveType()) {
+					$script .= "
 			\$this->$clo = (\$row[\$startcol + $n] !== null) ? (".$col->getPhpType().") \$row[\$startcol + $n] : null;";
-					} elseif ($col->isPhpObjectType()) {
-						$script .= "
+				} elseif ($col->isPhpObjectType()) {
+					$script .= "
 			\$this->$clo = (\$row[\$startcol + $n] !== null) ? new ".$col->getPhpType()."(\$row[\$startcol + $n]) : null;";
-					} else {
-						$script .= "
+				} else {
+					$script .= "
 			\$this->$clo = \$row[\$startcol + $n];";
-					}
-					$n++;
-				} // if col->isLazyLoad()
-			} /* foreach */
+				}
+				$n++;
+			} // if col->isLazyLoad()
+		} /* foreach */
 
-			if ($this->getBuildProperty("addSaveMethod")) {
-				$script .= "
+		if ($this->getBuildProperty("addSaveMethod")) {
+			$script .= "
 			\$this->resetModified();
 ";
-			}
+		}
 
-			$script .= "
+		$script .= "
 			\$this->setNew(false);
 
 			if (\$rehydrate) {
@@ -1002,17 +1024,17 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	public function getByPosition(\$pos)
 	{
 		switch(\$pos) {";
-	$i = 0;
-	foreach ($table->getColumns() as $col) {
-		$cfc = $col->getPhpName();
-		$cptype = $col->getPhpType();// not safe to use it because some methods may return objects (Blob)
-$script .= "
+		$i = 0;
+		foreach ($table->getColumns() as $col) {
+			$cfc = $col->getPhpName();
+			$cptype = $col->getPhpType();// not safe to use it because some methods may return objects (Blob)
+			$script .= "
 			case $i:
 				return \$this->get$cfc();
 				break;";
-		$i++;
-	} /* foreach */
-$script .= "
+			$i++;
+		} /* foreach */
+		$script .= "
 			default:
 				return null;
 				break;
@@ -1161,7 +1183,7 @@ $script .= "
 	 *
 	 * This will only work if the object has been saved and has a valid primary key set.
 	 *
-	 * @param      PDO \$con The (optional) PDO connection to use.
+	 * @param      PDO \$con (optional) The PDO connection to use.
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
@@ -1188,6 +1210,21 @@ $script .= "
 			throw new PropelException('Cannot find matching row in the database to reload object values.');
 		}
 		\$this->hydrate(\$row, 0, true); // rehydrate
+";
+
+		// support for lazy load columns
+		foreach($this->getTable()->getColumns() as $col) {
+			if ($col->isLazyLoad()) {
+				$clo = strtolower($col->getName());
+				$script .= "
+		// Reset the $clo lazy-load column
+		\$this->" . $clo . " = null;
+		\$this->".$clo."_isLoaded = false;
+";
+			}
+		}
+
+		$script .= "
 	}
 ";
 	} // addReload()
@@ -1485,15 +1522,15 @@ $script .= "
 	public function setPrimaryKey(\$keys)
 	{
 ";
-			$i = 0;
-			foreach ($this->getTable()->getPrimaryKey() as $pk) {
-				$pktype = $pk->getPhpType();
-				$script .= "
+		$i = 0;
+		foreach ($this->getTable()->getPrimaryKey() as $pk) {
+			$pktype = $pk->getPhpType();
+			$script .= "
 		\$this->set".$pk->getPhpName()."(\$keys[$i]);
 ";
-				$i++;
-			} /* foreach ($table->getPrimaryKey() */
-			$script .= "
+			$i++;
+		} /* foreach ($table->getPrimaryKey() */
+		$script .= "
 	}
 ";
 	} // addSetPrimaryKey_MultiPK

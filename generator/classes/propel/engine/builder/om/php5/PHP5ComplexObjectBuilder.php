@@ -372,7 +372,7 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 			$colFK = $tblFK->getColumn($colFKName);
 			$script .= "
 		if (\$v === null) {
-			\$this->set".$column->getPhpName()."(".var_export($column->getDefaultValue(), true).");
+			\$this->set".$column->getPhpName()."(".$this->getDefaultValueString($column).");
 		} else {
 			\$this->set".$column->getPhpName()."(\$v->get".$colFK->getPhpName()."());
 		}
@@ -412,7 +412,6 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 	{
 		$table = $this->getTable();
 
-		$className = $this->getForeignTable($fk)->getPhpName();
 		$varName = $this->getFKVarName($fk);
 
 		$and = "";
@@ -441,9 +440,9 @@ class PHP5ComplexObjectBuilder extends PHP5BasicObjectBuilder {
 
 		$pCollName = $this->getFKPhpNameAffix($fk, $plural = true);
 
-		#var_dump($pCollName);
-
 		$fkPeerBuilder = OMBuilder::getNewPeerBuilder($this->getForeignTable($fk));
+                $fkObjectBuilder = OMBuilder::getNewObjectBuilder($this->getForeignTable($fk))->getStubObjectBuilder();
+                $className = $fkObjectBuilder->getClassname(); // get the Classname that has maybe a prefix
 
 		$script .= "
 
@@ -1315,10 +1314,18 @@ $script .= "
 
 ";
 
-		foreach ($table->getReferrers() as $fk) {
-			$tblFK = $fk->getTable();
-			if ( $tblFK->getName() != $table->getName() ) {
-				$collName = $this->getRefFKCollVarName($fk);
+		foreach ($table->getReferrers() as $refFK) {
+			if ($refFK->isLocalPrimaryKey()) {
+				$varName = $this->getPKRefFKVarName($refFK);
+				$script .= "
+				if (\$this->$varName !== null) {
+					if (!\$this->".$varName."->validate(\$columns)) {
+						\$failureMap = array_merge(\$failureMap, \$this->".$varName."->getValidationFailures());
+					}
+				}
+";
+			} else {
+				$collName = $this->getRefFKCollVarName($refFK);
 				$script .= "
 				if (\$this->$collName !== null) {
 					foreach (\$this->$collName as \$referrerFK) {
@@ -1328,7 +1335,7 @@ $script .= "
 					}
 				}
 ";
-			} /* if tableFK !+ table */
+			}
 		} /* foreach getReferrers() */
 
 		$script .= "
@@ -1512,5 +1519,89 @@ $script .= "
 	}
 ";
 	} // addCopyInto()
+
+	/**
+	 * Adds a reload() method to re-fetch the data for this object from the database.
+	 * @param      string &$script The script will be modified in this method.
+	 */
+	protected function addReload(&$script)
+	{
+		$table = $this->getTable();
+		$script .= "
+	/**
+	 * Reloads this object from datastore based on primary key and (optionally) resets all associated objects.
+	 *
+	 * This will only work if the object has been saved and has a valid primary key set.
+	 *
+	 * @param      boolean \$deep (optional) Whether to also de-associated any related objects. 
+	 * @param      PDO \$con (optional) The PDO connection to use.
+	 * @return     void
+	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
+	 */
+	public function reload(\$deep = false, PDO \$con = null)
+	{
+		if (\$this->isDeleted()) {
+			throw new PropelException(\"Cannot reload a deleted object.\");
+		}
+
+		if (\$this->isNew()) {
+			throw new PropelException(\"Cannot reload an unsaved object.\");
+		}
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
+		}
+
+		// We don't need to alter the object instance pool; we're just modifying this instance
+		// already in the pool.
+
+		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$this->buildPkeyCriteria(), \$con);
+		\$row = \$stmt->fetch(PDO::FETCH_NUM);
+		if (!\$row) {
+			throw new PropelException('Cannot find matching row in the database to reload object values.');
+		}
+		\$this->hydrate(\$row, 0, true); // rehydrate
+";
+		
+		// support for lazy load columns
+		foreach($table->getColumns() as $col) {
+			if ($col->isLazyLoad()) {
+				$clo = strtolower($col->getName());
+				$script .= "
+		// Reset the $clo lazy-load column
+		\$this->" . $clo . " = null;
+		\$this->".$clo."_isLoaded = false;
+";
+			}
+		}
+		
+		$script .= "
+		if (\$deep) {  // also de-associate any related objects?
+";
+		
+		foreach ($table->getForeignKeys() as $fk) {
+			$varName = $this->getFKVarName($fk);
+			$script .= "
+			\$this->".$varName." = null;";
+		}
+
+		foreach ($table->getReferrers() as $refFK) {
+			if ($refFK->isLocalPrimaryKey()) {
+				$script .= "
+			\$this->".$this->getPKRefFKVarName($refFK)." = null;
+";
+			} else {
+				$script .= "	
+			\$this->".$this->getRefFKCollVarName($refFK)." = null;
+			\$this->".$this->getRefFKLastCriteriaVarName($refFK)." = null;
+";
+			}
+		}
+		
+		$script .= "
+		} // if (deep)
+	}
+";
+	} // addReload()
 
 } // PHP5ComplexObjectBuilder

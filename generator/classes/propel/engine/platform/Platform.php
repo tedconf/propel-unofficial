@@ -136,5 +136,10 @@ interface Platform {
 	 * @return     mixed
 	 */
 	public function getBooleanString($tf);
-
+	
+	/**
+	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
+	 * @return     boolean 
+	 */
+	public function hasStreamBlobImpl();
 }

@@ -206,6 +206,15 @@ class DefaultPlatform implements Platform {
 	}
 
 	/**
+	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
+	 * @return     boolean 
+	 */
+	public function hasStreamBlobImpl()
+	{
+		return false;
+	}
+	
+	/**
 	 * @see        Platform::getBooleanString()
 	 */
 	public function getBooleanString($b)
