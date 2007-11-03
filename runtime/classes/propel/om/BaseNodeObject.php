@@ -33,6 +33,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 *
 	 * @param      PropelPDO $con	Connection to use.
 	 * @return     void
+	 * @throws     PropelException
 	 */
 	public function save(PropelPDO $con = null);
 
@@ -41,6 +42,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	 *
 	 * @param      PropelPDO $con	Connection to use.
 	 * @return     void
+	 * @throws     PropelException
 	 */
 	public function delete(PropelPDO $con = null);
 
