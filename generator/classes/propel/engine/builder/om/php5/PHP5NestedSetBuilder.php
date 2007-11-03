@@ -442,7 +442,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function getNumberOfDescendants(PDO \$con = null)
 	{
-		return $peerClassname::getNumberOfDescendants(\$node, \$con);
+		return $peerClassname::getNumberOfDescendants(\$this, \$con);
 	}
 ";
 	}
