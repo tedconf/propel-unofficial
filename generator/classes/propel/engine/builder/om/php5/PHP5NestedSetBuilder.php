@@ -897,7 +897,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 		$scope_col_getter_name = null;
 		foreach ($table->getColumns() as $col) {
-			if ($col->isNestedSetScopeKey()) {
+			if ($col->isTreeScopeKey()) {
 				$scope_col_getter_name = 'get'.$col->getPhpName();
 				break;
 			}
@@ -926,7 +926,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 		$parent_col_getter_name = null;
 		foreach ($table->getColumns() as $col) {
-			if ($col->isNestedSetParentKey()) {
+			if ($col->isTreeParentKey()) {
 				$parent_col_getter_name = 'get'.$col->getPhpName();
 				break;
 			}
@@ -1005,7 +1005,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 		$scope_col_setter_name = null;
 		foreach ($table->getColumns() as $col) {
-			if ($col->isNestedSetScopeKey()) {
+			if ($col->isTreeScopeKey()) {
 				$scope_col_setter_name = 'set'.$col->getPhpName();
 				break;
 			}
@@ -1035,7 +1035,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 		$parent_col_setter_name = null;
 		foreach ($table->getColumns() as $col) {
-			if ($col->isNestedSetParentKey()) {
+			if ($col->isTreeParentKey()) {
 				$parent_col_setter_name = 'set'.$col->getPhpName();
 				break;
 			}

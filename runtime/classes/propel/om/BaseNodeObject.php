@@ -275,20 +275,6 @@ interface BaseNodeObject extends IteratorAggregate {
 	public function insertAsParentOf(BaseNodeObject $node, PropelPDO $con = null);
 
 	/**
-	 * Wraps the getter for the left value
-	 *
-	 * @return     int
-	 */
-	public function getLeftValue();
-
-	/**
-	 * Wraps the getter for the right value
-	 *
-	 * @return     int
-	 */
-	public function getRightValue();
-
-	/**
 	 * Wraps the getter for the scope value
 	 *
 	 * @return     int
@@ -301,22 +287,6 @@ interface BaseNodeObject extends IteratorAggregate {
 	 * @return     int
 	 */
 	public function getParentIdValue();
-
-	/**
-	 * Set the value left column
-	 *
-	 * @param      int $v new value
-	 * @return     void
-	 */
-	public function setLeftValue($v);
-
-	/**
-	 * Set the value of right column
-	 *
-	 * @param      int $v new value
-	 * @return     void
-	 */
-	public function setRightValue($v);
 
 	/**
 	 * Set the value of scope column

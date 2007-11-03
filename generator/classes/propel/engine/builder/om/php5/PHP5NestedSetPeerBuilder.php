@@ -205,11 +205,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 				$right_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
-			if ($col->isNestedSetScopeKey()) {
+			if ($col->isTreeScopeKey()) {
 				$scope_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
-			if ($col->isNestedSetParentKey()) {
+			if ($col->isTreeParentKey()) {
 				$parent_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 

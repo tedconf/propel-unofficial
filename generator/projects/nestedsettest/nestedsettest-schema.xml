@@ -23,13 +23,13 @@
 		<column
 			name="parent"
 			required="true"
-			nestedSetParentKey="true"
+			treeParentKey="true"
 			type="INTEGER"
 			description="Node Parent Key"/>
 		<column
 			name="scope"
 			required="true"
-			nestedSetScopeKey="true"
+			treeScopeKey="true"
 			type="INTEGER"
 			description="Node Scope Key"/>
 		<column

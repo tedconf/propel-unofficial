@@ -86,7 +86,8 @@ class Column extends XMLElement {
 	private $nodeKeySep;
 	private $isNestedSetLeftKey = false;
 	private $isNestedSetRightKey = false;
-	private $isNestedSetScopeKey = false;
+	private $isTreeScopeKey = false;
+	private $isTreeParentKey = false;
 	private $isUnique = false;
 	private $isAutoIncrement = false;
 	private $isLazyLoad = false;
@@ -202,8 +203,8 @@ class Column extends XMLElement {
 
 			$this->isNestedSetLeftKey = $this->booleanValue($this->getAttribute("nestedSetLeftKey"));
 			$this->isNestedSetRightKey = $this->booleanValue($this->getAttribute("nestedSetRightKey"));
-			$this->isNestedSetScopeKey = $this->booleanValue($this->getAttribute("nestedSetScopeKey"));
-			$this->isNestedSetParentKey = $this->booleanValue($this->getAttribute("nestedSetParentKey"));
+			$this->isTreeScopeKey = $this->booleanValue($this->getAttribute("treeScopeKey"));
+			$this->isTreeParentKey = $this->booleanValue($this->getAttribute("treeParentKey"));
 
 			$this->isNotNull = ($this->booleanValue($this->getAttribute("required"), false) || $this->isPrimaryKey); // primary keys are required
 
@@ -612,35 +613,35 @@ class Column extends XMLElement {
 	}
 
 	/**
-	 * Set if the column is the nested set scope key of a tree
+	 * Set if the column is the scope key of a tree
 	 */
-	public function setNestedSetScopeKey($nssk)
+	public function setTreeScopeKey($tsk)
 	{
-		$this->isNestedSetScopeKey = (boolean) $nssk;
+		$this->isTreeScopeKey = (boolean) $tsk;
 	}
 
 	/**
-	 * Return true if the column is a nested set scope key of a tree
+	 * Return true if the column is a scope key of a tree
 	 */
-	public function isNestedSetScopeKey()
+	public function isTreeScopeKey()
 	{
-		return $this->isNestedSetScopeKey;
+		return $this->isTreeScopeKey;
 	}
 
 	/**
-	 * Set if the column is the nested set parent key of a tree
+	 * Set if the column is the parent key of a tree
 	 */
-	public function setNestedSetParentKey($nspk)
+	public function setTreeParentKey($tpk)
 	{
-		$this->isNestedSetParentKey = (boolean) $nspk;
+		$this->isTreeParentKey = (boolean) $tpk;
 	}
 
 	/**
-	 * Return true if the column is a nested set parent key of a tree
+	 * Return true if the column is a parent key of a tree
 	 */
-	public function isNestedSetParentKey()
+	public function isTreeParentKey()
 	{
-		return $this->isNestedSetParentKey;
+		return $this->isTreeParentKey;
 	}
 
 	/**
