@@ -344,7 +344,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function getMapBuilder()
 	{
 		if (self::\$mapBuilder === null) {
-			require '" . $this->getMapBuilderBuilder()->getClassFilePath()."';
+			require_once '" . $this->getMapBuilderBuilder()->getClassFilePath()."';
 			self::\$mapBuilder = new ".$this->getMapBuilderBuilder()->getClassname()."();
 		}
 		return self::\$mapBuilder;
