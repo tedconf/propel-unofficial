@@ -521,7 +521,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		self::shiftRLRange(\$dest->getLeftValue(), \$dest->getRightValue(), -1, \$con, \$sidv);
 		self::shiftRLValues(\$dest->getRightValue() + 1, -2, \$con, \$sidv);
-		return \$dest->delete(false, \$con);
+		return \$dest->delete(\$con);
 	}
 ";
 	}
