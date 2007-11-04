@@ -81,11 +81,12 @@ interface BaseNodePeer {
 	public static function insertAsNextSiblingOf(BaseNodeObject $node, BaseNodeObject $sibling, PropelPDO $con = null);
 
 	/**
-	 * Inserts node as parent of given node.
+	 * Inserts $parent as parent of given $node.
 	 *
 	 * @param      object $parent  	Propel object for given parent node
 	 * @param      object $node  	Propel object for given destination node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 * @throws     Exception      When trying to insert node as parent of a root node
 	 */
 	public static function insertAsParentOf(BaseNodeObject $parent, BaseNodeObject $node, PropelPDO $con = null);
@@ -98,16 +99,6 @@ interface BaseNodePeer {
 	 * @return     object		Inserted propel object for model
 	 */
 	public static function insertRoot(BaseNodeObject $node, PropelPDO $con = null);
-
-	/**
-	 * Inserts $parent as parent to destination node $child
-	 *
-	 * @param      object $child	Propel object to become child node
-	 * @param      object $parent	Propel object as parent node
-	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
-	 */
-	public static function insertParent(BaseNodeObject $child, BaseNodeObject $parent, PropelPDO $con = null);
 
 	/**
 	 * Delete root node

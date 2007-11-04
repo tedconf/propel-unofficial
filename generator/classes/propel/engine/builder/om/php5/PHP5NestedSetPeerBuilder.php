@@ -123,7 +123,6 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$this->addInsertAsParentOf($script);
 
 		$this->addInsertRoot($script);
-		$this->addInsertParent($script);
 
 		$this->addDeleteRoot($script);
 		$this->addDeleteNode($script);
@@ -451,12 +450,16 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			throw new Exception('Impossible to insert a node as parent of a root node');
 		}
 
-		self::shiftRLValues(\$node->getLeftValue(), 1, \$con, \$node->getScopeIdValue());
-		self::shiftRLValues(\$node->getRightValue() + 2, 1, \$con, \$node->getScopeIdValue());
-
 		\$sidv = null;
 		if (self::SCOPE_COL) {
-			\$parent->setScopeIdValue(\$sidv = \$node->getScopeIdValue());
+			\$sidv = \$node->getScopeIdValue();
+		}
+
+		self::shiftRLValues(\$node->getLeftValue(), 1, \$con, \$sidv);
+		self::shiftRLValues(\$node->getRightValue() + 2, 1, \$con, \$sidv);
+
+		if (self::SCOPE_COL) {
+			\$parent->setScopeIdValue(\$sidv);
 		}
 
 		\$parent->setLeftValue(\$node->getLeftValue());
@@ -491,35 +494,6 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		return $peerClassname::insertParent($peerClassname::retrieveRoot(\$sidv, \$con), \$node, \$con);
-	}
-";
-	}
-
-	protected function addInsertParent(&$script)
-	{
-		$objectClassname = $this->getStubObjectBuilder()->getClassname();
-		$peerClassname = $this->getStubPeerBuilder()->getClassname();
-		$script .= "
-	/**
-	 * Inserts \$parent as parent to destination node \$child
-	 *
-	 * @param      $objectClassname \$child	Propel object to become child node
-	 * @param      $objectClassname \$parent	Propel object as parent node
-	 * @param      PropelPDO \$con	Connection to use.
-	 * @return     void
-	 */
-	public static function insertParent(BaseNodeObject \$child, BaseNodeObject \$parent, PropelPDO \$con = null)
-	{
-		\$sidv = null;
-		if (self::SCOPE_COL) {
-			\$sidv = \$child->getScopeIdValue();
-		}
-
-		self::shiftRLValues(\$child->getLeftValue(), 1, \$con, \$sidv);
-		self::shiftRLValues(\$child->getRightValue() + 2, 1, \$con, \$sidv);
-
-		\$parent->setLeftValue(\$child->getLeftValue());
-		\$parent->setRightValue(\$child->getRightValue() + 2);
 	}
 ";
 	}
