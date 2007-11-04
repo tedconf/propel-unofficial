@@ -301,11 +301,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Sets node properties to make it a root node.
 	 *
+	 * @return     \$this
 	 * @throws     PropelException
 	 */
 	public function makeRoot()
 	{
 		$peerClassname::createRoot(\$this);
+		return \$this;
 	}
 ";
 	}
@@ -337,11 +339,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the level of the node in the tree
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setLevel(\$level)
 	{
 		\$this->level = \$level;
+		return \$this;
 	}
 ";
 	}
@@ -354,11 +357,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the children array of the node in the tree
 	 *
 	 * @param      array of $objectClassName \$children	array of Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setChildren(array \$children)
 	{
 		\$this->_children = \$children;
+		return \$this;
 	}
 ";
 	}
@@ -372,7 +376,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the parentNode of the node in the tree
 	 *
 	 * @param      $objectClassName \$parent Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setParentNode(BaseNodeObject \$parent = null)
 	{
@@ -381,6 +385,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		{
 			\$this->setParentIdValue(\$parent->getPrimaryKey());
 		}
+		return \$this;
 	}
 ";
 	}
@@ -394,12 +399,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the previous sibling of the node in the tree
 	 *
 	 * @param      $objectClassName \$node Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setPrevSibling(BaseNodeObject \$node)
 	{
 		\$this->prevSibling = \$node;
 		\$this->hasPrevSibling = $peerClassname::isValid(\$node);
+		return \$this;
 	}
 ";
 	}
@@ -413,12 +419,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets the next sibling of the node in the tree
 	 *
 	 * @param      $objectClassName \$node Propel node object
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setNextSibling(BaseNodeObject \$node)
 	{
 		\$this->nextSibling = \$node;
 		\$this->hasNextSibling = $peerClassname::isValid(\$node);
+		return \$this;
 	}
 ";
 	}
@@ -965,11 +972,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value left column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setLeftValue(\$v)
 	{
 		\$this->$left_col_setter_name(\$v);
+		return \$this;
 	}
 ";
 	}
@@ -990,11 +998,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value of right column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setRightValue(\$v)
 	{
 		\$this->$right_col_setter_name(\$v);
+		return \$this;
 	}
 ";
 	}
@@ -1016,7 +1025,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value of scope column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setScopeIdValue(\$v)
 	{";
@@ -1025,6 +1034,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		\$this->$scope_col_setter_name(\$v);";
 		}
 		$script .= "
+		return \$this;
 	}
 ";
 	}
@@ -1046,15 +1056,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Set the value of parent column
 	 *
 	 * @param      int \$v new value
-	 * @return     void
+	 * @return     \$this
 	 */
 	public function setParentIdValue(\$v)
-	{";
-		if ($parent_col_setter_name) {
-			$script .= "
-		\$this->$parent_col_setter_name(\$v);";
-		}
-		$script .= "
+	{
+		\$this->$parent_col_setter_name(\$v);
+		return \$this;
 	}
 ";
 	}
