@@ -493,7 +493,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$sidv = \$node->getScopeIdValue();
 		}
 
-		return $peerClassname::insertAsParentOf($peerClassname::retrieveRoot(\$sidv, \$con), \$node, \$con);
+		$peerClassname::insertAsParentOf($peerClassname::retrieveRoot(\$sidv, \$con), \$node, \$con);
 	}
 ";
 	}
@@ -565,6 +565,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$parent	Propel object for parent node
 	 * @param      $objectClassname \$child		Propel object for child node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToFirstChildOf(BaseNodeObject \$parent, BaseNodeObject \$child, PropelPDO \$con = null)
 	{
@@ -588,6 +589,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$parent	Propel object for parent node
 	 * @param      $objectClassname \$child		Propel object for child node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToLastChildOf(BaseNodeObject \$parent, BaseNodeObject \$child, PropelPDO \$con = null)
 	{
@@ -611,6 +613,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$dest	Propel object for destination node
 	 * @param      $objectClassname \$node	Propel object for source node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToPrevSiblingOf(BaseNodeObject \$dest, BaseNodeObject \$node, PropelPDO \$con = null)
 	{
@@ -634,6 +637,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * @param      $objectClassname \$dest	Propel object for destination node
 	 * @param      $objectClassname \$node	Propel object for source node
 	 * @param      PropelPDO \$con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToNextSiblingOf(BaseNodeObject \$dest, BaseNodeObject \$node, PropelPDO \$con = null)
 	{

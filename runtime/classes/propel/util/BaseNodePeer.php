@@ -50,6 +50,7 @@ interface BaseNodePeer {
 	 * @param      object $child	Propel object for child node
 	 * @param      object $parent	Propel object for parent node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsFirstChildOf(BaseNodeObject $child, BaseNodeObject $parent, PropelPDO $con = null);
 
@@ -59,6 +60,7 @@ interface BaseNodePeer {
 	 * @param      object $child	Propel object for child node
 	 * @param      object $parent	Propel object for parent node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsLastChildOf(BaseNodeObject $child, BaseNodeObject $parent, PropelPDO $con = null);
 
@@ -68,6 +70,7 @@ interface BaseNodePeer {
 	 * @param      object $node		Propel object for destination node
 	 * @param      object $sibling	Propel object for source node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsPrevSiblingOf(BaseNodeObject $node, BaseNodeObject $sibling, PropelPDO $con = null);
 
@@ -77,6 +80,7 @@ interface BaseNodePeer {
 	 * @param      object $node		Propel object for destination node
 	 * @param      object $sibling	Propel object for source node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function insertAsNextSiblingOf(BaseNodeObject $node, BaseNodeObject $sibling, PropelPDO $con = null);
 
@@ -96,7 +100,7 @@ interface BaseNodePeer {
 	 *
 	 * @param      object $node	Propel object as root node
 	 * @param      PropelPDO $con	Connection to use.
-	 * @return     object		Inserted propel object for model
+	 * @return     void
 	 */
 	public static function insertRoot(BaseNodeObject $node, PropelPDO $con = null);
 
@@ -124,6 +128,7 @@ interface BaseNodePeer {
 	 * @param      object $parent	Propel object for parent node
 	 * @param      object $child	Propel object for child node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToFirstChildOf(BaseNodeObject $parent, BaseNodeObject $child, PropelPDO $con = null);
 
@@ -133,6 +138,7 @@ interface BaseNodePeer {
 	 * @param      object $dest	Propel object for destination node
 	 * @param      object $node	Propel object for source node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToLastChildOf(BaseNodeObject $dest, BaseNodeObject $node, PropelPDO $con = null);
 
@@ -142,6 +148,7 @@ interface BaseNodePeer {
 	 * @param      object $dest	Propel object for destination node
 	 * @param      object $node	Propel object for source node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToPrevSiblingOf(BaseNodeObject $dest, BaseNodeObject $node, PropelPDO $con = null);
 
@@ -151,6 +158,7 @@ interface BaseNodePeer {
 	 * @param      object $dest	Propel object for destination node
 	 * @param      object $node	Propel object for source node
 	 * @param      PropelPDO $con	Connection to use.
+	 * @return     void
 	 */
 	public static function moveToNextSiblingOf(BaseNodeObject $dest, BaseNodeObject $node, PropelPDO $con = null);
 
