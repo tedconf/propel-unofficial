@@ -493,7 +493,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$sidv = \$node->getScopeIdValue();
 		}
 
-		return $peerClassname::insertParent($peerClassname::retrieveRoot(\$sidv, \$con), \$node, \$con);
+		return $peerClassname::insertAsParentOf($peerClassname::retrieveRoot(\$sidv, \$con), \$node, \$con);
 	}
 ";
 	}
