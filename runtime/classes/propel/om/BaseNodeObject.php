@@ -272,6 +272,42 @@ interface BaseNodeObject extends IteratorAggregate {
 	public function insertAsNextSiblingOf(BaseNodeObject $dest, PropelPDO $con = null);
 
 	/**
+	 * Moves node to be first child of $parent
+	 *
+	 * @param      Menu $parent	Propel object for destination node
+	 * @param      PropelPDO $con Connection to use.
+	 * @return     void
+	 */
+	public function moveToFirstChildOf(BaseNodeObject $parent, PropelPDO $con = null);
+
+	/**
+	 * Moves node to be last child of $parent
+	 *
+	 * @param      Menu $parent	Propel object for destination node
+	 * @param      PropelPDO $con Connection to use.
+	 * @return     void
+	 */
+	public function moveToLastChildOf(BaseNodeObject $parent, PropelPDO $con = null);
+
+	/**
+	 * Moves node to be prev sibling to $dest
+	 *
+	 * @param      Menu $dest	Propel object for destination node
+	 * @param      PropelPDO $con Connection to use.
+	 * @return     void
+	 */
+	public function moveToPrevSiblingOf(BaseNodeObject $dest, PropelPDO $con = null);
+
+	/**
+	 * Moves node to be next sibling to $dest
+	 *
+	 * @param      Menu $dest	Propel object for destination node
+	 * @param      PropelPDO $con Connection to use.
+	 * @return     void
+	 */
+	public function moveToNextSiblingOf(BaseNodeObject $dest, PropelPDO $con = null);
+
+	/**
 	 * Inserts node as parent of given node.
 	 *
 	 * @param      object $node  Propel object for given destination node

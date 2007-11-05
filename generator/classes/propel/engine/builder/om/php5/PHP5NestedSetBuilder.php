@@ -148,6 +148,12 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 		$this->addInsertAsPrevSiblingOf($script);
 		$this->addInsertAsNextSiblingOf($script);
 
+		$this->addMoveToFirstChildOf($script);
+		$this->addMoveToLastChildOf($script);
+
+		$this->addMoveToPrevSiblingOf($script);
+		$this->addMoveToNextSiblingOf($script);
+
 		$this->addInsertAsParentOf($script);
 
 		$this->addGetLeft($script);
@@ -761,12 +767,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 	protected function addInsertAsFirstChildOf(&$script)
 	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
 	 * Inserts as first child of given destination node \$parent
 	 *
-	 * @param      object \$parent	Propel object for destination node
+	 * @param      $objectClassName \$parent	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
 	 * @return     void
 	 */
@@ -779,12 +786,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 	protected function addInsertAsLastChildOf(&$script)
 	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
 	 * Inserts as last child of given destination node \$parent
 	 *
-	 * @param      object \$parent	Propel object for destination node
+	 * @param      $objectClassName \$parent	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
 	 * @return     void
 	 */
@@ -797,12 +805,13 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 	protected function addInsertAsPrevSiblingOf(&$script)
 	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
 	 * Inserts \$node as previous sibling to given destination node \$dest
 	 *
-	 * @param      object \$dest	Propel object for destination node
+	 * @param      $objectClassName \$dest	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
 	 * @return     void
 	 */
@@ -815,18 +824,95 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 
 	protected function addInsertAsNextSiblingOf(&$script)
 	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$script .= "
 	/**
 	 * Inserts \$node as next sibling to given destination node \$dest
 	 *
-	 * @param      object \$dest	Propel object for destination node
+	 * @param      $objectClassName \$dest	Propel object for destination node
 	 * @param      PropelPDO \$con Connection to use.
 	 * @return     void
 	 */
 	public function insertAsNextSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
 	{
 		$peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
+	}
+";
+	}
+
+	protected function addMoveToFirstChildOf(&$script)
+	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Moves node to be first child of \$parent
+	 *
+	 * @param      $objectClassName \$parent	Propel object for destination node
+	 * @param      PropelPDO \$con Connection to use.
+	 * @return     void
+	 */
+	public function moveToFirstChildOf(BaseNodeObject \$parent, PropelPDO \$con = null)
+	{
+		$peerClassname::moveToFirstChildOf(\$parent, \$this, \$con);
+	}
+";
+	}
+
+	protected function addMoveToLastChildOf(&$script)
+	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Moves node to be last child of \$parent
+	 *
+	 * @param      $objectClassName \$parent	Propel object for destination node
+	 * @param      PropelPDO \$con Connection to use.
+	 * @return     void
+	 */
+	public function moveToLastChildOf(BaseNodeObject \$parent, PropelPDO \$con = null)
+	{
+		$peerClassname::moveToLastChildOf(\$parent, \$this, \$con);
+	}
+";
+	}
+
+	protected function addMoveToPrevSiblingOf(&$script)
+	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Moves node to be prev sibling to \$dest
+	 *
+	 * @param      $objectClassName \$dest	Propel object for destination node
+	 * @param      PropelPDO \$con Connection to use.
+	 * @return     void
+	 */
+	public function moveToPrevSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
+	{
+		$peerClassname::moveToPrevSiblingOf(\$dest, \$this, \$con);
+	}
+";
+	}
+
+	protected function addMoveToNextSiblingOf(&$script)
+	{
+		$objectClassName = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$script .= "
+	/**
+	 * Moves node to be next sibling to \$dest
+	 *
+	 * @param      $objectClassName \$dest	Propel object for destination node
+	 * @param      PropelPDO \$con Connection to use.
+	 * @return     void
+	 */
+	public function moveToNextSiblingOf(BaseNodeObject \$dest, PropelPDO \$con = null)
+	{
+		$peerClassname::moveToNextSiblingOf(\$dest, \$this, \$con);
 	}
 ";
 	}
