@@ -274,7 +274,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Moves node to be first child of $parent
 	 *
-	 * @param      Menu $parent	Propel object for destination node
+	 * @param      object $parent	Propel object for destination node
 	 * @param      PropelPDO $con Connection to use.
 	 * @return     void
 	 */
@@ -283,7 +283,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Moves node to be last child of $parent
 	 *
-	 * @param      Menu $parent	Propel object for destination node
+	 * @param      object $parent	Propel object for destination node
 	 * @param      PropelPDO $con Connection to use.
 	 * @return     void
 	 */
@@ -292,7 +292,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Moves node to be prev sibling to $dest
 	 *
-	 * @param      Menu $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for destination node
 	 * @param      PropelPDO $con Connection to use.
 	 * @return     void
 	 */
@@ -301,7 +301,7 @@ interface BaseNodeObject extends IteratorAggregate {
 	/**
 	 * Moves node to be next sibling to $dest
 	 *
-	 * @param      Menu $dest	Propel object for destination node
+	 * @param      object $dest	Propel object for destination node
 	 * @param      PropelPDO $con Connection to use.
 	 * @return     void
 	 */
