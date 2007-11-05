@@ -1206,8 +1206,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$c1->addAnd(\$c2);
 
 		\$c->add(\$c1);
-		if (self::SCOPE_ID) {
-			\$c->add(self::SCOPE_ID, \$node->getScopeIdValue(), Criteria::EQUAL);
+		if (self::SCOPE_COL) {
+			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
 		}
 		\$c->addAscendingOrderByColumn(self::RIGHT_COL);
 
@@ -1473,7 +1473,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			self::LEFT_COL,
 			self::LEFT_COL);
 
-		if (self::SCOPE_ID) {
+		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 
@@ -1481,7 +1481,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
 		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if (self::SCOPE_ID) {
+		if (self::SCOPE_COL) {
 			\$stmt->bindValue(4, \$scopeId);
 		}
 		\$stmt->setFetchMode(PDO::FETCH_ASSOC);
@@ -1495,7 +1495,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			self::RIGHT_COL,
 			self::RIGHT_COL);
 
-		if (self::SCOPE_ID) {
+		if (self::SCOPE_COL) {
 			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
 		}
 
@@ -1503,7 +1503,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
 		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
 		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if (self::SCOPE_ID) {
+		if (self::SCOPE_COL) {
 			\$stmt->bindValue(4, \$scopeId);
 		}
 		\$stmt->setFetchMode(PDO::FETCH_ASSOC);
