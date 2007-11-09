@@ -45,7 +45,7 @@ class DBMSSQL extends DBSybase {
 
         // obtain the original select statement
         preg_match('/\A(.*)select(.*)from/si',$sql,$select_segment);
-        if(count($select_segment>0))
+        if(count($select_segment)>0)
         {
             $original_select = $select_segment[0];
         } else {
