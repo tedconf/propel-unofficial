@@ -20,7 +20,7 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'PHPUnit2/Framework/TestCase.php';
+require_once 'PHPUnit/Framework/TestCase.php';
 require_once 'propel/engine/database/model/Column.php';
 include_once 'propel/engine/platform/MysqlPlatform.php';
 
@@ -28,9 +28,9 @@ include_once 'propel/engine/platform/MysqlPlatform.php';
  * Tests for package handling.
  *
  * @author     <a href="mailto:mpoeschl@marmot.at>Martin Poeschl</a>
- * @version    $Id$
+ * @version    $Revision$
  */
-class ColumnTest extends PHPUnit2_Framework_TestCase {
+class ColumnTest extends PHPUnit_Framework_TestCase {
 
 	/**
 	 * Tests static Column::makeList() method.

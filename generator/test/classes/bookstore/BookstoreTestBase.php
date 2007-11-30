@@ -19,27 +19,28 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'PHPUnit2/Framework/TestCase.php';
+require_once 'PHPUnit/Framework/TestCase.php';
 include_once 'bookstore/BookstoreDataPopulator.php';
 
 /**
  * Base class contains some methods shared by subclass test cases.
  */
-abstract class BookstoreTestBase extends PHPUnit2_Framework_TestCase {
+abstract class BookstoreTestBase extends PHPUnit_Framework_TestCase {
 
 	/**
 	 * This is run before each unit test; it populates the database.
 	 */
-	public function setUp()
+	protected function setUp()
 	{
 		parent::setUp();
+		BookstoreDataPopulator::depopulate();
 		BookstoreDataPopulator::populate();
 	}
 
 	/**
 	 * This is run after each unit test.  It empties the database.
 	 */
-	public function tearDown()
+	protected function tearDown()
 	{
 
 		BookstoreDataPopulator::depopulate();
@@ -50,7 +51,8 @@ abstract class BookstoreTestBase extends PHPUnit2_Framework_TestCase {
 		$this->assertEquals(0, count(ReviewPeer::doSelect(new Criteria())), "Expect review table to be empty.");
 		$this->assertEquals(0, count(MediaPeer::doSelect(new Criteria())), "Expect media table to be empty.");
 		$this->assertEquals(0, count(BookstoreEmployeePeer::doSelect(new Criteria())), "Expect bookstore_employee table to be empty.");
-		$this->assertEquals(0, count(BookstoreEmployeeAccountPeer::doSelect(new Criteria())), "Expect bookstore_employee table to be empty.");
+		$this->assertEquals(0, count(BookstoreEmployeeAccountPeer::doSelect(new Criteria())), "Expect bookstore_employee_account table to be empty.");
+		$this->assertEquals(0, count(BookstoreSalePeer::doSelect(new Criteria())), "Expect bookstore_sale table to be empty.");
 
 		BookPeer::clearInstancePool();
 		$this->assertEquals(0, count(BookPeer::$instances), "Expected 0 Book instances after clearInstancePool()");
@@ -72,6 +74,9 @@ abstract class BookstoreTestBase extends PHPUnit2_Framework_TestCase {
 
 		BookstoreEmployeeAccountPeer::clearInstancePool();
 		$this->assertEquals(0, count(BookstoreEmployeeAccountPeer::$instances), "Expected 0 BookstoreEmployeeAccount instances after clearInstancePool()");
+
+		BookstoreSalePeer::clearInstancePool();
+		$this->assertEquals(0, count(BookstoreSalePeer::$instances), "Expected 0 BookstoreSale instances after clearInstancePool()");
 
 		parent::tearDown();
 	}

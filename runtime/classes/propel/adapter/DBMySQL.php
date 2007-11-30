@@ -33,6 +33,21 @@
 class DBMySQL extends DBAdapter {
 
 	/**
+	 * This method is called after a connection was created to run necessary
+	 * post-initialization queries or code.
+	 *
+	 * @param      PDO   A PDO connection instance.
+	 * @param      array An array of settings.
+	 */
+	public function initConnection(PDO $con, array $settings)
+	{
+		if (isset($settings['charset']['value'])) {
+			$con->query('SET NAMES "' . $settings['charset']['value'] . '"');
+		}
+		parent::initConnection($con, $settings);
+	}
+
+	/**
 	 * This method is used to ignore case.
 	 *
 	 * @param      in The string to transform to upper case.
@@ -130,7 +145,7 @@ class DBMySQL extends DBAdapter {
 	 */
 	public function useQuoteIdentifier()
 	{
-		return false;
+		return true;
 	}
 
 	/**
@@ -145,9 +160,12 @@ class DBMySQL extends DBAdapter {
 		}
 	}
 
-	public function random($seed=NULL) 
+	/**
+	 * @see        DBAdapter::random()
+	 */
+	public function random($seed = null)
 	{
-		return 'rand('.$seed.')';
+		return 'rand('.((int) $seed).')';
 	}
 
 }

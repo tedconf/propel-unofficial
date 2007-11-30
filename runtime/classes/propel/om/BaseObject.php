@@ -73,6 +73,15 @@ abstract class BaseObject {
 	}
 
 	/**
+	 * Get the columns that have been modified in this object.
+	 * @return     array A unique list of the modified column names for this object.
+	 */
+	public function getModifiedColumns()
+	{
+		return array_unique($this->modifiedColumns);
+	}
+
+	/**
 	 * Returns whether the object has ever been saved.  This will
 	 * be false, if the object was retrieved from storage or was created
 	 * and then saved.
@@ -142,7 +151,8 @@ abstract class BaseObject {
 	 */
 	public function equals($obj)
 	{
-		if (is_object($obj)) {
+		$thisclazz = get_class($this);
+		if (is_object($obj) && $obj instanceof $thisclazz) {
 			if ($this === $obj) {
 				return true;
 			} elseif ($this->getPrimaryKey() === null || $obj->getPrimaryKey() === null)  {

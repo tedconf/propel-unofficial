@@ -133,6 +133,11 @@ class Propel
 	private static $databaseMapClass = 'DatabaseMap';
 
 	/**
+	 * @var        bool Whether the object instance pooling is enabled
+	 */
+	private static $instancePoolingEnabled = true;
+
+	/**
 	 * @var        array A map of class names and their file paths for autoloading
 	 */
 	private static $autoloadMap = array(
@@ -158,19 +163,20 @@ class Propel
 		'ValidatorMap' => 'propel/map/ValidatorMap.php',
 
 		'BaseObject' => 'propel/om/BaseObject.php',
-		'BaseNodeObject' => 'propel/om/BaseNodeObject.php',
+		'NodeObject' => 'propel/om/NodeObject.php',
 		'Persistent' => 'propel/om/Persistent.php',
 		'PreOrderNodeIterator' => 'propel/om/PreOrderNodeIterator.php',
 		'NestedSetPreOrderNodeIterator' => 'propel/om/NestedSetPreOrderNodeIterator.php',
 		'NestedSetRecursiveIterator' => 'propel/om/NestedSetRecursiveIterator.php',
 
 		'BasePeer' => 'propel/util/BasePeer.php',
-		'BaseNodePeer' => 'propel/util/BaseNodePeer.php',
+		'NodePeer' => 'propel/util/NodePeer.php',
 		'Criteria' => 'propel/util/Criteria.php',
 		'PeerInfo' => 'propel/util/PeerInfo.php',
 		'PropelColumnTypes' => 'propel/util/PropelColumnTypes.php',
 		'PropelPDO' => 'propel/util/PropelPDO.php',
 		'PropelPager' => 'propel/util/PropelPager.php',
+		'PropelDateTime' => 'propel/util/PropelDateTime.php',
 
 		'BasicValidator' => 'propel/validator/BasicValidator.php',
 		'MatchValidator' => 'propel/validator/MatchValidator.php',
@@ -195,8 +201,8 @@ class Propel
 	{
 		if (self::$configuration === null) {
 			throw new PropelException("Propel cannot be initialized without "
-				. "a valid configuration. Please check the log files "
-				. "for further details.");
+			. "a valid configuration. Please check the log files "
+			. "for further details.");
 		}
 
 		self::configureLogging();
@@ -400,6 +406,20 @@ class Propel
 
 		return self::$dbMaps[$name];
 	}
+	
+	/**
+	 * Sets the database map object to use for specified datasource.
+	 *
+	 * @param      string $name The datasource name.
+	 * @param      DatabaseMap $map The database map object to use for specified datasource. 
+	 */
+	public static function setDatabaseMap($name, DatabaseMap $map)
+	{
+		if ($name === null) {
+			$name = self::getDefaultDB();
+		}
+		self::$dbMaps[$name] = $map;
+	}
 
 	/**
 	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
@@ -431,7 +451,8 @@ class Propel
 			$user = isset($conparams['user']) ? $conparams['user'] : null;
 			$password = isset($conparams['password']) ? $conparams['password'] : null;
 
-			// load any driver options from the INI file
+			// load any driver options from the config file
+			// driver options are those PDO settings that have to be passed during the connection construction
 			$driver_options = array();
 			if ( isset($conparams['options']) && is_array($conparams['options']) ) {
 				try {
@@ -448,13 +469,45 @@ class Propel
 			} catch (PDOException $e) {
 				throw new PropelException("Unable to open PDO connection", $e);
 			}
+
+			// load any connection options from the config file
+			// connection attributes are those PDO flags that have to be set on the initialized connection
+			if (isset($conparams['attributes']) && is_array($conparams['attributes'])) {
+				$attributes = array();
+				try {
+					self::processDriverOptions( $conparams['attributes'], $attributes );
+				} catch (PropelException $e) {
+					throw new PropelException('Error processing connection attributes for datasource ['.$name.']', $e);
+				}
+				foreach ($attributes as $key => $value) {
+					$con->setAttribute($key, $value);
+				}
+			}
+
+			// initialize the connection using the settings provided in the config file. this could be a "SET NAMES <charset>" query for MySQL, for instance
+			$adapter = self::getDB($name);
+			$adapter->initConnection($con, isset($conparams['settings']) && is_array($conparams['settings']) ? $conparams['settings'] : array());
 		}
 
 		return self::$connectionMap[$name];
 	}
 
 	/**
-	 * Internal function to handle driver_options in PDO
+	 * Sets the connection to use for specified datasource.
+	 *
+	 * @param      string $name The datasource name.
+	 * @param      PropelPDO $con The PDO connection object to use for specified datasource. 
+	 */
+	public static function setConnection($name, PropelPDO $con)
+	{
+		if ($name === null) {
+			$name = self::getDefaultDB();
+		}
+		self::$connectionMap[$name] = $con;
+	}
+
+	/**
+	 * Internal function to handle driver options or conneciton attributes in PDO.
 	 *
 	 * Process the INI file flags to be passed to each connection.
 	 *
@@ -466,21 +519,32 @@ class Propel
 	private static function processDriverOptions($source, &$write_to)
 	{
 		foreach ($source as $option => $optiondata) {
-			$constant = 'PDO::'.$option;
-			$option_value = $optiondata['value'];
-			if ( defined ($constant) ) {
-				$constant_value = constant($constant);
-				$write_to[$constant_value] = $option_value;
-			} else {
-				throw new PropelException("Invalid PDO option specified: ".$option." = ".$option_value);
+			if (is_string($option) && strpos($option, 'PDO::') !== false) {
+				$key = $option;
+			} elseif (is_string($option)) {
+				$key = 'PDO::' . $option;
 			}
+			if (!defined($key)) {
+				throw new PropelException("Invalid PDO option/attribute name specified: ".$key);
+			}
+			$key = constant($key);
+
+			$value = $optiondata['value'];
+			if (is_string($value) && strpos($value, 'PDO::') !== false) {
+				if (!defined($value)) {
+					throw new PropelException("Invalid PDO option/attribute value specified: ".$value);
+				}
+				$value = constant($value);
+			}
+
+			$write_to[$key] = $value;
 		}
 	}
 
 	/**
-	 * Returns database adapter for a specific connection pool.
+	 * Returns database adapter for a specific datasource.
 	 *
-	 * @param      string A database name.
+	 * @param      string The datasource name.
 	 *
 	 * @return     DBAdapter The corresponding database adapter.
 	 *
@@ -502,6 +566,20 @@ class Propel
 		}
 
 		return self::$adapterMap[$name];
+	}
+
+	/**
+	 * Sets a database adapter for specified datasource.
+	 *
+	 * @param      string $name The datasource name.
+	 * @param      DBAdapter $adapter The DBAdapter implementation to use.
+	 */
+	public static function setDB($name, DBAdapter $adapter)
+	{
+		if ($name === null) {
+			$name = self::getDefaultDB();
+		}
+		self::$adapterMap[$name] = $adapter;
 	}
 
 	/**
@@ -557,6 +635,32 @@ class Propel
 	public static function setDatabaseMapClass($name)
 	{
 		self::$databaseMapClass = $name;
+	}
+
+	/**
+	 * Disable instance pooling.
+	 */
+	public static function disableInstancePooling()
+	{
+		self::$instancePoolingEnabled = false;
+	}
+
+	/**
+	 * Enable instance pooling (enabled by default).
+	 */
+	public static function enableInstancePooling()
+	{
+		self::$instancePoolingEnabled = true;
+	}
+
+	/**
+	 *  the instance pooling behaviour. True by default.
+	 *
+	 * @return     boolean Whether the pooling is enabled or not.
+	 */
+	public static function isInstancePoolingEnabled()
+	{
+		return self::$instancePoolingEnabled;
 	}
 }
 

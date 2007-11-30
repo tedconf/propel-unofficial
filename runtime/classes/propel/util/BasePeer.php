@@ -53,6 +53,12 @@ class BasePeer
 	const TYPE_PHPNAME = 'phpName';
 
 	/**
+	 * studlyphpname type
+	 * e.g. 'authorId'
+	 */
+	const TYPE_STUDLYPHPNAME = 'studlyPhpName';
+
+	/**
 	 * column (peer) name type
 	 * e.g. 'book.AUTHOR_ID'
 	 */
@@ -152,7 +158,8 @@ class BasePeer
 				Propel::log($sql, Propel::LOG_DEBUG);
 				$stmt = $con->prepare($sql);
 				self::populateStmtValues($stmt, $selectParams, $dbMap, $db);
-				$affectedRows = $stmt->execute();
+				$stmt->execute();
+				$affectedRows = $stmt->rowCount();
 			} catch (Exception $e) {
 				Propel::log($e->getMessage(), Propel::LOG_ERR);
 				throw new PropelException("Unable to execute DELETE statement.",$e);
@@ -188,7 +195,8 @@ class BasePeer
 			$sql = "DELETE FROM " . $tableName;
 			Propel::log($sql, Propel::LOG_DEBUG);
 			$stmt = $con->prepare($sql);
-			return $stmt->execute();
+			$stmt->execute();
+			return $stmt->rowCount();
 		} catch (Exception $e) {
 			Propel::log($e->getMessage(), Propel::LOG_ERR);
 			throw new PropelException("Unable to perform DELETE ALL operation.", $e);
@@ -463,7 +471,12 @@ class BasePeer
 				$type = $cMap->getType();
 				$pdoType = $cMap->getPdoType();
 
-				if (is_numeric($value) && $cMap->isEpochTemporal()) { // it's a timestamp that needs to be formatted
+				// FIXME - This is a temporary hack to get around apparent bugs w/ PDO+MYSQL
+				// See http://pecl.php.net/bugs/bug.php?id=9919
+				if ($pdoType == PDO::PARAM_BOOL && $db instanceof DBMySQL) {
+					$value = (int) $value;
+					$pdoType = PDO::PARAM_INT;
+				} elseif (is_numeric($value) && $cMap->isEpochTemporal()) { // it's a timestamp that needs to be formatted
 					if ($type == PropelColumnTypes::TIMESTAMP) {
 						$value = date($db->getTimestampFormatter(), $value);
 					} else if ($type == PropelColumnTypes::DATE) {
@@ -471,6 +484,18 @@ class BasePeer
 					} else if ($type == PropelColumnTypes::TIME) {
 						$value = date($db->getTimeFormatter(), $value);
 					}
+				} elseif ($value instanceof DateTime && $cMap->isTemporal()) { // it's a timestamp that needs to be formatted
+					if ($type == PropelColumnTypes::TIMESTAMP || $type == PropelColumnTypes::BU_TIMESTAMP) {
+						$value = $value->format($db->getTimestampFormatter());
+					} else if ($type == PropelColumnTypes::DATE || $type == PropelColumnTypes::BU_DATE) {
+						$value = $value->format($db->getDateFormatter());
+					} else if ($type == PropelColumnTypes::TIME) {
+						$value = $value->format($db->getTimeFormatter());
+					}
+				} elseif (is_resource($value) && $cMap->isLob()) {
+					// we always need to make sure that the stream is rewound, otherwise nothing will
+					// get written to database.
+					rewind($value);
 				}
 
 				if ($type == PropelColumnTypes::BLOB || $type == PropelColumnTypes::CLOB ) {
@@ -734,55 +759,6 @@ class BasePeer
 				}
 			}
 		}
-/*
-				// Old Code.
-				$joins =& $criteria->getJoins();
-				if (!empty($joins)) {
-					for ($i=0, $joinSize=count($joins); $i < $joinSize; $i++) {
-						$join =& $joins[$i];
-						$join1 = $join->getLeftColumn();
-						$join2 = $join->getRightColumn();
-
-						$tableName = substr($join1, 0, strpos($join1, '.'));
-						$table = $criteria->getTableForAlias($tableName);
-						if ($table !== null) {
-							$fromClause[] = $table . ' ' . $tableName;
-						} else {
-							$fromClause[] = $tableName;
-						}
-
-						$dot = strpos($join2, '.');
-						$tableName = substr($join2, 0, $dot);
-						$table = $criteria->getTableForAlias($tableName);
-						if ($table !== null) {
-							$fromClause[] = $table . ' ' . $tableName;
-						} else {
-							$fromClause[] = $tableName;
-							$table = $tableName;
-						}
-						$ignoreCase = ($criteria->isIgnoreCase() && ($dbMap->getTable($table)->getColumn(substr($join2, $dot + 1))->getType() == "string"));
-						if ($ignoreCase) {
-							$whereClause[] = $db->ignoreCase($join1) . '=' . $db->ignoreCase($join2);
-						} else {
-							$whereClause[] = $join1 . '=' . $join2;
-						}
-					if ($join->getJoinType()) {
-							$leftTable = $fromClause[count($fromClause) - 2];
-							$rightTable = $fromClause[count($fromClause) - 1];
-							$onClause = $whereClause[count($whereClause) - 1];
-							unset($whereClause[count($whereClause) - 1]);
-							$fromClause [] = $leftTable . ' ' . $join->getJoinType() . ' ' . $rightTable . ' ON ' . $onClause;
-
-							// remove all references to joinTables made by selectColumns, criteriaColumns
-							for ($i = 0, $fromClauseSize=count($fromClause); $i < $fromClauseSize; $i++) {
-								if ($fromClause[$i] == $leftTable || $fromClause[$i] == $rightTable) {
-									unset($fromClause[$i]);
-								}
-							}
-						} // If join type
-					} // Join for loop
-				} // If Joins
-*/
 
 		// Add the GROUP BY columns
 		$groupByClause = $groupBy;
@@ -840,8 +816,8 @@ class BasePeer
 				}
 
 				$column = $tableName ? $dbMap->getTable($tableName)->getColumn($columnName) : null;
-
-				if ($column && $column->getType() == 'string') {
+				
+				if ($column && $column->isText()) {
 					$orderByClause[] = $db->ignoreCaseInOrderBy("$tableAlias.$columnAlias") . $direction;
 					$selectClause[] = $db->ignoreCaseInOrderBy("$tableAlias.$columnAlias");
 				}
@@ -851,12 +827,26 @@ class BasePeer
 			}
 		}
 
+		// from / join tables quoten if it is necessary
+		if ($db->useQuoteIdentifier()) {
+			$fromClause = array_map(array($db, 'quoteIdentifier'), $fromClause);
+			$joinClause = $joinClause ? $joinClause : array_map(array($db, 'quoteIdentifier'), $joinClause);
+		}
+
+		// build from-clause
+		$from = '';
+		if (!empty($joinClause) && count($fromClause) > 1 && ($db instanceof DBMySQL)) {
+			$from .= "(" . implode(", ", $fromClause) . ")";
+		} else {
+			$from .= implode(", ", $fromClause);
+		}
+		$from .= $joinClause ? ' ' . implode(' ', $joinClause) : '';
+
 		// Build the SQL from the arrays we compiled
 		$sql =  "SELECT "
 				.($selectModifiers ? implode(" ", $selectModifiers) . " " : "")
 				.implode(", ", $selectClause)
-				." FROM ". ( (!empty($joinClause) && count($fromClause) > 1 && (substr(get_class($db), 0, 7) == 'DBMySQL')) ? "(" . implode(", ", $fromClause) . ")" : implode(", ", $fromClause) )
-								.($joinClause ? ' ' . implode(' ', $joinClause) : '')
+				." FROM "  . $from
 				.($whereClause ? " WHERE ".implode(" AND ", $whereClause) : "")
 				.($groupByClause ? " GROUP BY ".implode(",", $groupByClause) : "")
 				.($havingString ? " HAVING ".$havingString : "")
@@ -901,7 +891,7 @@ class BasePeer
 		try {
 			$v = isset(self::$validatorMap[$classname]) ? self::$validatorMap[$classname] : null;
 			if ($v === null) {
-				$cls = substr($classname, strrpos($classname, '.') + 1);
+				$cls = substr('.'.$classname, strrpos('.'.$classname, '.') + 1);
 				$v = new $cls();
 				self::$validatorMap[$classname] = $v;
 			}

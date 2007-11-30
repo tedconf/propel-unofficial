@@ -55,6 +55,9 @@ class ColumnMap {
 	/** Is null value allowed ?*/
 	private $notNull = false;
 
+	/** The default value for this column. */
+	private $defaultValue;
+
 	/** Name of the table that this column is related to. */
 	private $relatedTableName = "";
 
@@ -181,11 +184,12 @@ class ColumnMap {
 	 *
 	 * @return     int The PDO::PARMA_* value
 	 */
+	 /*
 	public function getPhpType()
 	{
 		return PropelColumnTypes::getPhpType($this->type);
 	}
-
+	*/
 	/**
 	 * Get the PDO type of this column.
 	 *
@@ -197,12 +201,12 @@ class ColumnMap {
 	}
 
 	/**
-	 * Whether this is a BLOB or CLOB.
+	 * Whether this is a BLOB, LONGVARBINARY, or VARBINARY.
 	 * @return     boolean
 	 */
 	public function isLob()
 	{
-		return ($this->type == PropelColumnTypes::BLOB || $this->type == PropelColumnTypes::CLOB);
+		return ($this->type == PropelColumnTypes::BLOB || $this->type == PropelColumnTypes::VARBINARY || $this->type == PropelColumnTypes::LONGVARBINARY);
 	}
 
 	/**
@@ -212,10 +216,31 @@ class ColumnMap {
 	 * between epoch and pre-epoch timestamps.
 	 *
 	 * @return     boolean
+	 * @deprecated Propel supports non-epoch dates
 	 */
 	public function isEpochTemporal()
 	{
 		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME);
+	}
+
+	/**
+	 * Whether this column is numeric (int, decimal, bigint etc).
+	 * @return     boolean
+	 */
+	public function isNumeric()
+	{
+		return ($this->type == PropelColumnTypes::NUMERIC || $this->type == PropelColumnTypes::DECIMAL || $this->type == PropelColumnTypes::TINYINT || $this->type == PropelColumnTypes::SMALLINT || $this->type == PropelColumnTypes::INTEGER || $this->type == PropelColumnTypes::BIGINT || $this->type == PropelColumnTypes::REAL || $this->type == PropelColumnTypes::FLOAT || $this->type == PropelColumnTypes::DOUBLE);
+	}
+
+	/**
+	 * Whether this is a DATE/TIME/TIMESTAMP column.
+	 *
+	 * @return     boolean
+	 * @since      1.3
+	 */
+	public function isTemporal()
+	{
+		return ($this->type == PropelColumnTypes::TIMESTAMP || $this->type == PropelColumnTypes::DATE || $this->type == PropelColumnTypes::TIME || $this->type == PropelColumnTypes::BU_DATE  || $this->type == PropelColumnTypes::BU_TIMESTAMP);
 	}
 
 	/**

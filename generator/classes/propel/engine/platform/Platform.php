@@ -36,6 +36,18 @@ interface Platform {
 	const SEQUENCE = "sequence";
 
 	/**
+	 * Sets a database connection to use (for quoting, etc.).
+	 * @param      PDO $con The database connection to use in this Platform class.
+	 */
+	public function setConnection(PDO $con = null);
+
+	/**
+	 * Returns the database connection to use for this Platform class.
+	 * @return     PDO The database connection or NULL if none has been set.
+	 */
+	public function getConnection();
+
+	/**
 	 * Returns the short name of the database type that this platform represents.
 	 * For example MysqlPlatform->getDatabaseType() returns 'mysql'.
 	 * @return     string
@@ -92,11 +104,11 @@ interface Platform {
 	public function hasScale($sqlType);
 
 	/**
-	 * Escape the string for RDBMS.
+	 * Quote and escape needed characters in the string for unerlying RDBMS.
 	 * @param      string $text
 	 * @return     string
 	 */
-	public function escapeText($text);
+	public function quote($text);
 
 	/**
 	 * Quotes identifiers used in database SQL.
@@ -125,4 +137,27 @@ interface Platform {
 	 */
 	public function getBooleanString($tf);
 
+	/**
+	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
+	 * @return     boolean
+	 */
+	public function hasStreamBlobImpl();
+
+	/**
+	 * Gets the preferred timestamp formatter for setting date/time values.
+	 * @return     string
+	 */
+	public function getTimestampFormatter();
+
+	/**
+	 * Gets the preferred date formatter for setting time values.
+	 * @return     string
+	 */
+	public function getDateFormatter();
+
+	/**
+	 * Gets the preferred time formatter for setting time values.
+	 * @return     string
+	 */
+	public function getTimeFormatter();
 }

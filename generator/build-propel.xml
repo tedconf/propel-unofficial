@@ -45,7 +45,7 @@
     classname="propel.phing.PropelDataModelTemplateTask" classpathRef="propelclasses"/>
   <taskdef
     name="propel-om"
-    classname="propel.phing.PropelOMTask" classpathRef="propelclasses"/>
+    classname="propel.phing\.tmp.PropelOMTask" classpathRef="propelclasses"/>
   <taskdef
     name="propel-data-dtd"
     classname="propel.phing.PropelDataDTDTask" classpathRef="propelclasses"/>
@@ -55,11 +55,9 @@
   <taskdef
     name="propel-data-sql"
     classname="propel.phing.PropelDataSQLTask" classpathRef="propelclasses"/>
-<!--
    <taskdef
     name="propel-creole-transform"
     classname="propel.phing.PropelCreoleTransformTask" classpathRef="propelclasses"/>
--->
 
   <taskdef
     name="propel-sql"
@@ -85,6 +83,7 @@
 
   <target
     name="main"
+  	depends="mysqli-check"
     description="==> generates sql + om classes">
 
     <phingcall target="sql"/>
@@ -148,9 +147,26 @@
 	</if>
   </target>
 
+	  <!--	temporary target to check whether mysqli is being used
+			If so, a warning is issued, since this is deprecated  -->
+	  <target name="mysqli-check">
+	  	<if>
+	  		<and>
+				<equals arg1="${propel.database}" arg2="mysqli"/>
+			</and>
+			<then>
+				<warn>ATTENTION: It appears you are using the mysqli driver.</warn>
+				<warn></warn>
+				<warn>This driver is no longer supported by Propel because Propel now uses PDO for database connections.</warn>
+				<warn>Please use mysqli driver instead.</warn>
+				<fail>Use 'mysql' instead of 'mysqli' for your propel.database property.</fail>
+			</then>
+		</if>
+	  </target>
+	
   <target
     name="sql"
-    depends="sql-check,pgsql-quoting-check"
+    depends="sql-check,pgsql-quoting-check,mysqli-check"
     unless="propel.internal.sql.uptodate"
     description="==> generates the SQL for your project">
 
@@ -173,6 +189,9 @@
       sqldbmap="${propel.sql.dir}/sqldb.map"
       targetDatabase="${propel.database}"
       packageObjectModel="${propel.packageObjectModel}"
+      url="${propel.database.url}"
+      userId="${propel.database.user}"
+      password="${propel.database.password}"
       >
       <mapper type="glob" from="${propel.sql.mapper.from}" to="${propel.sql.mapper.to}"/>
       <schemafileset dir="${propel.schema.dir}"
@@ -198,7 +217,7 @@
   <target
     name="create-db"
     unless="propel.internal.manualCreation"
-    depends="create-db-check"
+    depends="create-db-check,mysqli-check"
     description="==> generates the target database">
 
 	<fail message="create-db target temporarily disabled, while we replace creole components."/>
@@ -248,6 +267,8 @@
       sqldbmap="${propel.sql.dir}/sqldb.map"
       srcDir="${propel.sql.dir}"
       url="${propel.database.buildUrl}"
+      userId="${propel.database.user}"
+      password="${propel.database.password}"
     />
   </target>
 
@@ -264,19 +285,18 @@
     <echo message="| Generating XML from Creole connection !       |"/>
     <echo message="|                                               |"/>
     <echo message="+-----------------------------------------------+"/>
-    <fail message="The 'creole' target is temporarily disabled while we build a PDO reverse-engineer solution."/>
-	<!--
+
     <propel-creole-transform
-      dbDriver="${propel.database.driver}"
+      dbDriver="${propel.database.creole.driver}"
       dbSchema="${propel.database.schema}"
       dbEncoding="${propel.database.encoding}"
-      dbUrl="${propel.database.url}"
+      dbUrl="${propel.database.creole.url}"
       outputFile="${propel.schema.dir}/${propel.default.schema.basename}.xml"
       samePhpName="${propel.samePhpName}"
       addVendorInfo="${propel.addVendorInfo}"
       addValidators="${propel.addValidators}"
     />
-    -->
+
   </target>
 
 
@@ -397,7 +417,7 @@
 
   <target
     name="om"
-    depends="om-check"
+    depends="om-check,mysqli-check"
     unless="propel.internal.om.uptodate"
     description="==> generates the Peer-based object model for your project">
 

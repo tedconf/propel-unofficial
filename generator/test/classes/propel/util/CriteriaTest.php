@@ -23,6 +23,7 @@ class CriteriaTest extends BaseTestCase {
 	{
 		parent::setUp();
 		$this->c = new Criteria();
+		Propel::setDB(null, new DBSQLite());
 	}
 
 	/**
@@ -216,25 +217,33 @@ class CriteriaTest extends BaseTestCase {
 	 */
 	public function testCriterionIgnoreCase()
 	{
-		$myCriteria = new Criteria();
+		$adapters = array(new DBMySQL(), new DBPostgres());
+		$expectedIgnore = array("UPPER(TABLE.COLUMN) LIKE UPPER(?)", "TABLE.COLUMN ILIKE ?");
 
-		$myCriterion = $myCriteria->getNewCriterion(
-				"TABLE.COLUMN", "FoObAr", Criteria::LIKE);
-		$sb = "";
-		$params=array();
-		$myCriterion->appendPsTo($sb, $params);
-		$expected = "TABLE.COLUMN LIKE ?";
+		$i =0;
+		foreach ($adapters as $adapter) {
 
-		$this->assertEquals($expected, $sb);
+			Propel::setDB(null, $adapter);
+			$myCriteria = new Criteria();
 
-		$ignoreCriterion = $myCriterion->setIgnoreCase(true);
+			$myCriterion = $myCriteria->getNewCriterion(
+					"TABLE.COLUMN", "FoObAr", Criteria::LIKE);
+			$sb = "";
+			$params=array();
+			$myCriterion->appendPsTo($sb, $params);
+			$expected = "TABLE.COLUMN LIKE ?";
 
-		$sb = "";
-		$params=array();
-		$ignoreCriterion->appendPsTo($sb, $params);
-		$expected = "UPPER(TABLE.COLUMN) LIKE UPPER(?)";
-		$this->assertEquals($expected, $sb);
+			$this->assertEquals($expected, $sb);
 
+			$ignoreCriterion = $myCriterion->setIgnoreCase(true);
+
+			$sb = "";
+			$params=array();
+			$ignoreCriterion->appendPsTo($sb, $params);
+			// $expected = "UPPER(TABLE.COLUMN) LIKE UPPER(?)";
+			$this->assertEquals($expectedIgnore[$i], $sb);
+			$i++;
+		}
 	}
 
 	/**
@@ -504,6 +513,28 @@ class CriteriaTest extends BaseTestCase {
 			print $e->getTraceAsString();
 			$this->fail("PropelException thrown in BasePeer.createSelectSql(): ". $e->getMessage());
 		}
+		$this->assertEquals($expect, $result);
+	}
+
+	/**
+	 * @link       http://propel.phpdb.org/trac/ticket/451
+	 */
+	public function testMultipleMixedJoinOrders()
+	{
+		$c = new Criteria();
+		$c->clearSelectColumns()->
+			addJoin("TABLE_A.FOO_ID", "TABLE_B.ID", Criteria::LEFT_JOIN)->
+			addJoin("TABLE_A.BAR_ID", "TABLE_C.ID", Criteria::INNER_JOIN)->
+			addSelectColumn("TABLE_A.ID");
+
+		$expect = 'SELECT TABLE_A.ID FROM (TABLE_A, TABLE_C)'
+					.' LEFT JOIN TABLE_B ON (TABLE_A.FOO_ID=TABLE_B.ID) WHERE TABLE_A.BAR_ID=TABLE_C.ID';
+
+		$result = BasePeer::createSelectSql($c, $params=array());
+
+		print "Actual:   " . $result . "\n---\n";
+		print "Expected: " . $expect . "\n";
+
 		$this->assertEquals($expect, $result);
 	}
 }

@@ -74,7 +74,6 @@ abstract class DBAdapter {
 	public static function factory($driver) {
 		$adapterClass = isset(self::$adapters[$driver]) ? self::$adapters[$driver] : null;
 		if ($adapterClass !== null) {
-			require 'propel/adapter/'.$adapterClass.'.php';
 			$a = new $adapterClass();
 			return $a;
 		} else {
@@ -83,9 +82,29 @@ abstract class DBAdapter {
 	}
 
 	/**
+	 * This method is called after a connection was created to run necessary
+	 * post-initialization queries or code.
+	 *
+	 * This base method runs queries specified using the "query" setting.
+	 *
+	 * @param      PDO   A PDO connection instance.
+	 * @param      array An array of settings.
+	 */
+	public function initConnection(PDO $con, array $settings)
+	{
+		if (isset($settings['queries']) && is_array($settings['queries'])) {
+			foreach ($settings['queries'] as $queries) {
+				foreach ((array)$queries as $query) {
+					$con->query($query);
+				}
+			}
+		}
+	}
+
+	/**
 	 * This method is used to ignore case.
 	 *
-	 * @param      in The string to transform to upper case.
+	 * @param      string The string to transform to upper case.
 	 * @return     string The upper case string.
 	 */
 	public abstract function toUpperCase($in);
@@ -243,7 +262,7 @@ abstract class DBAdapter {
 	 * Modifies the passed-in SQL to add LIMIT and/or OFFSET.
 	 */
 	public abstract function applyLimit(&$sql, $offset, $limit);
-	
+
 	public abstract function random($seed=NULL);
 
 }

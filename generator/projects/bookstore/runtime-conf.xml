@@ -41,10 +41,10 @@
 
 			<datasource id="bookstore">
 				<!-- the Propel adapter to use for this connection -->
-				<adapter>sqlite</adapter>
+				<adapter>pgsql</adapter>
 				<!-- Connection parameters. See PDO documentation for DSN format and available option constants. -->
 				<connection>
-					<dsn>sqlite2:/tmp/bookstore.db</dsn>
+					<dsn>pgsql:dbname=bookstore user=postgres</dsn>
 					<!--
 					For MySQL and Oracle you must specify username + password separate from DSN:
 					<user>testuser</user>
@@ -52,11 +52,27 @@
 					-->
 					<options>
 						<option id="ATTR_PERSISTENT">false</option>
-						<!-- for MySQL, you should also turn on prepared statement emulation, as
-							prepared statements support is buggy in mysql driver
+					</options>
+					
+					<attributes>
+						<!-- for MySQL, you should also turn on prepared statement emulation, as prepared statements support is buggy in mysql driver
 						<option id="ATTR_EMULATE_PREPARES">true</option>
 						-->
-					</options>
+					</attributes>
+					
+					<settings>
+						<setting id="charset">utf8</setting>
+						<!-- for MySQL >= 4.1 you'll likely need this
+						<setting id="charset">utf8</setting>
+						-->
+						
+						<!-- you can also execute arbitrary queries after the connection is created
+						<setting id="queries">
+							<query>SELECT * FROM foo</query>
+							<query>INSERT INTO BAR ('hey', 'there')</query>
+						</setting>
+						-->
+					</settings>
 				</connection>
 			</datasource>
 

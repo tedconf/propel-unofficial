@@ -117,12 +117,27 @@ class DBOracle extends DBAdapter {
 		}
 	}
 
-	/* someone please confirm this is valid
-	public function random($seed=NULL) 
+	protected function getIdMethod()
+	{
+		return DBAdapter::ID_METHOD_SEQUENCE;
+	}
+
+	public function getId(PDO $con, $name = null)
+	{
+		if ($name === null) {
+			throw new PropelException("Unable to fetch next sequence ID without sequence name.");
+		}
+
+		$stmt = $con->query("SELECT " . $name . ".nextval FROM dual");
+		$row = $stmt->fetch(PDO::FETCH_NUM);
+
+		return $row[0];
+	}
+
+	public function random($seed=NULL)
 	{
 		return 'dbms_random.value';
 	}
-	*/	
-	
+
 
 }

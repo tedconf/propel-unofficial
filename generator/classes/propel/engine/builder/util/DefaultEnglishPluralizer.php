@@ -1,5 +1,4 @@
 <?php
-
 /*
  *  $Id$
  *
@@ -20,13 +19,25 @@
  * <http://propel.phpdb.org>.
  */
 
-/**
- * This is used in order to connect to a MySQL database using the new mysqli API.
- *
- * @author     Hans Lellelid <hans@xmpl.org> (Propel)
- * @version    $Revision$
- * @package    propel.adapter
- */
-class DBMySQLi extends DBMySQL {
+require_once 'propel/engine/builder/util/Pluralizer.php';
 
+/**
+ * The default Enlglish pluralizer class.
+ *
+ * @author     Hans Lellelid <hans@xmpl.org>
+ * @version    $Revision$
+ * @package    propel.engine.generator
+ */
+class DefaultEnglishPluralizer implements Pluralizer {
+
+	/**
+	 * Generate a plural name based on the passed in root.
+	 * @param      string $root The root that needs to be pluralized (e.g. Author)
+	 * @return     string The plural form of $root (e.g. Authors).
+	 */
+	public function getPluralForm($root)
+	{
+		return $root . 's';
+	}
+	
 }

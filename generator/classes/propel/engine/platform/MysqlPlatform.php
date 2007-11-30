@@ -37,10 +37,9 @@ class MysqlPlatform extends DefaultPlatform {
 	protected function initialize()
 	{
 		parent::initialize();
+		$this->setSchemaDomainMapping(new Domain(PropelTypes::BOOLEAN, "TINYINT"));
 		$this->setSchemaDomainMapping(new Domain(PropelTypes::NUMERIC, "DECIMAL"));
 		$this->setSchemaDomainMapping(new Domain(PropelTypes::LONGVARCHAR, "TEXT"));
-		$this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "DATETIME"));
-		$this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "DATETIME"));
 		$this->setSchemaDomainMapping(new Domain(PropelTypes::BINARY, "BLOB"));
 		$this->setSchemaDomainMapping(new Domain(PropelTypes::VARBINARY, "MEDIUMBLOB"));
 		$this->setSchemaDomainMapping(new Domain(PropelTypes::LONGVARBINARY, "LONGBLOB"));
@@ -80,7 +79,8 @@ class MysqlPlatform extends DefaultPlatform {
 	/**
 	 * @see        Platform#hasSize(String)
 	 */
-	public function hasSize($sqlType) {
+	public function hasSize($sqlType)
+	{
 		return !("MEDIUMTEXT" == $sqlType || "LONGTEXT" == $sqlType
 				|| "BLOB" == $sqlType || "MEDIUMBLOB" == $sqlType
 				|| "LONGBLOB" == $sqlType);
@@ -91,8 +91,13 @@ class MysqlPlatform extends DefaultPlatform {
 	 * @param      string $text
 	 * @return     string
 	 */
-	public function escapeText($text) {
-		return mysql_escape_string($text);
+	public function disconnectedEscapeText($text)
+	{
+		if (function_exists('mysql_escape_string')) {
+			return mysql_escape_string($text);
+		} else {
+			return addslashes($text);
+		}
 	}
 
 	/**
@@ -101,5 +106,14 @@ class MysqlPlatform extends DefaultPlatform {
 	public function quoteIdentifier($text)
 	{
 		return '`' . $text . '`';
+	}
+
+	/**
+	 * Gets the preferred timestamp formatter for setting date/time values.
+	 * @return     string
+	 */
+	public function getTimestampFormatter()
+	{
+		return 'Y-m-d H:i:s';
 	}
 }

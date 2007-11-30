@@ -75,7 +75,7 @@ abstract class DataModelBuilder {
 
 	/**
 	 * Imports and returns the classname of the builder class for specified 'type'.
-	 * @param      $type The "key" for class to load.
+	 * @param      string $type The "key" for class to load.
 	 * @return     string The unqualified classname.
 	 */
 	public static function getBuilderClass($type)
@@ -93,8 +93,11 @@ abstract class DataModelBuilder {
 		// This is a slight hack to workaround camel case inconsistencies for the DDL classes.
 		// Basically, we want to turn ?.?.?.sqliteDDLBuilder into ?.?.?.SqliteDDLBuilder
 		$lastdotpos = strrpos($classpath, '.');
-		if ($lastdotpos) $classpath{$lastdotpos+1} = strtoupper($classpath{$lastdotpos+1});
-		else ucfirst($classpath);
+		if ($lastdotpos !== false) {
+			$classpath{$lastdotpos+1} = strtoupper($classpath{$lastdotpos+1});
+		} else {
+			$classpath = ucfirst($classpath);
+		}
 
 		return Phing::import($classpath);
 	}

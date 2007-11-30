@@ -25,7 +25,7 @@ require_once 'propel/engine/builder/sql/DDLBuilder.php';
 /**
  * DDL Builder class for MySQL.
  *
- * @author     David Zülke
+ * @author     David Zï¿½lke
  * @author     Hans Lellelid <hans@xmpl.org>
  * @package    propel.engine.builder.sql.mysql
  */
@@ -112,8 +112,15 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 
 		foreach ($table->getColumns() as $col) {
 			$entry = $this->getColumnDDL($col);
+			$colinfo = $col->getVendorSpecificInfo();
+			if ( isset ( $colinfo['Charset'] ) ) {
+				$entry .= ' CHARACTER SET '.$platform->quote($colinfo['Charset']);
+			}
+			if ( isset ( $colinfo['Collate'] ) ) {
+				$entry .= ' COLLATE '.$platform->quote($colinfo['Collate']);
+			}
 			if ($col->getDescription()) {
-				$entry .= " COMMENT '".$platform->escapeText($col->getDescription())."'";
+				$entry .= " COMMENT ".$platform->quote($col->getDescription());
 			}
 			$lines[] = $entry;
 		}
@@ -143,8 +150,28 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 		}
 
 		$script .= "Type=$mysqlTableType";
+
+		$dbVendorSpecific = $table->getDatabase()->getVendorSpecificInfo();
+		$tableVendorSpecific = $table->getVendorSpecificInfo();
+		$vendorSpecific = array_merge ( $dbVendorSpecific, $tableVendorSpecific );
+		if ( isset ( $vendorSpecific['Charset'] ) ) {
+			$script .= ' CHARACTER SET '.$platform->quote($vendorSpecific['Charset']);
+		}
+		if ( isset ( $vendorSpecific['Collate'] ) ) {
+			$script .= ' COLLATE '.$platform->quote($vendorSpecific['Collate']);
+		}
+		if ( isset ( $vendorSpecific['Checksum'] ) ) {
+			$script .= ' CHECKSUM='.$platform->quote($vendorSpecific['Checksum']);
+		}
+		if ( isset ( $vendorSpecific['Pack_Keys'] ) ) {
+			$script .= ' PACK_KEYS='.$platform->quote($vendorSpecific['Pack_Keys']);
+		}
+		if ( isset ( $vendorSpecific['Delay_key_write'] ) ) {
+			$script .= ' DELAY_KEY_WRITE='.$platform->quote($vendorSpecific['Delay_key_write']);
+		}
+
 		if ($table->getDescription()) {
-			$script .= " COMMENT='".$platform->escapeText($table->getDescription())."'";
+			$script .= " COMMENT=".$platform->quote($table->getDescription());
 		}
 		$script .= ";
 ";
@@ -296,4 +323,41 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 	{
 	}
 
+	/**
+	 * Builds the DDL SQL for a Column object.
+	 * @return     string
+	 */
+	public function getColumnDDL(Column $col)
+	{
+		$platform = $this->getPlatform();
+		$domain = $col->getDomain();
+
+		$sb = "";
+		$sb .= $this->quoteIdentifier($col->getName()) . " ";
+		$sb .= $domain->getSqlType();
+		if ($platform->hasSize($domain->getSqlType())) {
+			$sb .= $domain->printSize();
+		}
+		$sb .= " ";
+                if ($domain->getSqlType() == 'TIMESTAMP') {
+			$not_null_string = $col->getNotNullString();
+			$default_setting = $col->getDefaultSetting();
+
+			if ($not_null_string == '') {
+				$not_null_string = 'NULL';
+			}
+
+			if ($default_setting == '' && $not_null_string == 'NOT NULL') {
+				$default_setting = 'DEFAULT CURRENT_TIMESTAMP';
+			}
+
+			$sb .= $not_null_string . " " . $default_setting . " ";
+		} else {
+			$sb .= $col->getDefaultSetting() . " ";
+			$sb .= $col->getNotNullString() . " ";
+		}
+		$sb .= $col->getAutoIncrementString();
+
+		return trim($sb);
+	}
 }

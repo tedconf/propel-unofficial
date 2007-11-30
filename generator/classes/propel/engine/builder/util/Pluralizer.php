@@ -19,40 +19,20 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/engine/platform/MysqlPlatform.php';
-
 /**
- * MySql Platform implementation, using new mysqli API.
+ * The generic interface to create a plural form of a name.
  *
- * @author     Hans Lellelid <hans@xmpl.org> (Propel)
+ * @author     Hans Lellelid <hans@xmpl.org>
  * @version    $Revision$
- * @package    propel.engine.platform
+ * @package    propel.engine.generator
  */
-class MysqliPlatform extends MysqlPlatform {
+interface Pluralizer {
 
 	/**
-	 * Initializes db specific domain mapping.
+	 * Generate a plural name based on the passed in root.
+	 * @param      string $root The root that needs to be pluralized (e.g. Author)
+	 * @return     string The plural form of $root.
 	 */
-	protected function initialize()
-	{
-		parent::initialize();
-
-		// HL -- commenting these out, as it turns out that while the date format is fixed
-		// there is still a special meaning to TIMESTAMP in MySQL 4.1+
-		// $this->setSchemaDomainMapping(new Domain(PropelTypes::TIMESTAMP, "TIMESTAMP"));
-		// $this->setSchemaDomainMapping(new Domain(PropelTypes::BU_TIMESTAMP, "TIMESTAMP"));
-	}
-
-	/**
-	 * Escape the string for MySQL.
-	 *
-	 * @param      string $text
-	 * @return     string
-	 */
-	public function escapeText($text) {
-		// Because mysqli requires open connection, we are using addslashes() here.
-		// This needs to be fixed in a better way ...
-		return addslashes($text);
-	}
-
+	public function getPluralForm($root);
+	
 }

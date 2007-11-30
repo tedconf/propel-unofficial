@@ -80,8 +80,13 @@ class PgsqlPlatform extends DefaultPlatform {
 	 * @param      string $text
 	 * @return     string
 	 */
-	public function escapeText($text) {
-		return pg_escape_string($text);
+	public function disconnectedEscapeText($text)
+	{
+		if (function_exists('pg_escape_string')) {
+			return pg_escape_string($text);
+		} else {
+			return parent::disconnectedEscapeText($text);
+		}
 	}
 
 	/**
@@ -110,5 +115,14 @@ class PgsqlPlatform extends DefaultPlatform {
 	public function hasSize($sqlType)
 	{
 		return !("BYTEA" == $sqlType || "TEXT" == $sqlType);
+	}
+
+	/**
+	 * Whether the underlying PDO driver for this platform returns BLOB columns as streams (instead of strings).
+	 * @return     boolean
+	 */
+	public function hasStreamBlobImpl()
+	{
+		return true;
 	}
 }

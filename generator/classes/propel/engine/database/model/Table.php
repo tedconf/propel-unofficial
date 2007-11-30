@@ -143,6 +143,12 @@ class Table extends XMLElement implements IDMethod {
 		if ($this->heavyIndexing) {
 			$this->doHeavyIndexing();
 		}
+		
+		// If there is no PK, then throw an error.  Propel 1.3 requires primary keys.
+		$pk = $this->getPrimaryKey();
+		if (empty($pk)) {
+			throw new EngineException("Table '".$this->getName()."' does not have a primary key defined.  Propel requires all tables to have a primary key.");	
+		}
 
 		// Name any indices which are missing a name using the
 		// appropriate algorithm.
@@ -150,17 +156,21 @@ class Table extends XMLElement implements IDMethod {
 
 		// if idMethod is "native" and in fact there are no autoIncrement
 		// columns in the table, then change it to "none"
-		if ($this->getIdMethod() === IDMethod::NATIVE) {
-			$anyAutoInc = false;
-			foreach ($this->getColumns() as $col) {
-				if ($col->isAutoIncrement()) {
-					$anyAutoInc = true;
-					break;
-				}
+		$anyAutoInc = false;
+		$hasPK = false;
+		foreach ($this->getColumns() as $col) {
+			if ($col->isAutoIncrement()) {
+				$anyAutoInc = true;
 			}
-			if (!$anyAutoInc) {
-				$this->setIdMethod(IDMethod::NO_ID_METHOD);
+			if ($col->isPrimaryKey()) {
+				$hasPK = true;
 			}
+		}
+		if ($this->getIdMethod() === IDMethod::NATIVE && !$anyAutoInc) {
+			$this->setIdMethod(IDMethod::NO_ID_METHOD);
+		}
+		if (!$hasPK) {
+			throw new EngineException("Table '" . $this->getName() . "' does not define a primary key column!");
 		}
 	}
 
@@ -844,27 +854,36 @@ class Table extends XMLElement implements IDMethod {
 	}
 
 	/**
-	 * Return the first foreign key that includes col in it's list
-	 * of local columns.  Eg. Foreign key (a,b,c) refrences tbl(x,y,z)
-	 * will be returned of col is either a,b or c.
-	 * @param      string $col
-	 * @return     Return a Column object or null if it does not exist.
+	 * Get all the foreign keys from this table to the specufued tabke.
+	 * @return     array ForeignKey[]
 	 */
-	public function getForeignKey($col)
+	public function getForeignKeysReferencingTable($tablename)
 	{
-		$firstFK = null;
-		for ($i=0,$size=count($this->foreignKeys); $i < $size; $i++) {
-			$key = $this->foreignKeys[$i];
-			if (in_array($col, $key->getLocalColumns())) {
-				if ($firstFK === null) {
-					$firstFK = $key;
-				} else {
-					throw new EngineException($col . " has ben declared as a foreign key multiple times.  This is not"
-								       . " being handled properly. (Try moving foreign key declarations to the foreign table.)");
-				}
+		$matches = array();
+		$keys = $this->getForeignKeys();
+		foreach ($keys as $fk) {
+			if ($fk->getForeignTableName() === $tablename) {
+				$matches[] = $fk;
 			}
 		}
-		return $firstFK;
+		return $matches;
+	}
+
+	/**
+	 * Return the foreign keys that includes col in it's list of local columns.
+	 * Eg. Foreign key (a,b,c) refrences tbl(x,y,z) will be returned of col is either a,b or c.
+	 * @param      string $col
+	 * @return     array ForeignKey[] or null if there is no FK for specified column.
+	 */
+	public function getColumnForeignKeys($colname)
+	{
+		$matches = array();
+		foreach ($this->foreignKeys as $fk) {
+			if (in_array($colname, $fk->getLocalColumns())) {
+				$matches[] = $fk;
+			}
+		}
+		return $matches;
 	}
 
 	/**

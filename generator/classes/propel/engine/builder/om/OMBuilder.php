@@ -111,7 +111,13 @@ abstract class OMBuilder extends DataModelBuilder {
 	 * @var        DataModelBuilder
 	 */
 	private $nestedSetPeerBuilder;
-
+	
+	/**
+	 * The Pluralizer class to use.
+	 * @var        Pluralizer
+	 */
+	private $pluralizer;
+	
 	/**
 	 * Returns new or existing Peer builder class for this table.
 	 * @return     DataModelBuilder
@@ -123,7 +129,20 @@ abstract class OMBuilder extends DataModelBuilder {
 		}
 		return $this->peerBuilder;
 	}
-
+	
+	/**
+	 * Returns new or existing Pluralizer class.
+	 * @return     Pluralizer
+	 */
+	public function getPluralizer()
+	{
+		if (!isset($this->pluralizer)) {
+			$classname = self::getBuilderClass('pluralizer');
+			$this->pluralizer = new $classname();
+		}
+		return $this->pluralizer;
+	}
+	
 	/**
 	 * Returns new or existing stub Peer builder class for this table.
 	 * @return     DataModelBuilder
@@ -311,6 +330,17 @@ abstract class OMBuilder extends DataModelBuilder {
 		$this->addClassBody($script);
 		$this->addClassClose($script);
 		return $script;
+	}
+
+	/**
+	 * Creates a $obj = new Book(); code snippet. Can be used by frameworks, for instance, to
+	 * extend this behavior, e.g. initialize the object after creating the instance or so.
+	 *
+	 * @return     string Some code
+	 */
+	public function buildObjectInstanceCreationCode($objName, $clsName)
+	{
+		return "$objName = new $clsName();";
 	}
 
 	/**
