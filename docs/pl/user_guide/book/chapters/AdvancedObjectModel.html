@@ -45,8 +45,8 @@ class BaseBook extends BookstoreComponent {</pre>
  &lt;column name=&quot;title&quot; type=&quot;VARCHAR&quot; size=&quot;100&quot;/&gt;
 &lt;/table&gt;</pre>
 <p><em><strong>Ważne:</strong> musisz sprecyzować prefiks dla paczki kiedy wskazujesz klase dziedziczoną (extends=&quot;package.ClassName&quot;) tak aby te klasy mogły być prawidłowo dodane na początku definicji klasy dziedziczącej; jednak nie mozesz sprecyzować paczki dla klasy dziedziczonej, ponieważ Propel buduje jednocześnie tylko jedną paczkę (wyszczególnioną poprzez zmienną ${propel.targetPackage} w pliku <tt>build.properties</tt>) i jest wymogiem żeby klasa dziedziczona była częścią paczki którą własnie budujesz. Niewykluczone, że klasa dziedziczona może być częścią oddzielnej paczki.</em></p>
-<p>Wynikiem kodu powyżej będzie stworzenie 2 klas -- <strong>BasePublicationPeer</strong> i <strong>BasePublication</strong> -- oraz 4 [stub] klas -- <strong>PublicationPeer</strong>, <strong>Publication</strong>, <strong>Journal</strong> (dziedziczy po <strong>Publication</strong>), 
-  i <strong>Magazine</strong> (dziedziczy po <strong>Journal</strong>).</p>
+<p>Wynikiem kodu powyżej będzie stworzenie 2 klas -- <strong>BasePublicationPeer</strong> i <strong>BasePublication</strong> -- oraz 4 klas -- <strong>PublicationPeer</strong>, <strong>Publication</strong>, <strong>Journal</strong> (dziedziczy po <strong>Publication</strong>), 
+  i <strong>Magazine</strong> (dziedziczy po <strong>Journal</strong>). Te klasy to tak zwane końcówki (stub), które możesz rozszerzać</p>
 <p align="center"><img src="../images/inheritance.gif" width="113" height="385" /></p>
 
 <p> Zauważ że tylko klasa Peer została stworzona. Jeśli chcesz sie upewnić że twoje klasy dziedziczone będą działać jedynie zestawem kolumnami dla każdego rekordu, powinieneś nadpisać metodę <strong>BasePublicationPeer::populateObject()</strong> aby zapewnic indywidualne wypełnienie bazujące na klasie obiektu. Jednakże w wielu wypadkach sam fakt, że zwracane są obiekty prawidłowej klasy, jest wystarczający dla potrzeb twojej aplikacji.</p>

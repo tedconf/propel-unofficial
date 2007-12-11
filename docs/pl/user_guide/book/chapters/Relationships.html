@@ -93,8 +93,7 @@ foreach($books as $book) {
   <li>SELECT * FROM book_reader_ref INNER JOIN reader ON reader.reader_id = book_reader_ref.reader_id 
     WHERE book_reader_ref.book_id = $book-&gt;getBookId()</li>
 </ol>
-<p>Metoda ta nie jest zbytnio rozrzutna -- w porównaniu z wykonywaniem pojedyńczych zapytań łączących zależność wiele do wielu ktora zazwyczaj nie ma sensu -- ale także jest &quot;mniej elegancka&quot; niż obsluga zależności jeden-do-jednego. Wymagana wyraźna referencja do tablicy łączącej jest przeszkodą w użyciu modelowania  dużych danych typu string zastosowanych w propelu (dziedziczone z Torque).
-[niejestem tego pewienRequiring the explicitly reference of the cross-reference table is a drawback to using the very literal data modeling approach adopted by Propel (inherited from Torque).] </p>
+<p>Metoda ta nie jest zbytnio rozrzutna -- w porównaniu z wykonywaniem pojedyńczych zapytań łączących zależność wiele do wielu ktora zazwyczaj nie ma sensu -- ale także jest &quot;mniej elegancka&quot; niż obsluga zależności jeden-do-jednego. Wymagana konkretna referencja do tablicy łączącej jest przeszkodą dla użycia bardziej złożonego modelowania   zastosowanego w propelu (odziedziczone z Torque).</p>
 <h2><a name="Relationships.CascadingDelete"></a>Usuwanie kaskadowe</h2>
 <p>Propel także wspiera kasowanie kaskadowe, które może być ustawione poprzez atrybut <strong>onDelete=&quot;cascade&quot;</strong> w tagu <strong>&lt;foreign-key&gt;</strong>. Torque także wspierał onUpdate=&quot;cascade&quot;, ale od kiedy Propel nie zezwala na aktualizacje 'PrimaryKey' opcja nie zostanie dodana, dodatkowo niektóre bazy danych po prostu nie wspierają. Dla baz które nie posiadają takiej funkcji, Propel wspiera je emulując kasowanie kaskadowe. (np.MySQL v4.x).</p>
 <pre title="Example of cascade delete definition">&lt;table name=&quot;review&quot;&gt;

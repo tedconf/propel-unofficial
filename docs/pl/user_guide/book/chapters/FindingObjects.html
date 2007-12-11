@@ -108,7 +108,7 @@ $c-&gt;add($cton1);
 
 <h3>Określanie Wielu Warunków dla Kolumny</h3>
 
-<p>W przykładzie powyżej, zobaczyliśmy, jak można określać pojedyncze warunki dla kolumny (np. author.FIRST_NAME = "Leo"). W istocie, określanie wielu warunków dla pojedynczej kolumny jest bardziej złożone, bo Propel przechowuje warunki w tzw. "hashtable" (ze względów wydajnościowych).[kupy się nie trzyma to tłumaczenie]</p>
+<p>W przykładzie powyżej, zobaczyliśmy, jak można określać pojedyncze warunki dla kolumny (np. author.FIRST_NAME = "Leo"). W istocie, określanie wielu warunków dla pojedynczej kolumny jest bardziej złożone, bo Propel przechowuje warunki w tzw. "hashtable" (ze względów wydajnościowych).</p>
 
 <p><strong>Poniżej przykład błędnego użycia Criteria</strong></p>
 <pre title="Criteria: WRONG use of multiple conditions">
@@ -184,11 +184,9 @@ class BookPeer extends BaseBookPeer {
    */
   function getUnreviewedBooks() {
     $con = Propel::getConnection(DATABASE_NAME);
-	
-    // if not using a driver that supports sub-selects
-    // you must do a cross join (left join w/ NULL)
+
     // jeśli używasz sterownka, który nie obsługuje podzapytań
-    // musisz wykonać join (left join w/ NULL) [wtf to znaczy?]
+    // musisz wykonać join (left join)
     $sql = "SELECT books.* FROM books WHERE ".
            "NOT EXISTS (SELECT id FROM review WHERE book_id = book.id)";
     
