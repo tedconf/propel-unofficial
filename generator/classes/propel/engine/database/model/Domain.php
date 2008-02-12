@@ -246,6 +246,11 @@ class Domain extends XMLElement {
 			// convert "true" => TRUE
 			return $this->booleanValue($this->defaultValue);
 		} elseif ($this->propelType === PropelTypes::DATE || $this->propelType === PropelTypes::TIME || $this->propelType === PropelTypes::TIMESTAMP) {
+            // Under PHP 5.2.5, using '0000-00-00' as the default value will trigger an exception
+            // so instead of converting it to unix timestamp, we turn it into a null
+            if(preg_match('/^0000-00-00/', $this->defaultValue)) {
+                return null;
+            } 
 			// DATE/TIME vals need to be converted to integer timestamp
 			$ts = strtotime($this->defaultValue);
 			if ($ts === -1 || $ts === false) { // in PHP 5.1 return value changes to FALSE
