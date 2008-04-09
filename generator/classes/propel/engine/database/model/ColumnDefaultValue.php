@@ -15,7 +15,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This software consists of voluntary contributions made by many individuals
- * and is licensed under the LGPL. For more information please see
+ * and is licensed under version 3 of the LGPL. For more information please see
  * <http://propel.phpdb.org>.
  */
 
