@@ -30,6 +30,7 @@
  *
  * @author     Hans Lellelid <hans@xmpl.org> (Propel)
  * @author     Kaspars Jaudzems <kaspars.jaudzems@inbox.lv> (Propel)
+ * @author     Heltem <heltem@o2php.com> (Propel)
  * @author     Frank Y. Kim <frank.kim@clearink.com> (Torque)
  * @author     John D. McNally <jmcnally@collab.net> (Torque)
  * @author     Brett McLaughlin <bmclaugh@algx.net> (Torque)
@@ -103,7 +104,7 @@ class BasePeer
 	 * Criteria.
 	 *
 	 * @param      Criteria $criteria The criteria to use.
-	 * @param      PDO $con A PDO connection object.
+	 * @param      PropelPDO $con A PropelPDO connection object.
 	 * @return     int	The number of rows affected by last statement execution.  For most
 	 * 				uses there is only one delete statement executed, so this number
 	 * 				will correspond to the number of rows affected by the call to this
@@ -111,7 +112,7 @@ class BasePeer
 	 * 				is returned (supported) by the PDO driver.
 	 * @throws     PropelException
 	 */
-	public static function doDelete(Criteria $criteria, PDO $con)
+	public static function doDelete(Criteria $criteria, PropelPDO $con)
 	{
 		$db = Propel::getDB($criteria->getDbName());
 		$dbMap = Propel::getDatabaseMap($criteria->getDbName());
@@ -155,7 +156,6 @@ class BasePeer
 			// Execute the statement.
 			try {
 				$sql = "DELETE FROM " . $tableName . " WHERE " .  implode(" AND ", $whereClause);
-				Propel::log($sql, Propel::LOG_DEBUG);
 				$stmt = $con->prepare($sql);
 				self::populateStmtValues($stmt, $selectParams, $dbMap, $db);
 				$stmt->execute();
@@ -183,17 +183,16 @@ class BasePeer
 	 * </code>
 	 *
 	 * @param      string $tableName The name of the table to empty.
-	 * @param      PDO $con A PDO connection object.
+	 * @param      PropelPDO $con A PropelPDO connection object.
 	 * @return     int	The number of rows affected by the statement.  Note
 	 * 				that the return value does require that this information
 	 * 				is returned (supported) by the Creole db driver.
 	 * @throws     PropelException - wrapping SQLException caught from statement execution.
 	 */
-	public static function doDeleteAll($tableName, PDO $con)
+	public static function doDeleteAll($tableName, PropelPDO $con)
 	{
 		try {
 			$sql = "DELETE FROM " . $tableName;
-			Propel::log($sql, Propel::LOG_DEBUG);
 			$stmt = $con->prepare($sql);
 			$stmt->execute();
 			return $stmt->rowCount();
@@ -221,12 +220,12 @@ class BasePeer
 	 * inserted as specified in Criteria and null will be returned.
 	 *
 	 * @param      Criteria $criteria Object containing values to insert.
-	 * @param      PDO $con A PDO connection.
+	 * @param      PropelPDO $con A PropelPDO connection.
 	 * @return     mixed The primary key for the new row if (and only if!) the primary key
 	 *				is auto-generated.  Otherwise will return <code>null</code>.
 	 * @throws     PropelException
 	 */
-	public static function doInsert(Criteria $criteria, PDO $con) {
+	public static function doInsert(Criteria $criteria, PropelPDO $con) {
 
 		// the primary key
 		$id = null;
@@ -258,7 +257,7 @@ class BasePeer
 
 		// pk will be null if there is no primary key defined for the table
 		// we're inserting into.
-		if ($pk !== null && $useIdGen && !$criteria->containsKey($pk->getFullyQualifiedName()) && $db->isGetIdBeforeInsert()) {
+		if ($pk !== null && $useIdGen && !$criteria->keyContainsValue($pk->getFullyQualifiedName()) && $db->isGetIdBeforeInsert()) {
 			try {
 				$id = $db->getId($con, $keyInfo);
 			} catch (Exception $e) {
@@ -273,7 +272,7 @@ class BasePeer
 			$qualifiedCols = $criteria->keys(); // we need table.column cols when populating values
 			$columns = array(); // but just 'column' cols for the SQL
 			foreach ($qualifiedCols as $qualifiedCol) {
-				$columns[] = substr($qualifiedCol, strpos($qualifiedCol, '.') + 1);
+				$columns[] = substr($qualifiedCol, strrpos($qualifiedCol, '.') + 1);
 			}
 
 			// add identifiers
@@ -281,11 +280,15 @@ class BasePeer
 				$columns = array_map(array($adapter, 'quoteIdentifier'), $columns);
 			}
 
-			$sql = "INSERT INTO " . $tableName
-				. " (" . implode(",", $columns) . ")"
-				. " VALUES (" . substr(str_repeat("?,", count($columns)), 0, -1) . ")";
-
-			Propel::log($sql, Propel::LOG_DEBUG);
+			$sql = 'INSERT INTO ' . $tableName
+			. ' (' . implode(',', $columns) . ')'
+			. ' VALUES (';
+			// . substr(str_repeat("?,", count($columns)), 0, -1) . 
+			for($p=1, $cnt=count($columns); $p <= $cnt; $p++) {
+				$sql .= ':p'.$p;
+				if ($p !== $cnt) $sql .= ',';
+			}
+			$sql .= ')';
 
 			$stmt = $con->prepare($sql);
 			self::populateStmtValues($stmt, self::buildParams($qualifiedCols, $criteria), $dbMap, $db);
@@ -321,7 +324,7 @@ class BasePeer
 	 *		clause.
 	 * @param      $updateValues A Criteria object containing values used in set
 	 *		clause.
-	 * @param      PDO $con The PDO connection object to use.
+	 * @param      PropelPDO $con The PropelPDO connection object to use.
 	 * @return     int	The number of rows affected by last update statement.  For most
 	 * 				uses there is only one update statement executed, so this number
 	 * 				will correspond to the number of rows affected by the call to this
@@ -329,7 +332,7 @@ class BasePeer
 	 * 				is returned (supported) by the Creole db driver.
 	 * @throws     PropelException
 	 */
-	public static function doUpdate(Criteria $selectCriteria, Criteria $updateValues, PDO $con) {
+	public static function doUpdate(Criteria $selectCriteria, Criteria $updateValues, PropelPDO $con) {
 
 		$db = Propel::getDB($selectCriteria->getDbName());
 		$dbMap = Propel::getDatabaseMap($selectCriteria->getDbName());
@@ -345,35 +348,65 @@ class BasePeer
 		foreach ($tablesColumns as $tableName => $columns) {
 
 			$whereClause = array();
-
-			$selectParams = array();
-			foreach ($columns as $colName) {
-				$sb = "";
-				$selectCriteria->getCriterion($colName)->appendPsTo($sb, $selectParams);
-				$whereClause[] = $sb;
-			}
+			
+			$params = array();
 
 			$stmt = null;
 			try {
 
 				$sql = "UPDATE " . $tableName . " SET ";
+				$p = 1;
 				foreach ($updateTablesColumns[$tableName] as $col) {
-					$updateColumnName = substr($col, strpos($col, '.') + 1);
+					$updateColumnName = substr($col, strrpos($col, '.') + 1);
 					// add identifiers for the actual database?
 					if ($db->useQuoteIdentifier()) {
 						$updateColumnName = $db->quoteIdentifier($updateColumnName);
 					}
-					$sql .= $updateColumnName . " = ?,";
+					if ($updateValues->getComparison($col) != Criteria::CUSTOM_EQUAL) {
+						$sql .= $updateColumnName . '=:p'.$p++.', ';
+					} else {
+						$param = $updateValues->get($col);
+						$sql .= $updateColumnName . ' = ';
+						if (is_array($param)) {
+							if (isset($param['raw'])) {
+								$raw = $param['raw'];
+								$rawcvt = '';
+								// parse the $params['raw'] for ? chars
+								for($r=0,$len=strlen($raw); $r < $len; $r++) {
+									if ($raw{$r} == '?') {
+										$rawcvt .= ':p'.$p++;
+									} else {
+										$rawcvt .= $raw{$r};
+									}
+								}
+								$sql .= $rawcvt . ', ';
+							} else {
+								$sql .= ':p'.$p++.', ';
+							}
+							if (isset($param['value'])) {
+								$updateValues->put($col, $param['value']);
+							}
+						} else {
+							$updateValues->remove($col);
+							$sql .= $param . ', ';
+						}
+					}
 				}
-
-				$sql = substr($sql, 0, -1) . " WHERE " .  implode(" AND ", $whereClause);
-
-				Propel::log($sql, Propel::LOG_DEBUG);
+				
+				$params = self::buildParams($updateTablesColumns[$tableName], $updateValues);
+				
+				foreach ($columns as $colName) {
+					$sb = "";
+					$selectCriteria->getCriterion($colName)->appendPsTo($sb, $params);
+					$whereClause[] = $sb;
+				}
+			
+				$sql = substr($sql, 0, -2) . " WHERE " .  implode(" AND ", $whereClause);
 
 				$stmt = $con->prepare($sql);
 
-				// Replace '?' with the actual values
-				self::populateStmtValues($stmt, array_merge(self::buildParams($updateTablesColumns[$tableName], $updateValues), $selectParams), $dbMap, $db);
+				// Replace ':p?' with the actual values
+				self::populateStmtValues($stmt, $params, $dbMap, $db);
 
 				$stmt->execute();
 
@@ -393,50 +426,98 @@ class BasePeer
 	}
 
 	/**
-	 * Executes query build by createSelectSql() and returns ResultSet.
+	 * Executes query build by createSelectSql() and returns the resultset statement.
 	 *
 	 * @param      Criteria $criteria A Criteria.
-	 * @param      PDO $con A PDO connection to use.
-	 * @return     ResultSet The resultset.
+	 * @param      PropelPDO $con A PropelPDO connection to use.
+	 * @return     PDOStatement The resultset.
 	 * @throws     PropelException
 	 * @see        createSelectSql()
 	 */
-	public static function doSelect(Criteria $criteria, PDO $con = null)
+	public static function doSelect(Criteria $criteria, PropelPDO $con = null)
 	{
 		$dbMap = Propel::getDatabaseMap($criteria->getDbName());
 		$db = Propel::getDB($criteria->getDbName());
 
 		if ($con === null) {
-			$con = Propel::getConnection($criteria->getDbName());
+			$con = Propel::getConnection($criteria->getDbName(), Propel::CONNECTION_READ);
 		}
 
 		$stmt = null;
 
-		try {
+		if ($criteria->isUseTransaction()) $con->beginTransaction();
 
-			// Transaction support exists for (only?) Postgres, which must
-			// have SELECT statements that include bytea columns wrapped w/
-			// transactions.
-			if ($criteria->isUseTransaction()) Transaction::begin($con);
+		try {
 
 			$params = array();
 			$sql = self::createSelectSql($criteria, $params);
 
- 			$stmt = $con->prepare($sql);
-
- 			// FIXME - add SQL-modification for LIMIT/OFFSET into DBAdapters & createSelectSql method.
-			// $stmt->setLimit($criteria->getLimit());
-			// $stmt->setOffset($criteria->getOffset());
+			$stmt = $con->prepare($sql);
 
 			self::populateStmtValues($stmt, $params, $dbMap, $db);
 
 			$stmt->execute();
 
-			if ($criteria->isUseTransaction()) Transaction::commit($con);
+			if ($criteria->isUseTransaction()) $con->commit();
 
 		} catch (Exception $e) {
 			if ($stmt) $stmt = null; // close
-			if ($criteria->isUseTransaction()) Transaction::rollback($con);
+			if ($criteria->isUseTransaction()) $con->rollBack();
+			Propel::log($e->getMessage(), Propel::LOG_ERR);
+			throw new PropelException($e);
+		}
+
+		return $stmt;
+	}
+
+	/**
+	 * Executes a COUNT query using either a simple SQL rewrite or, for more complex queries, a
+	 * sub-select of the SQL created by createSelectSql() and returns the statement.
+	 *
+	 * @param      Criteria $criteria A Criteria.
+	 * @param      PropelPDO $con A PropelPDO connection to use.
+	 * @return     PDOStatement The resultset statement.
+	 * @throws     PropelException
+	 * @see        createSelectSql()
+	 */
+	public static function doCount(Criteria $criteria, PropelPDO $con = null)
+	{
+		$dbMap = Propel::getDatabaseMap($criteria->getDbName());
+		$db = Propel::getDB($criteria->getDbName());
+
+		if ($con === null) {
+			$con = Propel::getConnection($criteria->getDbName(), Propel::CONNECTION_READ);
+		}
+
+		$stmt = null;
+
+		if ($criteria->isUseTransaction()) $con->beginTransaction();
+
+		$needsComplexCount = ($criteria->getGroupByColumns() || $criteria->getOffset()
+								|| $criteria->getLimit() || $criteria->getHaving() || in_array(Criteria::DISTINCT, $criteria->getSelectModifiers()));
+
+		try {
+
+			$params = array();
+
+			if ($needsComplexCount) {
+				$selectSql = self::createSelectSql($criteria, $params);
+				$sql = 'SELECT COUNT(*) FROM (' . $selectSql . ') AS propelmatch4cnt';
+			} else {
+				// Replace SELECT columns with COUNT(*)
+				$criteria->clearSelectColumns()->addSelectColumn('COUNT(*)');
+				$sql = self::createSelectSql($criteria, $params);
+			}
+
+			$stmt = $con->prepare($sql);
+			self::populateStmtValues($stmt, $params, $dbMap, $db);
+			$stmt->execute();
+
+			if ($criteria->isUseTransaction()) $con->commit();
+
+		} catch (Exception $e) {
+			if ($stmt) $stmt = null; // close
+			if ($criteria->isUseTransaction()) $con->rollBack();
 			Propel::log($e->getMessage(), Propel::LOG_ERR);
 			throw new PropelException($e);
 		}
@@ -447,12 +528,24 @@ class BasePeer
 	/**
 	 * Populates values in a prepared statement.
 	 *
-	 * @param      PreparedStatement $stmt
+	 * This method is designed to work with the createSelectSql() method, which creates
+	 * both the SELECT SQL statement and populates a passed-in array of parameter
+	 * values that should be substituted.
+	 *
+	 * <code>
+	 * $params = array();
+	 * $sql = BasePeer::createSelectSql($criteria, $params);
+	 * BasePeer::populateStmtValues($stmt, $params, Propel::getDatabaseMap($critera->getDbName()), Propel::getDB($criteria->getDbName()));
+	 * </code>
+	 *
+	 * @param      PDOStatement $stmt
 	 * @param      array $params array('column' => ..., 'table' => ..., 'value' => ...)
 	 * @param      DatabaseMap $dbMap
 	 * @return     int The number of params replaced.
+	 * @see        createSelectSql()
+	 * @see        doSelect()
 	 */
-	private static function populateStmtValues($stmt, $params, DatabaseMap $dbMap, DBAdapter $db)
+	private static function populateStmtValues(PDOStatement $stmt, array $params, DatabaseMap $dbMap, DBAdapter $db)
 	{
 		$i = 1;
 		foreach ($params as $param) {
@@ -462,8 +555,7 @@ class BasePeer
 
 			if ($value === null) {
 
-				$stmt->bindValue($i++, null, PDO::PARAM_NULL);
-				// $stmt->setNull($i++);
+				$stmt->bindValue(':p'.$i++, null, PDO::PARAM_NULL);
 
 			} else {
 
@@ -498,13 +590,7 @@ class BasePeer
 					rewind($value);
 				}
 
-				if ($type == PropelColumnTypes::BLOB || $type == PropelColumnTypes::CLOB ) {
-					Propel::log("Binding [LOB value] at position $i w/ Propel type $type and PDO type $pdoType", Propel::LOG_DEBUG);
-				} else {
-					Propel::log("Binding " . var_export($value, true) . " at position $i w/ Propel type $type and PDO type $pdoType", Propel::LOG_DEBUG);
-				}
-
-				$stmt->bindValue($i++, $value, $pdoType);
+				$stmt->bindValue(':p'.$i++, $value, $pdoType);
 			}
 		} // foreach
 	}
@@ -624,8 +710,8 @@ class BasePeer
 
 			$selectClause[] = $columnName; // the full column name: e.g. MAX(books.price)
 
-			$parenPos = strpos($columnName, '(');
-			$dotPos = strpos($columnName, '.');
+			$parenPos = strrpos($columnName, '(');
+			$dotPos = strrpos($columnName, '.', ($parenPos !== false ? $parenPos : 0));
 
 			// [HL] I think we really only want to worry about adding stuff to
 			// the fromClause if this function has a TABLE.COLUMN in it at all.
@@ -681,10 +767,10 @@ class BasePeer
 				}
 
 				$ignoreCase =
-					(($criteria->isIgnoreCase()
-						|| $someCriteria[$i]->isIgnoreCase())
-						&& ($dbMap->getTable($table)->getColumn($someCriteria[$i]->getColumn())->getType() == "string" )
-						 );
+				(($criteria->isIgnoreCase()
+				|| $someCriteria[$i]->isIgnoreCase())
+				&& (strpos($dbMap->getTable($table)->getColumn($someCriteria[$i]->getColumn())->getType(), "VARCHAR") !== false)
+				);
 
 				$someCriteria[$i]->setIgnoreCase($ignoreCase);
 			}
@@ -728,10 +814,18 @@ class BasePeer
 			}
 
 			// build the condition
-			if ($ignoreCase) {
-				$condition = $db->ignoreCase($join->getLeftColumn()) . '=' . $db->ignoreCase($join->getRightColumn());
-			} else {
-				$condition = $join->getLeftColumn() . '=' . $join->getRightColumn();
+			$left = $join->getLeftColumns();
+			$right = $join->getRightColumns();
+			$condition = "";
+			for ($i = 0; $i < count($left); $i++) {
+				if ($ignoreCase) {
+					$condition .= $db->ignoreCase($left[$i]) . '=' . $db->ignoreCase($right[$i]);
+				} else {
+					$condition .= $left[$i] . '=' . $right[$i];
+				}
+				if ($i + 1 < count($left) ) {
+					$condition .= " AND ";
+				}
 			}
 
 			// add 'em to the queues..
@@ -771,7 +865,7 @@ class BasePeer
 			$havingString = $sb;
 		}
 
-		 if (!empty($orderBy)) {
+		if (!empty($orderBy)) {
 
 			foreach ($orderBy as $orderByColumn) {
 
@@ -784,7 +878,7 @@ class BasePeer
 
 				// Split orderByColumn (i.e. "table.column DESC")
 
-				$dotPos = strpos($orderByColumn, '.');
+				$dotPos = strrpos($orderByColumn, '.');
 
 				if ($dotPos !== false) {
 					$tableName = substr($orderByColumn, 0, $dotPos);
@@ -816,41 +910,45 @@ class BasePeer
 				}
 
 				$column = $tableName ? $dbMap->getTable($tableName)->getColumn($columnName) : null;
-				
-				if ($column && $column->isText()) {
+
+				if ($criteria->isIgnoreCase() && $column && $column->isText()) {
 					$orderByClause[] = $db->ignoreCaseInOrderBy("$tableAlias.$columnAlias") . $direction;
 					$selectClause[] = $db->ignoreCaseInOrderBy("$tableAlias.$columnAlias");
-				}
-				else {
+				} else {
 					$orderByClause[] = $orderByColumn;
 				}
 			}
 		}
 
+		if (empty($fromClause) && $criteria->getPrimaryTableName()) {
+			$fromClause[] = $criteria->getPrimaryTableName();
+		}
+
 		// from / join tables quoten if it is necessary
 		if ($db->useQuoteIdentifier()) {
-			$fromClause = array_map(array($db, 'quoteIdentifier'), $fromClause);
-			$joinClause = $joinClause ? $joinClause : array_map(array($db, 'quoteIdentifier'), $joinClause);
+			$fromClause = array_map(array($db, 'quoteIdentifierTable'), $fromClause);
+			$joinClause = $joinClause ? $joinClause : array_map(array($db, 'quoteIdentifierTable'), $joinClause);
 		}
 
 		// build from-clause
 		$from = '';
-		if (!empty($joinClause) && count($fromClause) > 1 && ($db instanceof DBMySQL)) {
-			$from .= "(" . implode(", ", $fromClause) . ")";
+		if (!empty($joinClause) && count($fromClause) > 1) {
+			$from .= implode(" CROSS JOIN ", $fromClause);
 		} else {
 			$from .= implode(", ", $fromClause);
 		}
+		
 		$from .= $joinClause ? ' ' . implode(' ', $joinClause) : '';
 
 		// Build the SQL from the arrays we compiled
 		$sql =  "SELECT "
-				.($selectModifiers ? implode(" ", $selectModifiers) . " " : "")
-				.implode(", ", $selectClause)
-				." FROM "  . $from
-				.($whereClause ? " WHERE ".implode(" AND ", $whereClause) : "")
-				.($groupByClause ? " GROUP BY ".implode(",", $groupByClause) : "")
-				.($havingString ? " HAVING ".$havingString : "")
-				.($orderByClause ? " ORDER BY ".implode(",", $orderByClause) : "");
+		.($selectModifiers ? implode(" ", $selectModifiers) . " " : "")
+		.implode(", ", $selectClause)
+		." FROM "  . $from
+		.($whereClause ? " WHERE ".implode(" AND ", $whereClause) : "")
+		.($groupByClause ? " GROUP BY ".implode(",", $groupByClause) : "")
+		.($havingString ? " HAVING ".$havingString : "")
+		.($orderByClause ? " ORDER BY ".implode(",", $orderByClause) : "");
 
 		// APPLY OFFSET & LIMIT to the query.
 		if ($criteria->getLimit() || $criteria->getOffset()) {
@@ -880,18 +978,18 @@ class BasePeer
 	}
 
 	/**
-	* This function searches for the given validator $name under propel/validator/$name.php,
-	* imports and caches it.
-	*
-	* @param      string $classname The dot-path name of class (e.g. myapp.propel.MyValidator)
-	* @return     Validator object or null if not able to instantiate validator class (and error will be logged in this case)
-	*/
+	 * This function searches for the given validator $name under propel/validator/$name.php,
+	 * imports and caches it.
+	 *
+	 * @param      string $classname The dot-path name of class (e.g. myapp.propel.MyValidator)
+	 * @return     Validator object or null if not able to instantiate validator class (and error will be logged in this case)
+	 */
 	public static function getValidator($classname)
 	{
 		try {
 			$v = isset(self::$validatorMap[$classname]) ? self::$validatorMap[$classname] : null;
 			if ($v === null) {
-				$cls = substr('.'.$classname, strrpos('.'.$classname, '.') + 1);
+				$cls = Propel::importClass($classname);
 				$v = new $cls();
 				self::$validatorMap[$classname] = $v;
 			}

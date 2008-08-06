@@ -73,6 +73,9 @@ class Criteria implements IteratorAggregate {
 	/** Comparison type. */
 	const CUSTOM = "CUSTOM";
 
+	/** Comparison type for update */
+	const CUSTOM_EQUAL = "CUSTOM_EQUAL";
+
 	/** Comparison type. */
 	const DISTINCT = "DISTINCT ";
 
@@ -136,6 +139,14 @@ class Criteria implements IteratorAggregate {
 
 	/** The name of the database. */
 	private $dbName;
+
+	/**
+	 * The primary table for this Criteria.
+	 * Useful in cases where there are no select or where
+	 * columns.
+	 * @var        string
+	 */
+	private $primaryTableName;
 
 	/** The name of the database as given in the contructor. */
 	private $originalDbName;
@@ -312,6 +323,19 @@ class Criteria implements IteratorAggregate {
 	}
 
 	/**
+	 * Does this Criteria object contain the specified key and does it have a value set for the key 
+	 *
+	 * @param      string $column [table.]column
+	 * @return     boolean True if this Criteria object contain the specified key and a value for that key
+	 */
+	public function keyContainsValue($column)
+	{
+		// must use array_key_exists() because the key could
+		// exist but have a NULL value (that'd be valid).
+		return (array_key_exists($column, $this->map) && ($this->map[$column]->getValue() !== null) );
+	}
+
+	/**
 	 * Will force the sql represented by this criteria to be executed within
 	 * a transaction.  This is here primarily to support the oid type in
 	 * postgresql.  Though it can be used to require any single sql statement
@@ -385,7 +409,7 @@ class Criteria implements IteratorAggregate {
 	{
 		$tables = array();
 		foreach ( array_keys ( $this->map ) as $key) {
-			$t = substr ( $key, 0, strpos ( $key, '.' ) );
+			$t = substr ( $key, 0, strrpos ( $key, '.' ) );
 			if ( ! isset ( $tables[$t] ) ) {
 				$tables[$t] = array( $key );
 			} else {
@@ -429,6 +453,34 @@ class Criteria implements IteratorAggregate {
 	public function setDbName($dbName = null)
 	{
 		$this->dbName = ($dbName === null ? Propel::getDefaultDB() : $dbName);
+	}
+
+	/**
+	 * Get the primary table for this Criteria.
+	 *
+	 * This is useful for cases where a Criteria may not contain
+	 * any SELECT columns or WHERE columns.  This must be explicitly
+	 * set, of course, in order to be useful.
+	 *
+	 * @return     string
+	 */
+	public function getPrimaryTableName()
+	{
+		return $this->primaryTableName;
+	}
+
+	/**
+	 * Sets the primary table for this Criteria.
+	 *
+	 * This is useful for cases where a Criteria may not contain
+	 * any SELECT columns or WHERE columns.  This must be explicitly
+	 * set, of course, in order to be useful.
+	 *
+	 * @param      string $v
+	 */
+	public function setPrimaryTableName($tableName)
+	{
+		$this->primaryTableName = $tableName;
 	}
 
 	/**
@@ -580,7 +632,10 @@ class Criteria implements IteratorAggregate {
 	 */
 	public function addJoin($left, $right, $operator = null)
 	{
-		$this->joins[] = new Join($left, $right, $operator);
+		$j = new Join($left, $right, $operator);
+		if (!in_array($j, $this->joins)) { // compare equality, NOT identity
+			$this->joins[] = $j;
+		}
 		return $this;
 	}
 
@@ -720,7 +775,21 @@ class Criteria implements IteratorAggregate {
 		$this->selectColumns[] = $name;
 		return $this;
 	}
-
+	
+	/**
+	 * Whether this Criteria has any select columns.
+	 * 
+	 * This will include columns added with addAsColumn() method.
+	 *
+	 * @return     boolean
+	 * @see        addAsColumn()
+	 * @see        addSelectColumn()
+	 */
+	public function hasSelectClause()
+	{
+		return (!empty($this->selectColumns) || !empty($this->asColumns));
+	}
+	
 	/**
 	 * Get select columns.
 	 *
@@ -1191,8 +1260,16 @@ class Criterion  {
 	 */
 	public function __construct(Criteria $outer, $column, $value, $comparison = null)
 	{
-		list($this->table, $this->column) = explode('.', $column);
 		$this->value = $value;
+		$dotPos = strrpos($column,'.');
+		if ($dotPos === false) {
+			// no dot => aliased column
+			$this->table = null;
+			$this->column = $column;
+		} else {
+			$this->table = substr($column, 0, $dotPos); 
+			$this->column = substr($column, $dotPos+1, strlen($column));
+		}
 		$this->comparison = ($comparison === null ? Criteria::EQUAL : $comparison);
 		$this->init($outer);
 	}
@@ -1363,7 +1440,7 @@ class Criterion  {
 	 * Appends a Prepared Statement representation of the Criterion
 	 * onto the buffer.
 	 *
-	 * @param      string &$sb The stringbuffer that will receive the Prepared Statement
+	 * @param      string &$sb The string that will receive the Prepared Statement
 	 * @param      array $params A list to which Prepared Statement parameters
 	 * will be appended
 	 * @return     void
@@ -1400,14 +1477,17 @@ class Criterion  {
 
 			// OPTION 1:  table.column IN (?, ?) or table.column NOT IN (?, ?)
 			if ($this->comparison === Criteria::IN || $this->comparison === Criteria::NOT_IN) {
-
+				
+				$_bindParams = array(); // the param names used in query building
+				$_idxstart = count($params);
 				$valuesLength = 0;
 				foreach ( (array) $this->value as $value ) {
-					$valuesLength++;
+					$valuesLength++; // increment this first to correct for wanting bind params to start with :p1
 					$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $value);
+					$_bindParams[] = ':p'.($_idxstart + $valuesLength);
 				}
 				if ( $valuesLength !== 0 ) {
-					$sb .= $field . $this->comparison . '(' . substr(str_repeat("?,", $valuesLength), 0, -1) . ')';
+					$sb .= $field . $this->comparison . '(' . implode(',', $_bindParams) . ')';
 				} else {
 					$sb .= ($this->comparison === Criteria::IN) ? "1<>1" : "1=1";
 				}
@@ -1431,19 +1511,19 @@ class Criterion  {
 						$field = $db->ignoreCase($field);
 					}
 				}
-
+				
+				$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
+				
 				$sb .= $field . $this->comparison;
 
 				// If selection is case insensitive use SQL UPPER() function
 				// on criteria or, if Postgres we are using ILIKE, so not necessary.
 				if ($this->ignoreStringCase && !($db instanceof DBPostgres)) {
-					$sb .= $db->ignoreCase('?');
+					$sb .= $db->ignoreCase(':p'.count($params));
 				} else {
-					$sb .= '?';
+					$sb .= ':p'.count($params);
 				}
-
-				$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
-
+				
 			// OPTION 3:  table.column = ? or table.column >= ? etc. (traditional expressions, the default)
 			} else {
 
@@ -1455,17 +1535,17 @@ class Criterion  {
 					if ($this->value === Criteria::CURRENT_DATE || $this->value === Criteria::CURRENT_TIME || $this->value === Criteria::CURRENT_TIMESTAMP) {
 						$sb .= $field . $this->comparison . $this->value;
 					} else {
+						
+						$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
+						
 						// default case, it is a normal col = value expression; value
 						// will be replaced w/ '?' and will be inserted later using PDO bindValue()
 						if ($this->ignoreStringCase) {
-							$sb .= $db->ignoreCase($field) . $this->comparison . $db->ignoreCase("?");
+							$sb .= $db->ignoreCase($field) . $this->comparison . $db->ignoreCase(':p'.count($params));
 						} else {
-							$sb .= $field . $this->comparison . "?";
+							$sb .= $field . $this->comparison . ':p'.count($params);
 						}
-						// need to track the field in params, because
-						// we'll need it to determine the correct setter
-						// method later on (e.g. field 'review.DATE' => setDate());
-						$params[] = array('table' => $realtable, 'column' => $this->column, 'value' => $this->value);
+						
 					}
 				} else {
 
@@ -1645,6 +1725,15 @@ class Join
 	 */
 	public function __construct($leftColumn, $rightColumn, $joinType = null)
 	{
+		if (!is_array($leftColumn) ) {
+			$leftColumn = array($leftColumn);
+		}
+		if (!is_array($rightColumn) ) {
+			$rightColumn = array($rightColumn);
+		}
+		if (count($leftColumn) != count($rightColumn) ) {
+			throw new PropelException("Unable to create join because the left column count isn't equal to the right column count");
+		}
 		$this->leftColumn = $leftColumn;
 		$this->rightColumn = $rightColumn;
 		$this->joinType = $joinType;
@@ -1662,37 +1751,52 @@ class Join
 	/**
 	 * @return     the left column of the join condition
 	 */
-	public function getLeftColumn()
+	public function getLeftColumn($index = 0)
 	{
+		return $this->leftColumn[$index];
+	}
+	
+	/**
+	 * @return     all right columns of the join condition
+	 */
+	public function getLeftColumns() {
 		return $this->leftColumn;
 	}
 
-	public function getLeftColumnName()
+
+	public function getLeftColumnName($index = 0)
 	{
-		return substr($this->leftColumn, strpos($this->leftColumn, '.') + 1);
+		return substr($this->leftColumn[$index], strrpos($this->leftColumn[$index], '.') + 1);
 	}
 
-	public function getLeftTableName()
+	public function getLeftTableName($index = 0)
 	{
-		return substr($this->leftColumn, 0, strpos($this->leftColumn, '.'));
+		return substr($this->leftColumn[$index], 0, strrpos($this->leftColumn[$index], '.'));
 	}
 
 	/**
 	 * @return     the right column of the join condition
 	 */
-	public function getRightColumn()
+	public function getRightColumn($index = 0)
 	{
+		return $this->rightColumn[$index];
+	}
+	
+	/**
+	 * @return     all right columns of the join condition
+	 */
+	public function getRightColumns() {
 		return $this->rightColumn;
 	}
 
-	public function getRightColumnName()
+	public function getRightColumnName($index = 0)
 	{
-		return substr($this->rightColumn, strpos($this->rightColumn, '.') + 1);
+		return substr($this->rightColumn[$index], strrpos($this->rightColumn[$index], '.') + 1);
 	}
 
-	public function getRightTableName()
+	public function getRightTableName($index = 0)
 	{
-		return substr($this->rightColumn, 0, strpos($this->rightColumn, '.'));
+		return substr($this->rightColumn[$index], 0, strrpos($this->rightColumn[$index], '.'));
 	}
 
 	/**

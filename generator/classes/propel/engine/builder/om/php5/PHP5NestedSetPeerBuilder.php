@@ -51,7 +51,7 @@ class PHP5NestedSetPeerBuilder extends PeerBuilder {
 	 */
 	public function getUnprefixedClassname()
 	{
-		return $this->getBuildProperty('basePrefix') . $this->getStubObjectBuilder()->getClassname() . 'NestedSetPeer';
+		return $this->getBuildProperty('basePrefix') . $this->getStubObjectBuilder()->getUnprefixedClassname() . 'NestedSetPeer';
 	}
 
 	/**
@@ -170,7 +170,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$this->addHydrateChildren($script);
 
 		$this->addShiftRParent($script);
-		$this->addUpdateNode($script);
+		$this->addUpdateLoadedNode($script);
+		$this->addUpdateDBNode($script);
 
 		$this->addShiftRLValues($script);
 		$this->addShiftRLRange($script);
@@ -192,43 +193,51 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		$table = $this->getTable();
 		$tableName = $table->getName();
 
-		$left_colname = '';
-		$right_colname = '';
-		$scope_colname = null;
-		$parent_colname = '';
+		$colname = array();
 
 		foreach ($table->getColumns() as $col) {
 			if ($col->isNestedSetLeftKey()) {
-				$left_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
+				$colname['left'] = $this->prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
 			if ($col->isNestedSetRightKey()) {
-				$right_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
+				$colname['right'] = $this->prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
 			if ($col->isTreeScopeKey()) {
-				$scope_colname = DataModelBuilder::prefixTablename($tableName) . '.' . strtoupper($col->getName());
+				$colname['scope'] = $this->prefixTablename($tableName) . '.' . strtoupper($col->getName());
 			}
 
-			if (!empty($right_name) && !empty($left_colname) && !empty($scope_colname)) {
+			if (3 == count($colname)) {
 				break;
 			}
 		}
+
+		if(!isset($colname['left'])) {
+			throw new EngineException("One column must have nestedSetLeftKey attribute set to true for [" . $table->getName() . "] table");
+		}
+
+		if(!isset($colname['right'])) {
+			throw new EngineException("One column must have nestedSetRightKey attribute set to true for [" . $table->getName() . "] table");
+		}
+
+		$colname['scope'] = isset($colname['scope']) ? $colname['scope'] : null;
+
 		$script .= "
 	/**
 	 * Left column for the set
 	 */
-	const LEFT_COL = " . var_export($left_colname, true) . ";
+	const LEFT_COL = " . var_export($colname['left'], true) . ";
 
 	/**
 	 * Right column for the set
 	 */
-	const RIGHT_COL = " . var_export($right_colname, true) . ";
+	const RIGHT_COL = " . var_export($colname['right'], true) . ";
 
 	/**
 	 * Scope column for the set
 	 */
-	 const SCOPE_COL = " . var_export($scope_colname, true) . ";
+	const SCOPE_COL = " . var_export($colname['scope'], true) . ";
 ";
 	}
 
@@ -246,7 +255,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function createRoot(NodeObject \$node)
 	{
 		if (\$node->getLeftValue()) {
-			throw new Exception('Cannot turn an existing node into a root node.');
+			throw new PropelException('Cannot turn an existing node into a root node.');
 		}
 
 		\$node->setLeftValue(1);
@@ -310,8 +319,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// Update database nodes
 		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
-		// Update \$parent nodes properties recursively
-		self::shiftRParent(\$parent, 2, \$con);
+		// Update all loaded nodes
+		self::updateLoadedNode(\$parent, 2, \$con);
 	}
 ";
 	}
@@ -341,14 +350,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$child->setScopeIdValue(\$sidv = \$parent->getScopeIdValue());
 		}
 
-		\$newLeft = \$parent->getRightValue();
-		\$newRight = \$parent->getRightValue() + 1;
-
 		// Update database nodes
 		self::shiftRLValues(\$child->getLeftValue(), 2, \$con, \$sidv);
 
-		// Update \$parent nodes properties recursively
-		self::shiftRParent(\$parent, 2, \$con);
+		// Update all loaded nodes
+		self::updateLoadedNode(\$parent, 2, \$con);
 	}
 ";
 	}
@@ -369,7 +375,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertAsPrevSiblingOf(NodeObject \$node, NodeObject \$sibling, PropelPDO \$con = null)
 	{
 		if (\$sibling->isRoot()) {
-			throw new Exception('Root nodes cannot have siblings');
+			throw new PropelException('Root nodes cannot have siblings');
 		}
 
 		\$node->setLeftValue(\$sibling->getLeftValue());
@@ -384,8 +390,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// Update database nodes
 		self::shiftRLValues(\$node->getLeftValue(), 2, \$con, \$sidv);
 
-		// Update \$parent nodes properties recursively
-		self::shiftRParent(\$sibling->retrieveParent(), 2, \$con);
+		// Update all loaded nodes
+		self::updateLoadedNode(\$sibling->retrieveParent(), 2, \$con);
 	}
 ";
 	}
@@ -406,7 +412,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function insertAsNextSiblingOf(NodeObject \$node, NodeObject \$sibling, PropelPDO \$con = null)
 	{
 		if (\$sibling->isRoot()) {
-			throw new Exception('Root nodes cannot have siblings');
+			throw new PropelException('Root nodes cannot have siblings');
 		}
 
 		\$node->setLeftValue(\$sibling->getRightValue() + 1);
@@ -421,8 +427,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		// Update database nodes
 		self::shiftRLValues(\$node->getLeftValue(), 2, \$con, \$sidv);
 
-		// Update \$parent nodes properties recursively
-		self::shiftRParent(\$sibling->retrieveParent(), 2, \$con);
+		// Update all loaded nodes
+		self::updateLoadedNode(\$sibling->retrieveParent(), 2, \$con);
 	}
 ";
 	}
@@ -463,8 +469,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 
 		\$node->save(\$con);
 
-		// Update \$parent nodes properties recursively
-		self::shiftRParent(\$previous_parent, 2, \$con);
+		// Update all loaded nodes
+		self::updateLoadedNode(\$previous_parent, 2, \$con);
 	}
 ";
 	}
@@ -590,7 +596,10 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$parent->getLeftValue() + 1;
-		self::updateNode(\$child, \$destLeft, \$con);
+		self::updateDBNode(\$child, \$destLeft, \$con);
+
+		// Update all loaded nodes
+		self::updateLoadedNode(\$parent, 2, \$con);
 	}
 ";
 	}
@@ -614,7 +623,10 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$parent->getRightValue();
-		self::updateNode(\$child, \$destLeft, \$con);
+		self::updateDBNode(\$child, \$destLeft, \$con);
+
+		// Update all loaded nodes
+		self::updateLoadedNode(\$parent, 2, \$con);
 	}
 ";
 	}
@@ -638,7 +650,10 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			throw new PropelException('Moving nodes across trees is not supported');
 		}
 		\$destLeft = \$dest->getLeftValue();
-		self::updateNode(\$node, \$destLeft, \$con);
+		self::updateDBNode(\$node, \$destLeft, \$con);
+
+		// Update all loaded nodes
+		self::updateLoadedNode(\$dest->retrieveParent(), 2, \$con);
 	}
 ";
 	}
@@ -663,7 +678,10 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 		\$destLeft = \$dest->getRightValue();
 		\$destLeft = \$destLeft + 1;
-		self::updateNode(\$node, \$destLeft, \$con);
+		self::updateDBNode(\$node, \$destLeft, \$con);
+
+		// Update all loaded nodes
+		self::updateLoadedNode(\$dest->retrieveParent(), 2, \$con);
 	}
 ";
 	}
@@ -682,7 +700,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveFirstChild(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::LEFT_COL, \$node->getLeftValue() + 1, Criteria::EQUAL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -707,7 +725,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveLastChild(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::RIGHT_COL, \$node->getRightValue() - 1, Criteria::EQUAL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -732,7 +750,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrievePrevSibling(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::RIGHT_COL, \$node->getLeftValue() - 1, Criteria::EQUAL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -758,7 +776,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveNextSibling(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::LEFT_COL, \$node->getRightValue() + 1, Criteria::EQUAL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -781,13 +799,13 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveTree(\$scopeId = null, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$scopeId, Criteria::EQUAL);
 		}
 		\$stmt = $peerClassname::doSelectStmt(\$c, \$con);
-		if (false !== (\$row = \$stmt->fetch())) {
+		if (false !== (\$row = \$stmt->fetch(PDO::FETCH_NUM))) {
 			\$omClass = $peerClassname::getOMClass(\$row, 0);
 			\$cls = substr('.'.\$omClass, strrpos('.'.\$omClass, '.') + 1);
 
@@ -796,7 +814,8 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			\$root->setLevel(0);
 			$peerClassname::hydrateDescendants(\$root, \$stmt);
 			$peerClassname::addInstanceToPool(\$root);
-
+			
+			\$stmt->closeCursor();
 			return \$root;
 		}
 		return false;
@@ -835,7 +854,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveChildren(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -862,7 +881,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveDescendants(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
 		if (self::SCOPE_COL) {
 			\$c->add(self::SCOPE_COL, \$node->getScopeIdValue(), Criteria::EQUAL);
@@ -911,7 +930,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 */
 	public static function retrieveParent(NodeObject \$node, PropelPDO \$con = null)
 	{
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c1 = \$c->getNewCriterion(self::LEFT_COL, \$node->getLeftValue(), Criteria::LESS_THAN);
 		\$c2 = \$c->getNewCriterion(self::RIGHT_COL, \$node->getRightValue(), Criteria::GREATER_THAN);
 
@@ -947,20 +966,20 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	public static function getLevel(NodeObject \$node, PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 
-		\$sql = \"SELECT COUNT(*) AS level FROM \" . self::TABLE_NAME . \" WHERE \" . self::LEFT_COL . \" < ? AND \" . self::RIGHT_COL . \" > ?\";
+		\$sql = \"SELECT COUNT(*) AS level FROM \" . self::TABLE_NAME . \" WHERE \" . self::LEFT_COL . \" < :left AND \" . self::RIGHT_COL . \" > :right\";
 
 		if (self::SCOPE_COL) {
-			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
+			\$sql .= ' AND ' . self::SCOPE_COL . ' = :scope';
 		}
 
 		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindValue(1, \$node->getLeftValue(), PDO::PARAM_INT);
-		\$stmt->bindValue(2, \$node->getRightValue(), PDO::PARAM_INT);
+		\$stmt->bindValue(':left', \$node->getLeftValue(), PDO::PARAM_INT);
+		\$stmt->bindValue(':right', \$node->getRightValue(), PDO::PARAM_INT);
 		if (self::SCOPE_COL) {
-			\$stmt->bindValue(3, \$node->getScopeIdValue());
+			\$stmt->bindValue(':scope', \$node->getScopeIdValue());
 		}
 		\$stmt->execute();
 		\$row = \$stmt->fetch();
@@ -1249,7 +1268,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$left = \$node->getLeftValue();
 		\$right = \$node->getRightValue();
 
-		\$c = new Criteria();
+		\$c = new Criteria($peerClassname::DATABASE_NAME);
 		\$c1 = \$c->getNewCriterion(self::LEFT_COL, \$left, Criteria::GREATER_THAN);
 		\$c2 = \$c->getNewCriterion(self::RIGHT_COL, \$right, Criteria::LESS_THAN);
 
@@ -1299,6 +1318,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		$objectClassname = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$table = $this->getTable();
 		$script .= "
 	/**
 	 * Hydrate recursively the descendants of the given node
@@ -1310,12 +1330,34 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		\$descendants = array();
 		\$children = array();
 		\$prevSibling = null;
-		while (\$row = \$stmt->fetch()) {
-			\$omClass = $peerClassname::getOMClass(\$row, 0);
-			\$cls = substr('.'.\$omClass, strrpos('.'.\$omClass, '.') + 1);
+";
 
-			" . $this->buildObjectInstanceCreationCode('$child', '$cls') . "
-			\$child->hydrate(\$row);
+		if (!$table->getChildrenColumn()) {
+			$script .= "
+		// set the class once to avoid overhead in the loop
+		\$cls = $peerClassname::getOMClass();
+		\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);
+";
+		}
+
+		$script .= "
+		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key = ".$peerClassname."::getPrimaryKeyHashFromRow(\$row, 0);
+			if (null === (\$child = ".$peerClassname."::getInstanceFromPool(\$key))) {";
+
+		if ($table->getChildrenColumn()) {
+			$script .= "
+				// class must be set each time from the record row
+				\$cls = ".$peerClassname."::getOMClass(\$row, 0);
+				\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);
+";
+		}
+
+		$script .= "
+				" . $this->buildObjectInstanceCreationCode('$child', '$cls') . "
+				\$child->hydrate(\$row);
+			}
+
 			\$child->setLevel(\$node->getLevel() + 1);
 			\$child->setParentNode(\$node);
 			if (!empty(\$prevSibling)) {
@@ -1349,6 +1391,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		$objectClassname = $this->getStubObjectBuilder()->getClassname();
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$table = $this->getTable();
 		$script .= "
 	/**
 	 * Hydrate the children of the given node
@@ -1359,12 +1402,34 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	{
 		\$children = array();
 		\$prevRight = 0;
-		while (\$row = \$stmt->fetch()) {
-			\$omClass = $peerClassname::getOMClass(\$row, 0);
-			\$cls = substr('.'.\$omClass, strrpos('.'.\$omClass, '.') + 1);
+";
 
-			" . $this->buildObjectInstanceCreationCode('$child', '$cls') . "
-			\$child->hydrate(\$row);
+		if (!$table->getChildrenColumn()) {
+			$script .= "
+		// set the class once to avoid overhead in the loop
+		\$cls = $peerClassname::getOMClass();
+		\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);
+";
+		}
+
+		$script .= "
+		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+			\$key = ".$peerClassname."::getPrimaryKeyHashFromRow(\$row, 0);
+			if (null === (\$child = ".$peerClassname."::getInstanceFromPool(\$key))) {";
+			
+		if ($table->getChildrenColumn()) {
+			$script .= "
+				// class must be set each time from the record row
+				\$cls = ".$peerClassname."::getOMClass(\$row, 0);
+				\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);
+";
+		}
+
+		$script .= "
+				" . $this->buildObjectInstanceCreationCode('$child', '$cls') . "
+				\$child->hydrate(\$row);
+			}
+
 			\$child->setLevel(\$node->getLevel() + 1);
 
 			if (\$child->getRightValue() > \$prevRight) {
@@ -1382,6 +1447,11 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 ";
 	}
 
+	/**
+	 * @deprecated 1.3 - 2008/03/11
+	 * Won't be fixed, defect by design
+	 * Never trust it
+	 */
 	protected function addShiftRParent(&$script)
 	{
 		$objectClassname = $this->getStubObjectBuilder()->getClassname();
@@ -1391,6 +1461,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	 * Adds '\$delta' to all parent R values.
 	 * '\$delta' can also be negative.
 	 *
+	 * @deprecated 1.3 - 2008/03/11
 	 * @param      $objectClassname \$node	Propel object for parent node
 	 * @param      int \$delta	Value to be shifted by, can be negative
 	 * @param      PropelPDO \$con		Connection to use.
@@ -1402,23 +1473,107 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 			self::shiftRParent(\$parent, \$delta, \$con);
 		}
 		\$node->setRightValue(\$node->getRightValue() + \$delta);
-		\$node->save(\$con);
 	}
 ";
 	}
 
-	protected function addUpdateNode(&$script)
+	protected function addUpdateLoadedNode(&$script)
+	{
+		$objectClassname = $this->getStubObjectBuilder()->getClassname();
+		$peerClassname = $this->getStubPeerBuilder()->getClassname();
+		$table = $this->getTable();
+
+		$script .= "
+	/**
+	 * Reload all already loaded nodes to sync them with updated db
+	 *
+	 * @param      $objectClassname \$node	Propel object for parent node
+	 * @param      int \$delta	Value to be shifted by, can be negative
+	 * @param      PropelPDO \$con		Connection to use.
+	 */
+	protected static function updateLoadedNode(NodeObject \$node, \$delta, PropelPDO \$con = null)
+	{
+		if (Propel::isInstancePoolingEnabled()) {
+			\$keys = array();
+			foreach (self::\$instances as \$obj) {
+				\$keys[] = \$obj->getPrimaryKey();
+			}
+
+			if (!empty(\$keys)) {
+				// We don't need to alter the object instance pool; we're just modifying these ones
+				// already in the pool.
+				\$criteria = new Criteria(self::DATABASE_NAME);";
+		if (count($table->getPrimaryKey()) === 1) {
+			$pkey = $table->getPrimaryKey();
+			$col = array_shift($pkey);
+			$script .= "
+				\$criteria->add(".$this->getColumnConstant($col).", \$keys, Criteria::IN);
+";
+		} else {
+			$fields = array();
+			foreach ($table->getPrimaryKey() as $k => $col) {
+				$fields[] = $this->getColumnConstant($col);
+			};
+			$script .= "
+
+				// Loop on each instances in pool
+				foreach (\$keys as \$values) {
+				  // Create initial Criterion
+					\$cton = \$criteria->getNewCriterion(" . $fields[0] . ", \$values[0]);";
+			unset($fields[0]);
+			foreach ($fields as $k => $col) {
+				$script .= "
+
+					// Create next criterion
+					\$nextcton = \$criteria->getNewCriterion(" . $col . ", \$values[$k]);
+					// And merge it with the first
+					\$cton->addAnd(\$nextcton);";
+			}
+			$script .= "
+
+					// Add final Criterion to Criteria
+					\$criteria->addOr(\$cton);
+				}";
+			}
+
+			$script .= "
+				\$stmt = $peerClassname::doSelectStmt(\$criteria, \$con);
+				while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+					\$key = $peerClassname::getPrimaryKeyHashFromRow(\$row, 0);
+					if (null !== (\$object = $peerClassname::getInstanceFromPool(\$key))) {";
+			$n = 0;
+			foreach ($table->getColumns() as $col) {
+				if ($col->isNestedSetLeftKey()) {
+					$script .= "
+						\$object->setLeftValue(\$row[$n]);";
+				} else if ($col->isNestedSetRightKey()) {
+					$script .= "
+						\$object->setRightValue(\$row[$n]);";
+				}
+				$n++;
+			}
+			$script .= "
+					}
+				}
+				\$stmt->closeCursor();
+			}
+		}
+	}
+";
+	}
+
+	protected function addUpdateDBNode(&$script)
 	{
 		$objectClassname = $this->getStubObjectBuilder()->getClassname();
 		$script .= "
 	/**
-	 * Move \$node and its children to location \$dest and updates rest of tree
+	 * Move \$node and its children to location \$destLeft and updates rest of tree
 	 *
 	 * @param      $objectClassname \$node Propel object for node to update
+	 * @param      int	\$destLeft Destination left value
 	 * @param      PropelPDO \$con		Connection to use.
-	 * @param      int	 Destination left value
 	 */
-	protected static function updateNode(NodeObject \$node, \$destLeft, PropelPDO \$con = null)
+	protected static function updateDBNode(NodeObject \$node, \$destLeft, PropelPDO \$con = null)
 	{
 		\$left = \$node->getLeftValue();
 		\$right = \$node->getRightValue();
@@ -1433,7 +1588,7 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 		}
 
 		// now there's enough room next to target to move the subtree
-		\$newPos = self::shiftRLRange(\$left, \$right, \$destLeft - \$left, \$con, \$node->getScopeIdValue());
+		self::shiftRLRange(\$left, \$right, \$destLeft - \$left, \$con, \$node->getScopeIdValue());
 
 		// correct values after source
 		self::shiftRLValues(\$right + 1, -\$treeSize, \$con, \$node->getScopeIdValue());
@@ -1455,38 +1610,59 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	protected static function shiftRLValues(\$first, \$delta, PropelPDO \$con = null, \$scopeId = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 
 		\$leftUpdateCol = substr(self::LEFT_COL, strrpos(self::LEFT_COL, '.') + 1);
 		\$rightUpdateCol = substr(self::RIGHT_COL, strrpos(self::RIGHT_COL, '.') + 1);
-		// do that prepared thing so they must both execute to work
+
 		// Shift left column values
-		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . \$leftUpdateCol . \"=\" . self::LEFT_COL . \" + ? WHERE \" . self::LEFT_COL . \" >= ?\";
+		\$whereCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criterion = \$whereCriteria->getNewCriterion(
+			self::LEFT_COL,
+			\$first,
+			Criteria::GREATER_EQUAL);
+
 		if (self::SCOPE_COL) {
-			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
+			\$criterion->addAnd(
+				\$whereCriteria->getNewCriterion(
+					self::SCOPE_COL,
+					\$scopeId,
+					Criteria::EQUAL));
 		}
-		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindParam(1, \$delta, PDO::PARAM_INT);
-		\$stmt->bindParam(2, \$first, PDO::PARAM_INT);
-		if (self::SCOPE_COL) {
-			\$stmt->bindParam(3, \$scopeId);
-		}
-		\$result = \$stmt->execute();
+		\$whereCriteria->add(\$criterion);
+
+		\$valuesCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$valuesCriteria->add(
+			self::LEFT_COL,
+			array('raw' => \$leftUpdateCol . ' + ?', 'value' => \$delta),
+			Criteria::CUSTOM_EQUAL);
+
+		{$this->basePeerClassname}::doUpdate(\$whereCriteria, \$valuesCriteria, \$con);
 
 		// Shift right column values
-		\$sql =	\"UPDATE \" . self::TABLE_NAME . \" SET \" . \$rightUpdateCol . \"=\" . self::RIGHT_COL . \" + ? WHERE \" . self::RIGHT_COL . \" >= ?\";
-		if (self::SCOPE_COL) {
-			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
-		}
-		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindParam(1, \$delta, PDO::PARAM_INT);
-		\$stmt->bindParam(2, \$first, PDO::PARAM_INT);
-		if (self::SCOPE_COL) {
-			\$stmt->bindParam(3, \$scopeId);
-		}
-		\$result = \$stmt->execute();
+		\$whereCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criterion = \$whereCriteria->getNewCriterion(
+			self::RIGHT_COL,
+			\$first,
+			Criteria::GREATER_EQUAL);
 
+		if (self::SCOPE_COL) {
+			\$criterion->addAnd(
+				\$whereCriteria->getNewCriterion(
+					self::SCOPE_COL,
+					\$scopeId,
+					Criteria::EQUAL));
+		}
+		\$whereCriteria->add(\$criterion);
+
+		\$valuesCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$valuesCriteria->add(
+		  self::RIGHT_COL,
+			array('raw' => \$rightUpdateCol . ' + ?', 'value' => \$delta),
+			Criteria::CUSTOM_EQUAL);
+
+		{$this->basePeerClassname}::doUpdate(\$whereCriteria, \$valuesCriteria, \$con);
 	}
 ";
 	}
@@ -1508,55 +1684,45 @@ abstract class ".$this->getClassname()." extends ".$this->getPeerBuilder()->getC
 	protected static function shiftRLRange(\$first, \$last, \$delta, PropelPDO \$con = null, \$scopeId = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 
 		\$leftUpdateCol = substr(self::LEFT_COL, strrpos(self::LEFT_COL, '.') + 1);
 		\$rightUpdateCol = substr(self::RIGHT_COL, strrpos(self::RIGHT_COL, '.') + 1);
-		// do that prepared thing so they must both execute to work
+
 		// Shift left column values
-		\$sql = sprintf('UPDATE %s SET %s = %s + ? WHERE %s >= ? AND %s <= ?',
-			self::TABLE_NAME,
-			\$leftUpdateCol,
-			self::LEFT_COL,
-			self::LEFT_COL,
-			self::LEFT_COL);
-
+		\$whereCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criterion = \$whereCriteria->getNewCriterion(self::LEFT_COL, \$first, Criteria::GREATER_EQUAL);
+		\$criterion->addAnd(\$whereCriteria->getNewCriterion(self::LEFT_COL, \$last, Criteria::LESS_EQUAL));
 		if (self::SCOPE_COL) {
-			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
+			\$criterion->addAnd(\$whereCriteria->getNewCriterion(self::SCOPE_COL, \$scopeId, Criteria::EQUAL));
 		}
+		\$whereCriteria->add(\$criterion);
 
-		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
-		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
-		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if (self::SCOPE_COL) {
-			\$stmt->bindValue(4, \$scopeId);
-		}
-		\$stmt->setFetchMode(PDO::FETCH_ASSOC);
-		\$result = \$stmt->execute();
+		\$valuesCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$valuesCriteria->add(
+			self::LEFT_COL,
+			array('raw' => \$leftUpdateCol . ' + ?', 'value' => \$delta),
+			Criteria::CUSTOM_EQUAL);
+
+		{$this->basePeerClassname}::doUpdate(\$whereCriteria, \$valuesCriteria, \$con);
 
 		// Shift right column values
-		\$sql = sprintf('UPDATE %s SET %s = %s + ? WHERE %s >= ? AND %s <= ?',
-			self::TABLE_NAME,
-			\$rightUpdateCol,
-			self::RIGHT_COL,
-			self::RIGHT_COL,
-			self::RIGHT_COL);
-
+		\$whereCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criterion = \$whereCriteria->getNewCriterion(self::RIGHT_COL, \$first, Criteria::GREATER_EQUAL);
+		\$criterion->addAnd(\$whereCriteria->getNewCriterion(self::RIGHT_COL, \$last, Criteria::LESS_EQUAL));
 		if (self::SCOPE_COL) {
-			\$sql .= ' AND ' . self::SCOPE_COL . ' = ?';
+			\$criterion->addAnd(\$whereCriteria->getNewCriterion(self::SCOPE_COL, \$scopeId, Criteria::EQUAL));
 		}
+		\$whereCriteria->add(\$criterion);
 
-		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindValue(1, \$delta, PDO::PARAM_INT);
-		\$stmt->bindValue(2, \$first, PDO::PARAM_INT);
-		\$stmt->bindValue(3, \$last, PDO::PARAM_INT);
-		if (self::SCOPE_COL) {
-			\$stmt->bindValue(4, \$scopeId);
-		}
-		\$stmt->setFetchMode(PDO::FETCH_ASSOC);
-		\$result = \$stmt->execute();
+		\$valuesCriteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$valuesCriteria->add(
+			self::RIGHT_COL,
+			array('raw' => \$rightUpdateCol . ' + ?', 'value' => \$delta),
+			Criteria::CUSTOM_EQUAL);
+
+		{$this->basePeerClassname}::doUpdate(\$whereCriteria, \$valuesCriteria, \$con);
 
 		return array('left' => \$first + \$delta, 'right' => \$last + \$delta);
 	}

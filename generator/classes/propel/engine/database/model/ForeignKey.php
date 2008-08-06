@@ -51,6 +51,16 @@ class ForeignKey extends XMLElement {
 	const SETNULL  = "SET NULL";
 
 	/**
+	 * Constructs a new ForeignKey object.
+	 *
+	 * @param      string $name
+	 */
+	public function __construct($name=null)
+	{
+		$this->name = $name;
+	}
+
+	/**
 	 * Sets up the ForeignKey object based on the attributes that were passed to loadFromXML().
 	 * @see        parent::loadFromXML()
 	 */
@@ -84,7 +94,7 @@ class ForeignKey extends XMLElement {
 	 */
 	public function hasOnUpdate()
 	{
-	   return ($this->onUpdate !== self::NONE);
+		return ($this->onUpdate !== self::NONE);
 	}
 
 	/**
@@ -92,23 +102,25 @@ class ForeignKey extends XMLElement {
 	 */
 	public function hasOnDelete()
 	{
-	   return ($this->onDelete !== self::NONE);
+		return ($this->onDelete !== self::NONE);
 	}
 
 	/**
 	 * returns the onUpdate attribute
+	 * @return     string
 	 */
 	public function getOnUpdate()
 	{
-	   return $this->onUpdate;
+		return $this->onUpdate;
 	}
 
 	/**
-	 * returns the onDelete attribute
+	 * Returns the onDelete attribute
+	 * @return     string
 	 */
 	public function getOnDelete()
 	{
-	   return $this->onDelete;
+		return $this->onDelete;
 	}
 
 	/**
@@ -116,7 +128,7 @@ class ForeignKey extends XMLElement {
 	 */
 	public function setOnDelete($value)
 	{
-	   $this->onDelete = $this->normalizeFKey($value);
+		$this->onDelete = $this->normalizeFKey($value);
 	}
 
 	/**
@@ -124,7 +136,7 @@ class ForeignKey extends XMLElement {
 	 */
 	public function setOnUpdate($value)
 	{
-	   $this->onUpdate = $this->normalizeFKey($value);
+		$this->onUpdate = $this->normalizeFKey($value);
 	}
 
 	/**
@@ -229,13 +241,19 @@ class ForeignKey extends XMLElement {
 	}
 
 	/**
-	 * adds a new reference entry to the foreign key
+	 * Adds a new reference entry to the foreign key.
 	 */
 	public function addReference($p1, $p2 = null)
 	{
 		if (is_array($p1)) {
 			$this->addReference(@$p1["local"], @$p1["foreign"]);
 		} else {
+			if ($p1 instanceof Column) {
+				$p1 = $p1->getName();
+			}
+			if ($p2 instanceof Column) {
+				$p2 = $p2->getName();
+			}
 			$this->localColumns[] = $p1;
 			$this->foreignColumns[] = $p2;
 		}
@@ -260,8 +278,8 @@ class ForeignKey extends XMLElement {
 	}
 
 	/**
-	 * Return an array of local column objects.
-	 * @return     array Column[]
+	 * Return an array of local column names.
+	 * @return     array string[]
 	 */
 	public function getLocalColumns()
 	{
@@ -344,38 +362,78 @@ class ForeignKey extends XMLElement {
 		foreach ($localPKColumnObjs as $lPKCol) {
 			$localPKCols[] = $lPKCol->getName();
 		}
-//
-//		print "Local key columns: \n";
-//		print_r($localCols);
-//
-//		print "Local table primary key columns: \n";
-//		print_r($localPKCols);
+		//
+		//		print "Local key columns: \n";
+		//		print_r($localCols);
+		//
+		//		print "Local table primary key columns: \n";
+		//		print_r($localPKCols);
 
 		return (!array_diff($localPKCols, $localCols));
 	}
 
 	/**
-	 * String representation of the foreign key. This is an xml representation.
+	 * Whether this foreign key is matched by an invertes foreign key (on foreign table).
+	 *
+	 * This is to prevent duplicate columns being generated for a 1:1 relationship that is represented
+	 * by foreign keys on both tables.  I don't know if that's good practice ... but hell, why not
+	 * support it.
+	 *
+	 * @param      ForeignKey $fk
+	 * @return     boolean
+	 * @link       http://propel.phpdb.org/trac/ticket/549
 	 */
-	public function toString()
+	public function isMatchedByInverseFK()
 	{
-		$result = "    <foreign-key foreignTable=\""
-			. $this->getForeignTableName()
-			. "\" name=\""
-			. $this->getName()
-			. "\""
-			. ($this->getPhpName() ? " phpName=\"".($this->getPhpName())."\"" : "")
-			. ($this->getRefPhpName() ? " refPhpName=\"".($this->getRefPhpName())."\"" : "")
-			.">\n";
+		$foreignTable = $this->getForeignTable();
+		$map = $this->getForeignLocalMapping();
+
+		foreach ($foreignTable->getForeignKeys() as $refFK) {
+			$fkMap = $refFK->getLocalForeignMapping();
+			if ($map == $fkMap) { // compares keys and values, but doesn't care about order
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @see        XMLElement::appendXml(DOMNode)
+	 */
+	public function appendXml(DOMNode $node)
+	{
+		$doc = ($node instanceof DOMDocument) ? $node : $node->ownerDocument;
+
+		$fkNode = $node->appendChild($doc->createElement('foreign-key'));
+
+		$fkNode->setAttribute('foreignTable', $this->getForeignTableName());
+		$fkNode->setAttribute('name', $this->getName());
+
+		if ($this->getPhpName()) {
+			$fkNode->setAttribute('phpName', $this->getPhpName());
+		}
+
+		if ($this->getRefPhpName()) {
+			$fkNode->setAttribute('refPhpName', $this->getRefPhpName());
+		}
+
+		if ($this->getOnDelete()) {
+			$fkNode->setAttribute('onDelete', $this->getOnDelete());
+		}
+
+		if ($this->getOnUpdate()) {
+			$fkNode->setAttribute('onUpdate', $this->getOnUpdate());
+		}
 
 		for ($i=0, $size=count($this->localColumns); $i < $size; $i++) {
-			$result .= "        <reference local=\""
-				. $this->localColumns[$i]
-				. "\" foreign=\""
-				. $this->foreignColumns[$i]
-				. "\"/>\n";
+			$refNode = $fkNode->appendChild($doc->createElement('reference'));
+			$refNode->setAttribute('local', $this->localColumns[$i]);
+			$refNode->setAttribute('foreign', $this->foreignColumns[$i]);
 		}
-		$result .= "    </foreign-key>\n";
-		return $result;
+
+		foreach ($this->vendorInfos as $vi) {
+			$vi->appendXml($fkNode);
+		}
 	}
 }

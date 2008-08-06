@@ -42,23 +42,20 @@ class UniqueValidator implements BasicValidator
 	 */
 	public function isValid (ValidatorMap $map, $str)
 	{
-	  $column = $map->getColumn();
+		$column = $map->getColumn();
 
-	  $c = new Criteria();
-	  $c->add($column->getFullyQualifiedName(), $str, Criteria::EQUAL);
+		$c = new Criteria();
+		$c->add($column->getFullyQualifiedName(), $str, Criteria::EQUAL);
 
-	  $isValid = false;
+		$isValid = false;
 
-	  try {
+		$table = $column->getTable()->getPhpName();
 
-		  $table = $column->getTable()->getPhpName();
-		  $cmd = sprintf('$isValid = %sPeer::doCount($c) == 0;', $table);
-		  eval($cmd);
+		$clazz = $table . 'Peer';
+		$count = call_user_func(array($clazz, 'doCount'), $c);
 
-	  } catch(PropelException $e) {
-		/* what to do here ? */
-	  }
+		$isValid = ($count === 0);
 
-	  return $isValid;
+		return $isValid;
 	}
 }

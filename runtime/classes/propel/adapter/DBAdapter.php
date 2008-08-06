@@ -85,20 +85,42 @@ abstract class DBAdapter {
 	 * This method is called after a connection was created to run necessary
 	 * post-initialization queries or code.
 	 *
+	 * If a charset was specified, this will be set before any other queries
+	 * are executed.
+	 *
 	 * This base method runs queries specified using the "query" setting.
 	 *
 	 * @param      PDO   A PDO connection instance.
 	 * @param      array An array of settings.
+	 * @see        setCharset()
 	 */
 	public function initConnection(PDO $con, array $settings)
 	{
+		if (isset($settings['charset']['value'])) {
+			$this->setCharset($con, $settings['charset']['value']);
+		}
 		if (isset($settings['queries']) && is_array($settings['queries'])) {
 			foreach ($settings['queries'] as $queries) {
 				foreach ((array)$queries as $query) {
-					$con->query($query);
+					$con->exec($query);
 				}
 			}
 		}
+	}
+
+	/**
+	 * Sets the character encoding using SQL standard SET NAMES statement.
+	 *
+	 * This method is invoked from the default initConnection() method and must
+	 * be overridden for an RDMBS which does _not_ support this SQL standard.
+	 *
+	 * @param      PDO   A PDO connection instance.
+	 * @param      string The charset encoding.
+	 * @see        initConnection()
+	 */
+	public function setCharset(PDO $con, $charset)
+	{
+		$con->exec("SET NAMES '" . $charset . "'");
 	}
 
 	/**
@@ -182,6 +204,15 @@ abstract class DBAdapter {
 	}
 
 	/**
+	 * Quotes a database table which could have space seperating it from an alias, both should be identified seperately
+	 * @param      string $table The table name to quo
+	 * @return     string The quoted table name
+	 **/
+	public function quoteIdentifierTable($table) {
+		return implode(" ", array_map(array($this, "quoteIdentifier"), explode(" ", $table) ) );
+	}
+
+	/**
 	 * Returns the native ID method for this RDBMS.
 	 * @return     int one of DBAdapter:ID_METHOD_SEQUENCE, DBAdapter::ID_METHOD_AUTOINCREMENT.
 	 */
@@ -254,7 +285,8 @@ abstract class DBAdapter {
 	 * @return     boolean
 	 * @deprecated
 	 */
-	public function useQuoteIdentifier() {
+	public function useQuoteIdentifier()
+	{
 		return false;
 	}
 
@@ -262,7 +294,12 @@ abstract class DBAdapter {
 	 * Modifies the passed-in SQL to add LIMIT and/or OFFSET.
 	 */
 	public abstract function applyLimit(&$sql, $offset, $limit);
-
-	public abstract function random($seed=NULL);
+	
+	/**
+	 * Gets the SQL string that this adapter uses for getting a random number.
+	 *
+	 * @param      mixed $seed (optional) seed value for databases that support this
+	 */
+	public abstract function random($seed = null);
 
 }

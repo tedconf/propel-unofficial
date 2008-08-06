@@ -39,9 +39,14 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 	private $xmlConfFile;
 
 	/**
-	 * @var        PhingFile This is the file where the converted conf array dump will be placed.
+	 * @var        string This is the file where the converted conf array dump will be placed.
 	 */
 	private $outputFile;
+
+	/**
+	 * @var        string This is the file where the classmap manifest converted conf array dump will be placed.
+	 */
+	private $outputClassmapFile;
 
 	/**
 	 * [REQUIRED] Set the input XML runtime conf file.
@@ -65,6 +70,18 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 	}
 
 	/**
+	 * [REQUIRED] Set the output filename for the autoload classmap.
+	 * The directory is specified using AbstractPropelDataModelTask#setOutputDirectory().
+	 * @param      string $outputFile
+	 * @see        AbstractPropelDataModelTask#setOutputDirectory()
+	 */
+	public function setOutputClassmapFile($outputFile)
+	{
+		// this is a string, not a file
+		$this->outputClassmapFile = $outputFile;
+	}
+
+	/**
 	 * The main method does the work of the task.
 	 */
 	public function main()
@@ -79,6 +96,11 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 			throw new BuildException("No outputFile specified.", $this->getLocation());
 		}
 
+		if (!$this->outputClassmapFile) {
+			// We'll create a default one for BC
+			$this->outputClassmapFile = 'classmap-' . $this->outputFile;
+		}
+
 		// Create a PHP array from the XML file
 
 		$xmlDom = new DOMDocument();
@@ -86,12 +108,13 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 		$xml = simplexml_load_string($xmlDom->saveXML());
 
 		$phpconf = self::simpleXmlToArray($xml);
+		$phpconfClassmap = array();
 
 		// $this->log(var_export($phpconf,true));
 
 		// Create a map of all PHP classes and their filepaths for this data model
 
-		DataModelBuilder::setBuildProperties($this->getPropelProperties());
+		$generatorConfig = $this->getGeneratorConfig();
 
 		foreach ($this->getDataModels() as $dataModel) {
 
@@ -101,7 +124,7 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 
 				// $this->log("Processing class mappings in database: " . $database->getName());
 
-		//print the tables
+				//print the tables
 				foreach ($database->getTables() as $table) {
 
 					if (!$table->isForReferenceOnly()) {
@@ -119,7 +142,7 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 						// (this code is based on PropelOMTask)
 
 						foreach (array('mapbuilder', 'peerstub', 'objectstub') as $target) {
-							$builder = DataModelBuilder::builderFactory($table, $target);
+							$builder = $generatorConfig->getConfiguredBuilder($table, $target);
 							$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
 							$classMap[$builder->getClassname()] = $builder->getClassFilePath();
 						}
@@ -128,7 +151,7 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 							$col = $table->getChildrenColumn();
 							if ($col->isEnumeratedClasses()) {
 								foreach ($col->getChildren() as $child) {
-									$builder = DataModelBuilder::builderFactory($table, 'objectmultiextend');
+									$builder = $generatorConfig->getConfiguredBuilder($table, 'objectmultiextend');
 									$builder->setChild($child);
 									$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
 									$classMap[$builder->getClassname()] = $builder->getClassFilePath();
@@ -146,13 +169,23 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 							}
 						}
 
+						$basePeer = $table->getBasePeer();
+						if ( $basePeer !== null ) {
+							$className = ClassTools::classname($basePeer);
+							if (!isset($classMap[$className])) {
+								$classPath = ClassTools::getFilePath($basePeer);
+								$this->log('Adding class mapping: ' . $className . ' => ' . $classPath);
+								$classMap[$className] = $classPath;
+							}
+						}
+						
 						// -----------------------------------------------------------------------------------------
 						// Create tree Node classes
 						// -----------------------------------------------------------------------------------------
 
 						if ('MaterializedPath' == $table->treeMode()) {
 							foreach (array('nodepeerstub', 'nodestub') as $target) {
-								$builder = DataModelBuilder::builderFactory($table, $target);
+								$builder = $generatorConfig->getConfiguredBuilder($table, $target);
 								$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
 								$classMap[$builder->getClassname()] = $builder->getClassFilePath();
 							}
@@ -161,30 +194,41 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 					} // if (!$table->isReferenceOnly())
 				}
 
-				$phpconf['propel']['datasources'][$database->getName()]['classes'] = $classMap;
+				$phpconfClassmap['propel']['datasources'][$database->getName()]['classes'] = $classMap;
 			}
 		}
 
-//		$phpconf['propel']['classes'] = $classMap;
+		//		$phpconf['propel']['classes'] = $classMap;
 
-		$phpconf['propel']['generator_version'] = DataModelBuilder::getBuildProperty('version');
+		$phpconf['propel']['generator_version'] = $this->getGeneratorConfig()->getBuildProperty('version');
 
 		// Write resulting PHP data to output file:
 
 		$outfile = new PhingFile($this->outputDirectory, $this->outputFile);
 
 		$output = '<' . '?' . "php\n";
-		$output .= "// This file generated by Propel " . $phpconf['propel']['generator_version'] . " convert-props target".(DataModelBuilder::getBuildProperty('addTimestamp') ? " on " . strftime("%c") : '') . "\n";
+		$output .= "// This file generated by Propel " . $phpconf['propel']['generator_version'] . " convert-props target".($this->getGeneratorConfig()->getBuildProperty('addTimestamp') ? " on " . strftime("%c") : '') . "\n";
 		$output .= "// from XML runtime conf file " . $this->xmlConfFile->getPath() . "\n";
- 		$output .= "return ";
- 		$output .= var_export($phpconf, true);
- 		$output .= ";";
+		$output .= "return array_merge_recursive(";
+		$output .= var_export($phpconf, true);
+		$output .= ", include(dirname(__FILE__) . DIRECTORY_SEPARATOR . '".$this->outputClassmapFile."'));";
 
- 		$this->log("Creating PHP runtime conf file: " . $outfile->getPath());
+		$this->log("Creating PHP runtime conf file: " . $outfile->getPath());
+		if (!file_put_contents($outfile->getAbsolutePath(), $output)) {
+			throw new BuildException("Error creating output file: " . $outfile->getAbsolutePath(), $this->getLocation());
+		}
 
- 		if (!file_put_contents($outfile->getAbsolutePath(), $output)) {
- 			throw new BuildException("Error creating output file: " . $outfile->getAbsolutePath(), $this->getLocation());
- 		}
+		$outfile = new PhingFile($this->outputDirectory, $this->outputClassmapFile);
+		$output = '<' . '?' . "php\n";
+		$output .= "// This file generated by Propel " . $phpconf['propel']['generator_version'] . " convert-props target".($this->getGeneratorConfig()->getBuildProperty('addTimestamp') ? " on " . strftime("%c") : '') . "\n";
+		$output .= "return ";
+		$output .= var_export($phpconfClassmap, true);
+		$output .= ";";
+		$this->log("Creating PHP classmap runtime file: " . $outfile->getPath());
+		if (!file_put_contents($outfile->getAbsolutePath(), $output)) {
+			throw new BuildException("Error creating output file: " . $outfile->getAbsolutePath(), $this->getLocation());
+		}
+
 
 	} // main()
 
@@ -229,26 +273,32 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 				}
 			}
 
-			 // if the $k is already in our children list, we need to transform
-			 // it into an array, else we add it as a value
-			 if ( !in_array( $k, array_keys($ar) ) ) {
-				 $ar[$k] = $child;
-			 } else {
-				 // if the $ar[$k] element is not already an array, then we need to make it one
-				 if ( !is_array( $ar[$k] ) ) { $ar[$k] = array( $ar[$k] ); }
-				 $ar[$k][] = $child;
-			 }
+			// if the $k is already in our children list, we need to transform
+			// it into an array, else we add it as a value
+			if ( !in_array( $k, array_keys($ar) ) ) {
+				$ar[$k] = $child;
+			} else {
+				// (This only applies to nested nodes that do not have an @id attribute)
+
+				// if the $ar[$k] element is not already an array, then we need to make it one.
+				// this is a bit of a hack, but here we check to also make sure that if it is an
+				// array, that it has numeric keys.  this distinguishes it from simply having other
+				// nested element data.
+
+				if ( !is_array($ar[$k]) || !isset($ar[$k][0]) ) { $ar[$k] = array($ar[$k]); }
+				$ar[$k][] = $child;
+			}
 
 		}
 
 		return $ar;
 	}
 
- 	/**
- 	 * Process XML value, handling boolean, if appropriate.
- 	 * @param      object The simplexml value object.
- 	 * @return     mixed
- 	 */
+	/**
+	 * Process XML value, handling boolean, if appropriate.
+	 * @param      object The simplexml value object.
+	 * @return     mixed
+	 */
 	private static function getConvertedXmlValue($value)
 	{
 		$value = (string) $value; // convert from simplexml to string

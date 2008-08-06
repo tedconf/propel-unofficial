@@ -66,7 +66,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 	protected function addDropStatements(&$script)
 	{
 		$script .= "
-DROP TABLE IF EXISTS ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($this->getTable()->getName())).";
+DROP TABLE IF EXISTS ".$this->quoteIdentifier($this->prefixTablename($this->getTable()->getName())).";
 ";
 	}
 
@@ -104,20 +104,22 @@ DROP TABLE IF EXISTS ".$this->quoteIdentifier(DataModelBuilder::prefixTablename(
 
 		$script .= "
 
-CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->getName()))."
+CREATE TABLE ".$this->quoteIdentifier($this->prefixTablename($table->getName()))."
 (
 	";
 
 		$lines = array();
 
+		$databaseType = $this->getPlatform()->getDatabaseType();
+
 		foreach ($table->getColumns() as $col) {
 			$entry = $this->getColumnDDL($col);
-			$colinfo = $col->getVendorSpecificInfo();
-			if ( isset ( $colinfo['Charset'] ) ) {
-				$entry .= ' CHARACTER SET '.$platform->quote($colinfo['Charset']);
+			$colinfo = $col->getVendorInfoForType($databaseType);
+			if ( $colinfo->hasParameter('Charset') ) {
+				$entry .= ' CHARACTER SET '.$platform->quote($colinfo->getParamter('Charset'));
 			}
-			if ( isset ( $colinfo['Collate'] ) ) {
-				$entry .= ' COLLATE '.$platform->quote($colinfo['Collate']);
+			if ( $colinfo->hasParameter('Collate') ) {
+				$entry .= ' COLLATE '.$platform->quote($colinfo->getParamter('Collate'));
 			}
 			if ($col->getDescription()) {
 				$entry .= " COMMENT ".$platform->quote($col->getDescription());
@@ -141,9 +143,11 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 
 		$mysqlTableType = $this->getBuildProperty("mysqlTableType");
 		if (!$mysqlTableType) {
-			$vendorSpecific = $table->getVendorSpecificInfo();
-			if (isset($vendorSpecific['Type'])) {
-				$mysqlTableType = $vendorSpecific['Type'];
+			$vendorSpecific = $table->getVendorInfoForType($this->getPlatform()->getDatabaseType());
+			if ($vendorSpecific->hasParameter('Type')) {
+				$mysqlTableType = $vendorSpecific->getParameter('Type');
+			} elseif ($vendorSpecific->hasParameter('Engine')) {
+				$mysqlTableType = $vendorSpecific->getParameter('Engine');
 			} else {
 				$mysqlTableType = 'MyISAM';
 			}
@@ -151,23 +155,24 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 
 		$script .= "Type=$mysqlTableType";
 
-		$dbVendorSpecific = $table->getDatabase()->getVendorSpecificInfo();
-		$tableVendorSpecific = $table->getVendorSpecificInfo();
-		$vendorSpecific = array_merge ( $dbVendorSpecific, $tableVendorSpecific );
-		if ( isset ( $vendorSpecific['Charset'] ) ) {
-			$script .= ' CHARACTER SET '.$platform->quote($vendorSpecific['Charset']);
+		$dbVendorSpecific = $table->getDatabase()->getVendorInfoForType($databaseType);
+		$tableVendorSpecific = $table->getVendorInfoForType($databaseType);
+		$vendorSpecific = $dbVendorSpecific->getMergedVendorInfo($tableVendorSpecific);
+
+		if ( $vendorSpecific->hasParameter('Charset') ) {
+			$script .= ' CHARACTER SET '.$platform->quote($vendorSpecific->getParameter('Charset'));
 		}
-		if ( isset ( $vendorSpecific['Collate'] ) ) {
-			$script .= ' COLLATE '.$platform->quote($vendorSpecific['Collate']);
+		if ( $vendorSpecific->hasParameter('Collate') ) {
+			$script .= ' COLLATE '.$platform->quote($vendorSpecific->getParameter('Collate'));
 		}
-		if ( isset ( $vendorSpecific['Checksum'] ) ) {
-			$script .= ' CHECKSUM='.$platform->quote($vendorSpecific['Checksum']);
+		if ( $vendorSpecific->hasParameter('Checksum') ) {
+			$script .= ' CHECKSUM='.$platform->quote($vendorSpecific->getParameter('Checksum'));
 		}
-		if ( isset ( $vendorSpecific['Pack_Keys'] ) ) {
-			$script .= ' PACK_KEYS='.$platform->quote($vendorSpecific['Pack_Keys']);
+		if ( $vendorSpecific->hasParameter('Pack_Keys') ) {
+			$script .= ' PACK_KEYS='.$platform->quote($vendorSpecific->getParameter('Pack_Keys'));
 		}
-		if ( isset ( $vendorSpecific['Delay_key_write'] ) ) {
-			$script .= ' DELAY_KEY_WRITE='.$platform->quote($vendorSpecific['Delay_key_write']);
+		if ( $vendorSpecific->hasParameter('Delay_key_write') ) {
+			$script .= ' DELAY_KEY_WRITE='.$platform->quote($vendorSpecific->getParameter('Delay_key_write'));
 		}
 
 		if ($table->getDescription()) {
@@ -209,8 +214,8 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 		}
 
 		foreach ($table->getIndices() as $index ) {
-			$vendor = $index->getVendorSpecificInfo();
-			$lines[] .= (($vendor && $vendor['Index_type'] == 'FULLTEXT') ? 'FULLTEXT ' : '') . "KEY " . $this->quoteIdentifier($index->getName()) . "(" . $this->getIndexColumnList($index) . ")";
+			$vendorInfo = $index->getVendorInfoForType($platform->getDatabaseType());
+			$lines[] .= (($vendorInfo && $vendorInfo->getParameter('Index_type') == 'FULLTEXT') ? 'FULLTEXT ' : '') . "KEY " . $this->quoteIdentifier($index->getName()) . "(" . $this->getIndexColumnList($index) . ")";
 		}
 
 	}
@@ -275,7 +280,7 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 			}
 			$str = "CONSTRAINT ".$this->quoteIdentifier($fk->getName())."
 		FOREIGN KEY (".$this->getColumnList($fk->getLocalColumns()).")
-		REFERENCES ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($fk->getForeignTableName())) . " (".$this->getColumnList($fk->getForeignColumns()).")";
+		REFERENCES ".$this->quoteIdentifier($this->prefixTablename($fk->getForeignTableName())) . " (".$this->getColumnList($fk->getForeignColumns()).")";
 			if ($fk->hasOnUpdate()) {
 				$str .= "
 		ON UPDATE ".$fk->getOnUpdate();
@@ -331,30 +336,45 @@ CREATE TABLE ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($table->
 	{
 		$platform = $this->getPlatform();
 		$domain = $col->getDomain();
+		$sqlType = $domain->getSqlType();
+		$notNullString = $col->getNotNullString();
+		$defaultSetting = $col->getDefaultSetting();
+
+		// Special handling of TIMESTAMP/DATETIME types ...
+		// See: http://propel.phpdb.org/trac/ticket/538
+		if ($sqlType == 'DATETIME') {
+			$def = $domain->getDefaultValue();
+			if ($def && $def->isExpression()) { // DATETIME values can only have constant expressions
+				$sqlType = 'TIMESTAMP';
+			}
+		} elseif ($sqlType == 'DATE') {
+			$def = $domain->getDefaultValue();
+			if ($def && $def->isExpression()) { // DATE values don't support expressions in MySQL
+				throw new EngineException("DATE columns cannot have default *expressions* in MySQL.");
+			}
+		}
 
 		$sb = "";
 		$sb .= $this->quoteIdentifier($col->getName()) . " ";
-		$sb .= $domain->getSqlType();
-		if ($platform->hasSize($domain->getSqlType())) {
+		$sb .= $sqlType;
+		if ($platform->hasSize($sqlType)) {
 			$sb .= $domain->printSize();
 		}
 		$sb .= " ";
-                if ($domain->getSqlType() == 'TIMESTAMP') {
-			$not_null_string = $col->getNotNullString();
-			$default_setting = $col->getDefaultSetting();
 
-			if ($not_null_string == '') {
-				$not_null_string = 'NULL';
+		if ($sqlType == 'TIMESTAMP') {
+			$notNullString = $col->getNotNullString();
+			$defaultSetting = $col->getDefaultSetting();
+			if ($notNullString == '') {
+				$notNullString = 'NULL';
 			}
-
-			if ($default_setting == '' && $not_null_string == 'NOT NULL') {
-				$default_setting = 'DEFAULT CURRENT_TIMESTAMP';
+			if ($defaultSetting == '' && $notNullString == 'NOT NULL') {
+				$defaultSetting = 'DEFAULT CURRENT_TIMESTAMP';
 			}
-
-			$sb .= $not_null_string . " " . $default_setting . " ";
+			$sb .= $notNullString . " " . $defaultSetting . " ";
 		} else {
-			$sb .= $col->getDefaultSetting() . " ";
-			$sb .= $col->getNotNullString() . " ";
+			$sb .= $defaultSetting . " ";
+			$sb .= $notNullString . " ";
 		}
 		$sb .= $col->getAutoIncrementString();
 

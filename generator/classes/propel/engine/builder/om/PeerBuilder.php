@@ -58,7 +58,6 @@ abstract class PeerBuilder extends OMBuilder {
 	{
 		$this->addAddSelectColumns($script);
 
-		$this->addCountConstants($script);
 		$this->addDoCount($script);
 
 		// consider refactoring the doSelect stuff

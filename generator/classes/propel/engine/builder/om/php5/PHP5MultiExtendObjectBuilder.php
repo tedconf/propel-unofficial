@@ -109,7 +109,7 @@ class PHP5MultiExtendObjectBuilder extends ObjectBuilder {
 	 */
 	protected function getParentClassFilePath()
 	{
-		return $this->getFilePath($this->getParentClasspath());
+		return ClassTools::getFilePath($this->getParentClasspath());
 	}
 
 	/**
@@ -180,10 +180,9 @@ class ".$this->getClassname()." extends ".$this->getParentClassname()." {
 	 * Constructs a new ".$this->getChild()->getClassname()." class, setting the ".$col->getName()." column to ".$this->getPeerClassname()."::$const.
 	 */
 	public function __construct()
-	{
-";
-
+	{";
 		$script .= "
+		parent::__construct();
 		\$this->set$cfc(".$this->getPeerClassname()."::CLASSKEY_".strtoupper($child->getKey()).");
 	}
 ";

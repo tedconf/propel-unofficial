@@ -29,11 +29,20 @@
  */
 interface Platform {
 
-	/** constant for native id method */
+	/**
+	 * Constant for auto-increment id method.
+	 */
 	const IDENTITY = "identity";
 
-	/** constant for native id method */
+	/**
+	 * Constant for sequence id method.
+	 */
 	const SEQUENCE = "sequence";
+
+	/**
+	 * Constant for serial id method (postgresql).
+	 */
+	const SERIAL = "serial";
 
 	/**
 	 * Sets a database connection to use (for quoting, etc.).
@@ -46,6 +55,20 @@ interface Platform {
 	 * @return     PDO The database connection or NULL if none has been set.
 	 */
 	public function getConnection();
+
+	/**
+	 * Sets the GeneratorConfig which contains any generator build properties.
+	 *
+	 * @param      GeneratorConfig $config
+	 */
+	public function setGeneratorConfig(GeneratorConfig $config);
+
+	/**
+	 * Gets the GeneratorConfig object.
+	 *
+	 * @return     GeneratorConfig
+	 */
+	public function getGeneratorConfig();
 
 	/**
 	 * Returns the short name of the database type that this platform represents.

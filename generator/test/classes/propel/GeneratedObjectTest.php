@@ -69,7 +69,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$r = new Review();
 		$this->assertEquals('2001-01-01', $r->getReviewDate('Y-m-d'));
 
-		$this->assertFalse($r->isModified(), "expected isModified() to be falseb");
+		$this->assertFalse($r->isModified(), "expected isModified() to be false");
 
 		$acct = new BookstoreEmployeeAccount();
 		$this->assertEquals(true, $acct->getEnabled());
@@ -81,14 +81,20 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	}
 
 	/**
-	 * Tests the use of default expressions.
-	 * (Also indirectly tests the reload() method.)
+	 * Tests the use of default expressions and the reloadOnInsert and reloadOnUpdate attributes.
+	 *
+	 * @link       http://propel.phpdb.org/trac/ticket/378
+	 * @link       http://propel.phpdb.org/trac/ticket/555
 	 */
 	public function testDefaultExpresions()
 	{
 		if (Propel::getDb(BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
 			$this->markTestSkipped("Cannot test default expressions with SQLite");
 		}
+
+		$b = new Bookstore();
+		$b->setStoreName("Foo!");
+		$b->save();
 
 		$employee = new BookstoreEmployee();
 		$employee->setName("Johnny Walker");
@@ -97,13 +103,15 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$acct->setBookstoreEmployee($employee);
 		$acct->setLogin("test-login");
 
-		$this->assertNull($acct->getCreated());
+		$this->assertNull($acct->getCreated(), "Expected created column to be NULL.");
+		$this->assertNull($acct->getAuthenticator(), "Expected authenticator column to be NULL.");
 
 		$acct->save();
 
-		// BookstoreEmployeeAccountPeer::removeInstanceFromPool($acct);
-
 		$acct = BookstoreEmployeeAccountPeer::retrieveByPK($acct->getEmployeeId());
+
+		$this->assertNotNull($acct->getAuthenticator(), "Expected a valid (non-NULL) authenticator column after save.");
+		$this->assertEquals('Password', $acct->getAuthenticator(), "Expected authenticator='Password' after save.");
 		$this->assertNotNull($acct->getCreated(), "Expected a valid date after retrieving saved object.");
 
 		$now = new DateTime("now");
@@ -112,6 +120,141 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$acct->setCreated($now);
 		$this->assertEquals($now->format("Y-m-d"), $acct->getCreated("Y-m-d"));
 
+		// Unfortunately we can't really test the conjunction of reloadOnInsert and reloadOnUpdate when using just
+		// default values. (At least not in a cross-db way.)
+	}
+
+	/**
+	 * Tests the use of default expressions and the reloadOnInsert attribute.
+	 *
+	 * @link       http://propel.phpdb.org/trac/ticket/378
+	 * @link       http://propel.phpdb.org/trac/ticket/555
+	 */
+	public function testDefaultExpresions_ReloadOnInsert()
+	{
+		if (Propel::getDb(BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
+			$this->markTestSkipped("Cannot test default date expressions with SQLite");
+		}
+
+		// Create a new bookstore, contest, bookstore_contest, and bookstore_contest_entry
+
+		$b = new Bookstore();
+		$b->setStoreName("Barnes & Noble");
+		$b->save();
+
+		$c = new Contest();
+		$c->setName("Bookathon Contest");
+		$c->save();
+
+		$bc = new BookstoreContest();
+		$bc->setBookstore($b);
+		$bc->setContest($c);
+		$bc->save();
+
+		$c = new Customer();
+		$c->setName("Happy Customer");
+		$c->save();
+
+		$bce = new BookstoreContestEntry();
+		$bce->setBookstore($b);
+		$bce->setBookstoreContest($bc);
+		$bce->setCustomer($c);
+		$bce->save();
+
+		$this->assertNotNull($bce->getEntryDate(), "Expected a non-null entry_date after save.");
+	}
+
+	/**
+	 * Tests the overriding reloadOnInsert at runtime.
+	 *
+	 * @link       http://propel.phpdb.org/trac/ticket/378
+	 * @link       http://propel.phpdb.org/trac/ticket/555
+	 */
+	public function testDefaultExpresions_ReloadOnInsert_Override()
+	{
+		if (Propel::getDb(BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
+			$this->markTestSkipped("Cannot test default date expressions with SQLite");
+		}
+
+		// Create a new bookstore, contest, bookstore_contest, and bookstore_contest_entry
+		$b = new Bookstore();
+		$b->setStoreName("Barnes & Noble");
+		$b->save();
+
+		$c = new Contest();
+		$c->setName("Bookathon Contest");
+		$c->save();
+
+		$bc = new BookstoreContest();
+		$bc->setBookstore($b);
+		$bc->setContest($c);
+		$bc->save();
+
+		$c = new Customer();
+		$c->setName("Happy Customer");
+		$c->save();
+
+		$bce = new BookstoreContestEntry();
+		$bce->setBookstore($b);
+		$bce->setBookstoreContest($bc);
+		$bce->setCustomer($c);
+		$bce->save(null, $skipReload=true);
+
+		$this->assertNull($bce->getEntryDate(), "Expected a NULL entry_date after save.");
+	}
+
+	/**
+	 * Tests the use of default expressions and the reloadOnUpdate attribute.
+	 *
+	 * @link       http://propel.phpdb.org/trac/ticket/555
+	 */
+	public function testDefaultExpresions_ReloadOnUpdate()
+	{
+		$b = new Bookstore();
+		$b->setStoreName("Foo!");
+		$b->save();
+
+		$sale = new BookstoreSale();
+		$sale->setBookstore(BookstorePeer::doSelectOne(new Criteria()));
+		$sale->setSaleName("Spring Sale");
+		$sale->save();
+
+		// Expect that default values are set, but not default expressions
+		$this->assertNull($sale->getDiscount(), "Expected discount to be NULL.");
+
+		$sale->setSaleName("Winter Clearance");
+		$sale->save();
+		// Since reloadOnUpdate = true, we expect the discount to be set now.
+
+		$this->assertNotNull($sale->getDiscount(), "Expected discount to be non-NULL after save.");
+	}
+
+	/**
+	 * Tests the overriding reloadOnUpdate at runtime.
+	 *
+	 * @link       http://propel.phpdb.org/trac/ticket/378
+	 * @link       http://propel.phpdb.org/trac/ticket/555
+	 */
+	public function testDefaultExpresions_ReloadOnUpdate_Override()
+	{
+		$b = new Bookstore();
+		$b->setStoreName("Foo!");
+		$b->save();
+
+		$sale = new BookstoreSale();
+		$sale->setBookstore(BookstorePeer::doSelectOne(new Criteria()));
+		$sale->setSaleName("Spring Sale");
+		$sale->save();
+
+		// Expect that default values are set, but not default expressions
+		$this->assertNull($sale->getDiscount(), "Expected discount to be NULL.");
+
+		$sale->setSaleName("Winter Clearance");
+		$sale->save(null, $skipReload=true);
+
+		// Since reloadOnUpdate = true, we expect the discount to be set now.
+
+		$this->assertNull($sale->getDiscount(), "Expected NULL value for discount after save.");
 	}
 
 	/**
@@ -143,9 +286,11 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	/**
 	 * Test setting invalid date/time.
 	 */
-	public function _disabled_testSetTemporalValue_Invalid()
+	public function testSetTemporalValue_Invalid()
 	{
-		// FIXME - Figure out why this doesn't work (doesn't throw Exception) in the Phing+PHPUnit context
+		$this->markTestSkipped();
+		// FIXME - Figure out why this doesn't work (causes a PHP ERROR instead of throwing Exception) in
+		// the Phing+PHPUnit context
 		$r = new Review();
 		try {
 			$r->setReviewDate("Invalid Date");
@@ -165,6 +310,25 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$store->setStoreOpenTime(strtotime('12:55'));
 		$store->save();
 		$this->assertEquals('12:55', $store->getStoreOpenTime(null)->format('H:i'));
+
+		$acct = new BookstoreEmployeeAccount();
+		$acct->setCreated(time());
+		$this->assertEquals(date('Y-m-d H:i'), $acct->getCreated('Y-m-d H:i'));
+
+		$review = new Review();
+		$review->setReviewDate(time());
+		$this->assertEquals(date('Y-m-d'), $review->getReviewDate('Y-m-d'));
+	}
+
+	/**
+	 * Test setting empty temporal values.
+	 * @link       http://propel.phpdb.org/trac/ticket/586
+	 */
+	public function testTemporalValues_Empty()
+	{
+		$review = new Review();
+		$review->setReviewDate('');
+		$this->assertNull($review->getReviewDate());
 	}
 
 	/**
@@ -245,10 +409,14 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$book2 = BookPeer::retrieveByPK($book->getId());
 		$this->assertSame($book, $book2, "Expected same book object instance");
 
+		$this->assertEquals($pub1->getId(), $book->getPublisherId(), "Expected book to have OLD publisher id before reload()");
+
+		$book->reload();
+
 		$this->assertEquals($pub2->getId(), $book->getPublisherId(), "Expected book to have new publisher id");
 		$this->assertSame($pub2, $book->getPublisher(), "Expected book to have new publisher object associated.");
 
-		// Now let's set it back and also verify that reload() works ...
+		// Now let's set it back, just to be double sure ...
 
 		$con->exec("UPDATE " . BookPeer::TABLE_NAME . " SET "
 		. " publisher_id = " . $pub1->getId()
@@ -258,6 +426,36 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$this->assertEquals($pub1->getId(), $book->getPublisherId(), "Expected book to have old publisher id (again).");
 		$this->assertSame($pub1, $book->getPublisher(), "Expected book to have old publisher object associated (again).");
+
+	}
+
+	/**
+	 * Test the effect of typecast on primary key values and instance pool retrieval.
+	 */
+	public function testObjectInstancePoolTypecasting()
+	{
+		$reader = new BookReader();
+		$reader->setName("Tester");
+		$reader->save();
+		$readerId = $reader->getId();
+
+		$book = new Book();
+		$book->setTitle("BookTest");
+		$book->setISBN("TEST");
+		$book->save();
+		$bookId = $book->getId();
+
+		$opinion = new BookOpinion();
+		$opinion->setBookId((string)$bookId);
+		$opinion->setReaderId((string)$readerId);
+		$opinion->setRating("BAD!");
+		$opinion->setRecommendToFriend(false);
+		$opinion->save();
+
+
+		$opinion2 = BookOpinionPeer::retrieveByPK($bookId, $readerId);
+
+		$this->assertSame($opinion, $opinion2, "Expected same object to be retrieved from differently type-casted primary key values.");
 
 	}
 
@@ -402,8 +600,6 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 	/**
 	 * Tests new one-to-one functionality.
-	 *
-	 * @todo       -cGeneratedObjectTest Add a test for one-to-one when implemented.
 	 */
 	public function testOneToOne()
 	{
@@ -598,157 +794,10 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->assertFalse($r->hasOnlyDefaultValues());
 	}
 
-	/**
-	 * Test the LOB results returned in a resultset.
-	 */
-	public function testLobResults()
-	{
-
-		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
-		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
-
-		$book = BookPeer::doSelectOne(new Criteria());
-
-		$m1 = new Media();
-		$m1->setBook($book);
-		$m1->setCoverImage(file_get_contents($blob_path));
-		$m1->setExcerpt(file_get_contents($clob_path));
-		$m1->save();
-		$m1_id = $m1->getId();
-
-		$m1->reload();
-
-		$img = $m1->getCoverImage();
-		$txt = $m1->getExcerpt();
-
-		$this->assertType('resource', $img, "Expected results of BLOB method to be a resource.");
-		$this->assertType('string', $txt, "Expected results of CLOB method to be a string.");
-
-		$stat = fstat($img);
-		$size = $stat['size'];
-
-		$this->assertEquals(filesize($blob_path), $size, "Expected filesize to match stat(blobrsc)");
-		$this->assertEquals(filesize($clob_path), strlen($txt), "Expected filesize to match clob strlen");
-	}
-
-	/**
-	 * Tests the setting of LOB (BLOB and CLOB) values.
-	 */
-	public function testLobSetting()
-	{
-		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
-		$blob2_path = TESTS_BASE_DIR . '/etc/lob/propel.gif';
-
-		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
-		$book = BookPeer::doSelectOne(new Criteria());
-
-		$m1 = new Media();
-		$m1->setBook($book);
-		$m1->setCoverImage(file_get_contents($blob_path));
-		$m1->setExcerpt(file_get_contents($clob_path));
-		$m1->save();
-		$m1_id = $m1->getId();
-
-		// 1) Assert that we've got a valid stream to start with
-		$img = $m1->getCoverImage();
-		$this->assertType('resource', $img, "Expected results of BLOB method to be a resource.");
-
-		// 2) Test setting a BLOB column with file contents
-		$m1->setCoverImage(file_get_contents($blob2_path));
-		$this->assertType('resource', $m1->getCoverImage(), "Expected to get a resource back after setting BLOB with file contents.");
-
-		// commit those changes & reload
-		$m1->save();
-
-		// 3) Verify that we've got a valid resource after reload
-		$m1->reload();
-		$this->assertType('resource', $m1->getCoverImage(), "Expected to get a resource back after setting reloading object.");
-
-		// 4) Test isModified() behavior
-		$fp = fopen("php://temp", "r+");
-		fwrite($fp, file_get_contents($blob2_path));
-
-		$m1->setCoverImage($fp);
-		$this->assertTrue($m1->isModified(), "Expected Media object to be modified, despite fact that stream is to same data");
-
-		// 5) Test external modification of the stream (and re-setting it into the object)
-		$stream = $m1->getCoverImage();
-		fwrite($stream, file_get_contents($blob_path)); // change the contents of the stream
-
-		$m1->setCoverImage($stream);
-
-		$this->assertTrue($m1->isModified(), "Expected Media object to be modified when stream contents changed.");
-		$this->assertNotEquals(file_get_contents($blob2_path), stream_get_contents($m1->getCoverImage()));
-
-		$m1->save();
-
-		// 6) Assert that when we call the setter with a stream, that the file in db gets updated.
-
-		$m1->reload(); // start with a fresh copy from db
-
-		// Ensure that object is set up correctly
-		$this->assertNotEquals(file_get_contents($blob_path), stream_get_contents($m1->getCoverImage()), "The object is not correctly set up to verify the stream-setting test.");
-
-		$fp = fopen($blob_path, "r");
-		$m1->setCoverImage($fp);
-		$m1->save();
-		$m1->reload(); // refresh from db
-
-		// Assert that we've updated the db
-		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($m1->getCoverImage()), "Expected the updated BLOB value after setting with a stream.");
-
-		// 7) Assert that 'w' mode works
-
-	}
-
-	public function testLobSetting_WriteMode()
-	{
-		$blob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.gif';
-		$blob2_path = TESTS_BASE_DIR . '/etc/lob/propel.gif';
-
-		$clob_path = TESTS_BASE_DIR . '/etc/lob/tin_drum.txt';
-		$book = BookPeer::doSelectOne(new Criteria());
-
-		$m1 = new Media();
-		$m1->setBook($book);
-		$m1->setCoverImage(file_get_contents($blob_path));
-		$m1->setExcerpt(file_get_contents($clob_path));
-		$m1->save();
-
-		MediaPeer::clearInstancePool();
-
-		// make sure we have the latest from the db:
-		$m2 = MediaPeer::retrieveByPK($m1->getId());
-
-		// now attempt to assign a temporary stream, opened in 'w' mode, to the db
-
-		$stream = fopen("php://memory", 'w');
-		fwrite($stream, file_get_contents($blob2_path));
-		$m2->setCoverImage($stream);
-		$m2->save();
-		fclose($stream);
-
-		$m2->reload();
-		$this->assertEquals(file_get_contents($blob2_path), stream_get_contents($m2->getCoverImage()), "Expected contents to match when setting stream w/ 'w' mode");
-
-		$stream2 = fopen("php://memory", 'w+');
-		fwrite($stream2, file_get_contents($blob_path));
-		rewind($stream2);
-		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($stream2), "Expecting setup to be correct");
-
-		$m2->setCoverImage($stream2);
-		$m2->save();
-		$m2->reload();
-
-		$this->assertEquals(file_get_contents($blob_path), stream_get_contents($m2->getCoverImage()), "Expected contents to match when setting stream w/ 'w+' mode");
-
-	}
-
-
 	public function testDefaultFkColVal()
 	{
 		$sale = new BookstoreSale();
-		$this->assertEquals(1, $sale->getBookstoreId(), "Expected BookstoreSale object to have a default ID.");
+		$this->assertEquals(1, $sale->getBookstoreId(), "Expected BookstoreSale object to have a default bookstore_id of 1.");
 
 		$bookstore = BookstorePeer::doSelectOne(new Criteria());
 
@@ -834,5 +883,140 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$this->assertEquals($emp->getBookstoreEmployeeAccount()->getLogin(), $e2->getBookstoreEmployeeAccount()->getLogin());
 	}
+	
+	/**
+	 * Test copying when an object has composite primary key.
+	 * @link http://propel.phpdb.org/trac/ticket/618
+	 */
+	public function testCopy_CompositePK()
+	{
+		$br = new BookReader();
+		$br->setName("TestReader");
+		$br->save();
+		$br->copy();
+		
+		$b = new Book();
+		$b->setTitle("TestBook");
+		$b->setISBN("XX-XX-XX-XX");
+		$b->save();
+		
+		$op = new BookOpinion();
+		$op->setBookReader($br);
+		$op->setBook($b);
+		$op->setRating(10);
+		$op->setRecommendToFriend(true);
+		$op->save();
+		
+		
+		$br2 = $br->copy(true);
+		
+		$this->assertNull($br2->getId());
+		
+		$opinions = $br2->getBookOpinions();
+		$this->assertEquals(1, count($opinions), "Expected to have a related BookOpinion after copy()");
+		
+		// We DO expect the reader_id to be null
+		$this->assertNull($opinions[0]->getReaderId());
+		// but we DO NOT expect the book_id to be null 
+		$this->assertEquals($op->getBookId(), $opinions[0]->getBookId());
+	}
 
+	/**
+	 * Test the toArray() method with new lazyLoad param.
+	 * @link       http://propel.phpdb.org/trac/ticket/527
+	 */
+	public function testToArrayLazyLoad()
+	{
+		$c = new Criteria();
+		$c->add(MediaPeer::COVER_IMAGE, null, Criteria::NOT_EQUAL);
+		$c->add(MediaPeer::EXCERPT, null, Criteria::NOT_EQUAL);
+
+		$m = MediaPeer::doSelectOne($c);
+		if ($m === null) {
+			$this->fail("Test requires at least one media row w/ cover_image and excerpt NOT NULL");
+		}
+
+		$arr1 = $m->toArray(BasePeer::TYPE_COLNAME);
+		$this->assertNotNull($arr1[MediaPeer::COVER_IMAGE]);
+		$this->assertType('resource', $arr1[MediaPeer::COVER_IMAGE]);
+
+		$arr2 = $m->toArray(BasePeer::TYPE_COLNAME, false);
+		$this->assertNull($arr2[MediaPeer::COVER_IMAGE]);
+		$this->assertNull($arr2[MediaPeer::EXCERPT]);
+
+		$diffKeys = array_keys(array_diff($arr1, $arr2));
+
+		$expectedDiff = array(MediaPeer::COVER_IMAGE, MediaPeer::EXCERPT);
+
+		$this->assertEquals($expectedDiff, $diffKeys);
+	}
+
+	/**
+	 * Test regexp validator for ticket:542
+	 * @link       http://propel.phpdb.org/trac/ticket/542
+	 */
+	public function testRegexValidator()
+	{
+		$b = new Bookstore();
+		$b->setWebsite("http://this.is.valid.com/foo.bar");
+		$res = $b->validate();
+		$this->assertTrue($res, "Expected URL to validate");
+	}
+
+	/**
+	 * Test that setting the auto-increment primary key will result in exception.
+	 */
+	public function testSettingAutoIncrementPK()
+	{
+		$b = new Bookstore();
+		$b->setId(1);
+		$b->setStoreName("Test");
+		try {
+			$b->save();
+			$this->fail("Expected setting auto-increment primary key to result in Exception");
+		} catch (Exception $x) {
+			$this->assertType('PropelException', $x);
+		}
+
+		// ... but we should silently ignore NULL values, since these are really
+		// the same as "not set" in PHP world.
+		$b = new Bookstore();
+		$b->setId(null);
+		$b->setStoreName("Test2");
+		try {
+			$b->save();
+		} catch (Exception $x) {
+			$this->fail("Expected no exception when setting auto-increment primary key to NULL");
+		}
+		// success ...
+	}
+	
+	/**
+	 * Checks wether we are allowed to specify the primary key on a 
+	 * table with allowPkInsert=true set
+         *
+	 * saves the object, gets it from data-source again and then compares
+	 * them for equality (thus the instance pool is also checked) 
+	 */
+	public function testAllowPkInsertOnIdMethodNativeTable()
+	{
+		$cu = new Customer;
+		$cu->setPrimaryKey(100000);
+		
+		$cu->save();
+		
+		$cu2 = CustomerPeer::retrieveByPk(100000);
+				
+		$this->assertSame($cu, $cu2);
+	}
+	/**
+	 * Checks if it is allowed to save new, empty objects with a auto increment column
+	 */
+	public function testAllowEmptyWithAutoIncrement()
+	{
+		$bookreader = new BookReader();
+		$bookreader->save();
+				
+		$this->assertFalse($bookreader->isNew() );
+	}
 }

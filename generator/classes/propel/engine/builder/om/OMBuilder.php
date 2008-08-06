@@ -35,284 +35,6 @@ require_once 'propel/engine/builder/DataModelBuilder.php';
 abstract class OMBuilder extends DataModelBuilder {
 
 	/**
-	 * Peer builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $peerBuilder;
-
-	/**
-	 * Stub Peer builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $stubPeerBuilder;
-
-	/**
-	 * Object builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $objectBuilder;
-
-	/**
-	 * Stub Object builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $stubObjectBuilder;
-
-	/**
-	 * MapBuilder builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $mapBuilderBuilder;
-
-	/**
-	 * Stub Interface builder class for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $interfaceBuilder;
-
-	/**
-	 * Stub child object for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $multiExtendObjectBuilder;
-
-	/**
-	 * Node object builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $nodeBuilder;
-
-	/**
-	 * Node peer builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $nodePeerBuilder;
-
-	/**
-	 * Stub node object builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $stubNodeBuilder;
-
-	/**
-	 * Stub node peer builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $stubNodePeerBuilder;
-
-	/**
-	 * NestedSet object builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $nestedSetBuilder;
-
-	/**
-	 * NestedSet peer builder for current table.
-	 * @var        DataModelBuilder
-	 */
-	private $nestedSetPeerBuilder;
-	
-	/**
-	 * The Pluralizer class to use.
-	 * @var        Pluralizer
-	 */
-	private $pluralizer;
-	
-	/**
-	 * Returns new or existing Peer builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getPeerBuilder()
-	{
-		if (!isset($this->peerBuilder)) {
-			$this->peerBuilder = DataModelBuilder::builderFactory($this->getTable(), 'peer');
-		}
-		return $this->peerBuilder;
-	}
-	
-	/**
-	 * Returns new or existing Pluralizer class.
-	 * @return     Pluralizer
-	 */
-	public function getPluralizer()
-	{
-		if (!isset($this->pluralizer)) {
-			$classname = self::getBuilderClass('pluralizer');
-			$this->pluralizer = new $classname();
-		}
-		return $this->pluralizer;
-	}
-	
-	/**
-	 * Returns new or existing stub Peer builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getStubPeerBuilder()
-	{
-		if (!isset($this->stubPeerBuilder)) {
-			$this->stubPeerBuilder = DataModelBuilder::builderFactory($this->getTable(), 'peerstub');
-		}
-		return $this->stubPeerBuilder;
-	}
-
-	/**
-	 * Returns new or existing Object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getObjectBuilder()
-	{
-		if (!isset($this->objectBuilder)) {
-			$this->objectBuilder = DataModelBuilder::builderFactory($this->getTable(), 'object');
-		}
-		return $this->objectBuilder;
-
-	}
-
-	/**
-	 * Returns new or existing stub Object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getStubObjectBuilder()
-	{
-		if (!isset($this->stubObjectBuilder)) {
-			$this->stubObjectBuilder = DataModelBuilder::builderFactory($this->getTable(), 'objectstub');
-		}
-		return $this->stubObjectBuilder;
-	}
-
-	/**
-	 * Returns new or existing MapBuilder builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getMapBuilderBuilder()
-	{
-		if (!isset($this->mapBuilderBuilder)) {
-			$this->mapBuilderBuilder = DataModelBuilder::builderFactory($this->getTable(), 'mapbuilder');
-		}
-		return $this->mapBuilderBuilder;
-	}
-
-	/**
-	 * Returns new or existing stub Interface builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getInterfaceBuilder()
-	{
-		if (!isset($this->interfaceBuilder)) {
-			$this->interfaceBuilder = DataModelBuilder::builderFactory($this->getTable(), 'interface');
-		}
-		return $this->interfaceBuilder;
-	}
-
-	/**
-	 * Returns new or existing stub child object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getMultiExtendObjectBuilder()
-	{
-		if (!isset($this->multiExtendObjectBuilder)) {
-			$this->multiExtendObjectBuilder = DataModelBuilder::builderFactory($this->getTable(), 'objectmultiextend');
-		}
-		return $this->multiExtendObjectBuilder;
-	}
-
-	/**
-	 * Returns new or existing node Object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getNodeBuilder()
-	{
-		if (!isset($this->nodeBuilder)) {
-			$this->nodeBuilder = DataModelBuilder::builderFactory($this->getTable(), 'node');
-		}
-		return $this->nodeBuilder;
-	}
-
-	/**
-	 * Returns new or existing node Peer builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getNodePeerBuilder()
-	{
-		if (!isset($this->nodePeerBuilder)) {
-			$this->nodePeerBuilder = DataModelBuilder::builderFactory($this->getTable(), 'nodepeer');
-		}
-		return $this->nodePeerBuilder;
-	}
-
-	/**
-	 * Returns new or existing stub node Object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getStubNodeBuilder()
-	{
-		if (!isset($this->stubNodeBuilder)) {
-			$this->stubNodeBuilder = DataModelBuilder::builderFactory($this->getTable(), 'nodestub');
-		}
-		return $this->stubNodeBuilder;
-	}
-
-	/**
-	 * Returns new or existing stub node Peer builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getStubNodePeerBuilder()
-	{
-		if (!isset($this->stubNodePeerBuilder)) {
-			$this->stubNodePeerBuilder = DataModelBuilder::builderFactory($this->getTable(), 'nodepeerstub');
-		}
-		return $this->stubNodePeerBuilder;
-	}
-
-	/**
-	 * Returns new or existing nested set Object builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getNestedSetBuilder()
-	{
-		if (!isset($this->nestedSetBuilder)) {
-			$this->nestedSetBuilder = DataModelBuilder::builderFactory($this->getTable(), 'nestedset');
-		}
-		return $this->nestedSetBuilder;
-	}
-
-	/**
-	 * Returns new or existing nested set Peer builder class for this table.
-	 * @return     DataModelBuilder
-	 */
-	public function getNestedSetPeerBuilder()
-	{
-		if (!isset($this->nestedSetPeerBuilder)) {
-			$this->nestedSetPeerBuilder = DataModelBuilder::builderFactory($this->getTable(), 'nestedsetpeer');
-		}
-		return $this->nestedSetPeerBuilder;
-	}
-
-	/**
-	 * Convenience method to return a NEW Peer class builder instance.
-	 * This is used very frequently from the peer and object builders to get
-	 * a peer builder for a RELATED table.
-	 * @param      Table $table
-	 * @return     PeerBuilder
-	 */
-	public static function getNewPeerBuilder(Table $table)
-	{
-		return DataModelBuilder::builderFactory($table, 'peer');
-	}
-
-	/**
-	 * Convenience method to return a NEW Object class builder instance.
-	 * This is used very frequently from the peer and object builders to get
-	 * an object builder for a RELATED table.
-	 * @param      Table $table
-	 * @return     ObjectBuilder
-	 */
-	public static function getNewObjectBuilder(Table $table)
-	{
-		return DataModelBuilder::builderFactory($table, 'object');
-	}
-
-	/**
 	 * Builds the PHP source for current class and returns it as a string.
 	 *
 	 * This is the main entry point and defines a basic structure that classes should follow.
@@ -324,12 +46,27 @@ abstract class OMBuilder extends DataModelBuilder {
 	 */
 	public function build()
 	{
+		$this->validateModel();
+
 		$script = "<" . "?php\n"; // intentional concatenation
 		$this->addIncludes($script);
 		$this->addClassOpen($script);
 		$this->addClassBody($script);
 		$this->addClassClose($script);
 		return $script;
+	}
+
+	/**
+	 * Validates the current table to make sure that it won't
+	 * result in generated code that will not parse.
+	 *
+	 * This method may emit warnings for code which may cause problems
+	 * and will throw exceptions for errors that will definitely cause
+	 * problems.
+	 */
+	protected function validateModel()
+	{
+		// Validation is currently only implemented in the subclasses.
 	}
 
 	/**
@@ -357,7 +94,7 @@ abstract class OMBuilder extends DataModelBuilder {
 	 */
 	public function getClassname()
 	{
-		return DataModelBuilder::prefixClassname($this->getUnprefixedClassname());
+		return $this->prefixClassname($this->getUnprefixedClassname());
 	}
 	/**
 	 * Gets the dot-path representation of current class being built.
@@ -379,7 +116,7 @@ abstract class OMBuilder extends DataModelBuilder {
 	 */
 	public function getClassFilePath()
 	{
-		return parent::getFilePath($this->getPackage(), $this->getClassname());
+		return ClassTools::getFilePath($this->getPackage(), $this->getClassname());
 	}
 
 	/**
@@ -467,11 +204,4 @@ abstract class OMBuilder extends DataModelBuilder {
 		return $class;
 	}
 
-	/**
-	 *
-	 */
-	protected function getBuilder($tablename, $type) {
-		$table = $this->getTable()->getDatabase()->getTable($tablename);
-		return self::builderFactory($table, $type);
-	}
 }

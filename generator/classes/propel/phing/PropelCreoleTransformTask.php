@@ -144,7 +144,7 @@ class PropelCreoleTransformTask extends Task {
 		'required' => PropelCreoleTransformTask::VALIDATORS_REQUIRED,
 		'unique' => PropelCreoleTransformTask::VALIDATORS_UNIQUE,
 		'all' => PropelCreoleTransformTask::VALIDATORS_ALL,
-		);
+	);
 
 	/**
 	 * Defines messages that are added to validators
@@ -156,97 +156,100 @@ class PropelCreoleTransformTask extends Task {
 		'maxlength' => array (
 			'msg' => 'The field %s must be not longer than %s characters.',
 			'var' => array('colName', 'value')
-			),
+	),
 		'maxvalue' => array (
 			'msg' => 'The field %s must be not greater than %s.',
 			'var' => array('colName', 'value')
-			),
+	),
 		'type' => array (
 			'msg' => 'The field %s is not a valid value.',
 			'var' => array('colName')
-			),
+	),
 		'required' => array (
 			'msg' => 'The field %s is required.',
 			'var' => array('colName')
-			),
+	),
 		'unique' => array (
 			'msg' => 'This %s already exists in table %s.',
 			'var' => array('colName', 'tableName')
-			),
-			);
+	),
+	);
 
-			public function getDbSchema()
-			{
-				return $this->dbSchema;
-			}
+	public function getDbSchema()
+	{
+		return $this->dbSchema;
+	}
 
-			public function setDbSchema($dbSchema)
-			{
-				$this->dbSchema = $dbSchema;
-			}
+	public function setDbSchema($dbSchema)
+	{
+		$this->dbSchema = $dbSchema;
+	}
 
-			public function setDbUrl($v)
-			{
-				$this->dbUrl = $v;
-			}
+	public function setDbUrl($v)
+	{
+		$this->dbUrl = $v;
+	}
 
-			public function setDbDriver($v)
-			{
-				$this->dbDriver = $v;
-			}
+	public function setDbDriver($v)
+	{
+		$this->dbDriver = $v;
+	}
 
-			public function setDbUser($v)
-			{
-				$this->dbUser = $v;
-			}
+	public function setDbUser($v)
+	{
+		$this->dbUser = $v;
+	}
 
-			public function setDbPassword($v)
-			{
-				$this->dbPassword = $v;
-			}
+	public function setDbPassword($v)
+	{
+		$this->dbPassword = $v;
+	}
 
-			public function setDbEncoding($v)
-			{
-	   $this->dbEncoding = $v;
-			}
+	public function setDbEncoding($v)
+	{
+		$this->dbEncoding = $v;
+	}
 
-			public function setOutputFile($v)
-			{
-				$this->xmlSchema = $v;
-			}
+	public function setOutputFile($v)
+	{
+		$this->xmlSchema = $v;
+	}
 
-			public function setSamePhpName($v)
-			{
-				$this->samePhpName = $v;
-			}
+	public function setSamePhpName($v)
+	{
+		$this->samePhpName = $v;
+	}
 
-			public function setAddVendorInfo($v)
-			{
-				$this->addVendorInfo = (boolean) $v;
-			}
+	public function setAddVendorInfo($v)
+	{
+		$this->addVendorInfo = (boolean) $v;
+	}
 
 	/**
-	 * Sets set validator bitfield from propel.addValidators property
+	 * Sets set validator bitfield from a comma-separated list of "validator bit" names.
 	 *
-	 * @param      string $v The propel.addValidators property
+	 * @param      string $v The comma-separated list of which validators to add.
 	 * @return     void
 	 */
 	public function setAddValidators($v)
 	{
+		$validKeys = array_keys(self::$validatorBitMap);
+
 		// lowercase input
 		$v = strtolower($v);
-		// make it a bit expression
-		$v = str_replace(
-		array_keys(self::$validatorBitMap), self::$validatorBitMap, $v);
-		// check if it's a valid boolean expression
-		if (!preg_match('/[^\d|&~ ]/', $v)) {
-			// eval the expression
-			eval("\$v = $v;");
-		} else {
-			$this->log("\n\nERROR: NO VALIDATORS ADDED!\n\nThere is an error in propel.addValidators build property.\n\nAllowed tokens are: " . implode(', ', array_keys(self::$validatorBitMap)) . "\n\nAllowed operators are (like in php.ini):\n\n|    bitwise OR\n&    bitwise AND\n~    bitwise NOT\n\n", PROJECT_MSG_ERR);
-			$v = self::VALIDATORS_NONE;
+
+		$bits = self::VALIDATORS_NONE;
+
+		$exprs = explode(',', $v);
+		foreach ($exprs as $expr) {
+			$expr = trim($expr);
+			if (!isset(self::$validatorBitMap[$expr])) {
+				throw new BuildException("Unable to interpret validator in expression ('$v'): " . $expr);
+			}
+			$bits |= self::$validatorBitMap[$expr];
 		}
-		$this->validatorBits = $v;
+
+		$this->validatorBits = $bits;
 	}
 
 	public function isSamePhpName()
@@ -289,7 +292,7 @@ class PropelCreoleTransformTask extends Task {
 			$out->write($xmlstr);
 			$out->close();
 		} catch (Exception $e) {
-			$this->log("There was an error building XML from metadata: " . $e->getMessage(), PROJECT_MSG_ERR);
+			$this->log("There was an error building XML from metadata: " . $e->getMessage(), Project::MSG_ERR);
 		}
 		$this->log("Propel - CreoleToXMLSchema finished");
 	}
@@ -512,7 +515,7 @@ class PropelCreoleTransformTask extends Task {
 		$colScale = $column->getScale();
 
 		if ($colType === CreoleTypes::OTHER) {
-			$this->log("Column [" . $table->getName() . "." . $colName . "] has a column type (".$column->getNativeType().") that Propel does not support.", PROJECT_MSG_WARN);
+			$this->log("Column [" . $table->getName() . "." . $colName . "] has a column type (".$column->getNativeType().") that Propel does not support.", Project::MSG_WARN);
 		}
 
 		$node->setAttribute("name", $colName);
@@ -650,12 +653,11 @@ class PropelCreoleTransformTask extends Task {
 	/**
 	 * Checks whether to add validators of specified type or not
 	 *
-	 * @param      string $type The validator type
+	 * @param      int $type The validator type constant.
 	 * @return     boolean
 	 */
 	protected function isValidatorRequired($type) {
-		$type = strtolower($type);
-		return ($this->validatorBits & self::$validatorBitMap[$type] ? true : false);
+		return (($this->validatorBits & $type) === $type);
 	}
 
 	/**
@@ -698,16 +700,16 @@ class PropelCreoleTransformTask extends Task {
 		$colType = $column->getType();
 		$colSize = $column->getSize();
 
-		if ($this->isValidatorRequired('required')) {
+		if ($this->isValidatorRequired(self::VALIDATORS_REQUIRED)) {
 			$ruleInfo = array('type' => 'required');
 			$this->validatorInfos[$tableName][$colName][] = $ruleInfo;
 		}
 		$isPrimarykeyCol = in_array($colName, $this->getTablePkCols($table));
-		if ($this->isValidatorRequired('unique') && $isPrimarykeyCol) {
+		if ($this->isValidatorRequired(self::VALIDATORS_UNIQUE) && $isPrimarykeyCol) {
 			$ruleInfo = array('type' => 'unique');
 			$this->validatorInfos[$tableName][$colName][] = $ruleInfo;
 		}
-		if ($this->isValidatorRequired('maxLength') &&
+		if ($this->isValidatorRequired(self::VALIDATORS_MAXLENGTH) &&
 		$colSize > 0 && in_array($colType, array(
 		CreoleTypes::CHAR,
 		CreoleTypes::VARCHAR,
@@ -715,7 +717,7 @@ class PropelCreoleTransformTask extends Task {
 			$ruleInfo = array('type' => 'maxLength', 'value' => $colSize);
 			$this->validatorInfos[$tableName][$colName][] = $ruleInfo;
 		}
-		if ($this->isValidatorRequired('maxValue') &&
+		if ($this->isValidatorRequired(self::VALIDATORS_MAXVALUE) &&
 		$colSize > 0 && in_array($colType, array(
 		CreoleTypes::SMALLINT,
 		CreoleTypes::TINYINT,
@@ -728,11 +730,11 @@ class PropelCreoleTransformTask extends Task {
 		CreoleTypes::REAL))) {
 
 			// TODO: how to evaluate the appropriate size??
-			$this->log("WARNING: maxValue validator added for column $colName. You will have to adjust the size value manually.", PROJECT_MSG_WARN);
+			$this->log("WARNING: maxValue validator added for column $colName. You will have to adjust the size value manually.", Project::MSG_WARN);
 			$ruleInfo = array('type' => 'maxValue', 'value' => $colSize);
 			$this->validatorInfos[$tableName][$colName][] = $ruleInfo;
 		}
-		if ($this->isValidatorRequired('type') &&
+		if ($this->isValidatorRequired(self::VALIDATORS_TYPE) &&
 		$colSize > 0 && in_array($colType, array(
 		CreoleTypes::SMALLINT,
 		CreoleTypes::TINYINT,
@@ -741,7 +743,7 @@ class PropelCreoleTransformTask extends Task {
 			$ruleInfo = array('type' => 'type', 'value' => '[^\d]+');
 			$this->validatorInfos[$tableName][$colName][] = $ruleInfo;
 		}
-		if ($this->isValidatorRequired('type') &&
+		if ($this->isValidatorRequired(self::VALIDATORS_TYPE) &&
 		$colSize > 0 && in_array($colType, array(
 		CreoleTypes::FLOAT,
 		CreoleTypes::DOUBLE,
@@ -784,7 +786,8 @@ class PropelCreoleTransformTask extends Task {
 		$colName = $column->getName();
 		$tableName = $column->getTable()->getName();
 		$msg = self::$validatorMessages[strtolower($type)];
-		array_unshift($tmp = compact($msg['var']), $msg['msg']);
+		$tmp = compact($msg['var']);
+		array_unshift($tmp, $msg['msg']);
 		$msg = call_user_func_array('sprintf', $tmp);
 
 		// add node

@@ -22,6 +22,7 @@
 
 //include_once 'phing/tasks/ext/CapsuleTask.php';
 require_once 'phing/Task.php';
+include_once 'propel/engine/GeneratorConfig.php';
 include_once 'propel/engine/database/model/AppData.php';
 include_once 'propel/engine/database/model/Database.php';
 include_once 'propel/engine/database/transform/XmlToAppData.php';
@@ -147,6 +148,13 @@ abstract class AbstractPropelDataModelTask extends Task {
 	private $conn = false;
 
 	/**
+	 * An initialized GeneratorConfig object containing the converted Phing props.
+	 *
+	 * @var        GeneratorConfig
+	 */
+	private $generatorConfig;
+
+	/**
 	 * Return the data models that have been
 	 * processed.
 	 *
@@ -267,7 +275,7 @@ abstract class AbstractPropelDataModelTask extends Task {
 	public function setOutputDirectory(PhingFile $outputDirectory) {
 		try {
 			if (!$outputDirectory->exists()) {
-				$this->log("Output directory does not exist, creating: " . $outputDirectory->getPath(),PROJECT_MSG_VERBOSE);
+				$this->log("Output directory does not exist, creating: " . $outputDirectory->getPath(),Project::MSG_VERBOSE);
 				if (!$outputDirectory->mkdirs()) {
 					throw new IOException("Unable to create Ouptut directory: " . $outputDirectory->getAbsolutePath());
 				}
@@ -378,7 +386,7 @@ abstract class AbstractPropelDataModelTask extends Task {
 					. ($this->userId ? " user: " . $this->userId . "\n" : "")
 				. ($this->password ? " password: " . $this->password . "\n" : "");
 
-				$this->log($buf, PROJECT_MSG_VERBOSE);
+				$this->log($buf, Project::MSG_VERBOSE);
 
 				// Set user + password to null if they are empty strings
 				if (!$this->userId) { $this->userId = null; }
@@ -387,48 +395,11 @@ abstract class AbstractPropelDataModelTask extends Task {
 					$this->conn = new PDO($this->url, $this->userId, $this->password);
 					$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 				} catch (PDOException $x) {
-					$this->log("Unable to create a PDO connection: " . $x->getMessage(), PROJECT_MSG_WARN);
+					$this->log("Unable to create a PDO connection: " . $x->getMessage(), Project::MSG_WARN);
 				}
 			}
 		}
 		return $this->conn;
-	}
-
-	/**
-	 * Get the Platform class based on the target database type.
-	 * @return     Platform Object that implements the Platform interface.
-	 */
-	protected function getPlatformForTargetDatabase()
-	{
-
-		$classpath = $this->getPropelProperty("platformClass");
-		if (empty($classpath)) {
-			throw new BuildException("Unable to find class path for '$propname' property.");
-		}
-
-		// This is a slight hack to workaround camel case inconsistencies for the DDL classes.
-		// Basically, we want to turn ?.?.?.sqliteDDLBuilder into ?.?.?.SqliteDDLBuilder
-		$lastdotpos = strrpos($classpath, '.');
-		if ($lastdotpos !== null) {
-			$classpath{$lastdotpos+1} = strtoupper($classpath{$lastdotpos+1});
-		} else {
-			$classpath = ucfirst($classpath);
-		}
-
-		if (empty($classpath)) {
-			throw new BuildException("Unable to find class path for '$propname' property.");
-		}
-
-		$clazz = Phing::import($classpath);
-		$platform = new $clazz();
-
-		if (!$platform instanceof Platform) {
-			throw new BuildException("Specified platform class ($classpath) does not implement Platform interface.", $this->getLocation());
-		}
-
-		$platform->setConnection($this->getConnection());
-
-		return $platform;
 	}
 
 	/**
@@ -446,7 +417,7 @@ abstract class AbstractPropelDataModelTask extends Task {
 
 			$dataModelFiles = $ds->getIncludedFiles();
 
-			$platform = $this->getPlatformForTargetDatabase();
+			$platform = $this->getGeneratorConfig()->getConfiguredPlatform();
 
 			// Make a transaction for each file
 			foreach ($dataModelFiles as $dmFilename) {
@@ -459,9 +430,9 @@ abstract class AbstractPropelDataModelTask extends Task {
 
 				// normalize (or transform) the XML document using XSLT
 				if ($this->xslFile) {
-					$this->log("Transforming " . $xmlFile->getPath() . " using stylesheet " . $this->xslFile->getPath(), PROJECT_MSG_VERBOSE);
+					$this->log("Transforming " . $xmlFile->getPath() . " using stylesheet " . $this->xslFile->getPath(), Project::MSG_VERBOSE);
 					if (!class_exists('XSLTProcessor')) {
-						$this->log("Could not perform XLST transformation.  Make sure PHP has been compiled/configured to support XSLT.", PROJECT_MSG_ERR);
+						$this->log("Could not perform XLST transformation.  Make sure PHP has been compiled/configured to support XSLT.", Project::MSG_ERR);
 					} else {
 						// modify schema to include any external schema's (and remove the external-schema nodes)
 						$this->includeExternalSchemas($dom, $srcDir);
@@ -475,7 +446,7 @@ abstract class AbstractPropelDataModelTask extends Task {
 						// now overwrite previous vars to point to newly transformed file
 						$xmlFile = new PhingFile($srcDir, $newXmlFilename);
 						$transformed->save($xmlFile->getAbsolutePath());
-						$this->log("\t- Using new (post-transformation) XML file: " . $xmlFile->getPath(), PROJECT_MSG_VERBOSE);
+						$this->log("\t- Using new (post-transformation) XML file: " . $xmlFile->getPath(), Project::MSG_VERBOSE);
 
 						$dom = new DomDocument('1.0', 'UTF-8');
 						$dom->load($xmlFile->getAbsolutePath());
@@ -484,7 +455,7 @@ abstract class AbstractPropelDataModelTask extends Task {
 
 				// validate the XML document using XSD schema
 				if ($this->validate && $this->xsdFile) {
-					$this->log("Validating XML doc (".$xmlFile->getPath().") using schema file " . $this->xsdFile->getPath(), PROJECT_MSG_VERBOSE);
+					$this->log("Validating XML doc (".$xmlFile->getPath().") using schema file " . $this->xsdFile->getPath(), Project::MSG_VERBOSE);
 					if (!$dom->schemaValidate($this->xsdFile->getAbsolutePath())) {
 						throw new BuildException("XML schema file (".$xmlFile->getPath().") does not validate.  See warnings above for reasons validation failed (make sure error_reporting is set to show E_WARNING if you don't see any).");		throw new EngineException("XML schema does not validate (using schema file $xsdFile).  See warnings above for reasons validation failed (make sure error_reporting is set to show E_WARNING if you don't see any).", $this->getLocation());
 					}
@@ -540,7 +511,11 @@ abstract class AbstractPropelDataModelTask extends Task {
 		while ($externalSchema = $externalSchemaNodes->item(0)) {
 			$include = $externalSchema->getAttribute("filename");
 			$externalSchema->parentNode->removeChild($externalSchema);
-			$externalSchemaFile = new PhingFile($srcDir, $include);
+			if (strpos($srcDir->getPath(), "/") === 0) {
+				$externalSchemaFile = new PhingFile($include);
+			} else {
+				$externalSchemaFile = new PhingFile($srcDir, $include);
+			}
 			$externalSchemaDom = new DomDocument('1.0', 'UTF-8');
 			$externalSchemaDom->load($externalSchemaFile->getAbsolutePath());
 			$this->includeExternalSchemas($externalSchemaDom, $srcDir);
@@ -595,43 +570,16 @@ abstract class AbstractPropelDataModelTask extends Task {
 	}
 
 	/**
-	 * Fetches the propel.xxx properties from project, renaming the propel.xxx properties to just xxx.
-	 *
-	 * Also, renames any xxx.yyy properties to xxxYyy as PHP doesn't like the xxx.yyy syntax.
-	 *
-	 * @return     array Assoc array of properties.
+	 * Gets the GeneratorConfig object for this task or creates it on-demand.
+	 * @return     GeneratorConfig
 	 */
-	protected function getPropelProperties()
+	protected function getGeneratorConfig()
 	{
-		$allProps = $this->getProject()->getProperties();
-		$renamedPropelProps = array();
-		foreach ($allProps as $key => $propValue) {
-			if (strpos($key, "propel.") === 0) {
-				$newKey = substr($key, strlen("propel."));
-				$j = strpos($newKey, '.');
-				while ($j !== false) {
-					$newKey =  substr($newKey, 0, $j) . ucfirst(substr($newKey, $j + 1));
-					$j = strpos($newKey, '.');
-				}
-				$renamedPropelProps[$newKey] = $propValue;
-			}
+		if ($this->generatorConfig === null) {
+			$this->generatorConfig = new GeneratorConfig();
+			$this->generatorConfig->setBuildProperties($this->getProject()->getProperties());
 		}
-		return $renamedPropelProps;
-	}
-
-	/**
-	 * Fetches a single propel.xxx property from project, using "converted" property names.
-	 * @see        getPropelProperties()
-	 * @param      string $name Name of property to fetch (in converted CamelCase)
-	 * @return     string The value of the property (or NULL if not set)
-	 */
-	protected function getPropelProperty($name)
-	{
-		$props = $this->getPropelProperties();
-		if (isset($props[$name])) {
-			return $props[$name];
-		}
-		return null; // just to be explicit
+		return $this->generatorConfig;
 	}
 
 	/**

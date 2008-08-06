@@ -4,7 +4,7 @@
 	<table name="book" description="Book Table">
 		<column name="id" required="true" primaryKey="true"
 			autoIncrement="true" type="INTEGER" description="Book Id" />
-		<column name="title" type="VARCHAR" required="true" size="255"
+		<column name="title" type="VARCHAR" required="true"
 			description="Book Title" />
 		<column name="isbn" required="true" type="VARCHAR" size="24"
 			phpName="ISBN" description="ISBN Number" />
@@ -29,8 +29,7 @@
 				message="Book title must not be longer than ${value} characters." />
 		</validator>
 		<validator column="isbn" translate="none">
-			<rule name="notMatch" value="/[^\d-]+/"
-				message="The ISBN contains invalid characters." />
+			<rule name="class" class="bookstore.validator.ISBNValidator" message="ISBN does not validate!"/>
 		</validator>
 	</table>
 
@@ -74,7 +73,7 @@
 		<column name="reviewed_by" required="true" type="VARCHAR"
 			size="128" description="Reviewer Name" />
 		<column name="review_date" required="true" type="DATE"
-			default="01 Jan 2001" description="Date of Review" />
+			default="2001-01-01" description="Date of Review" />
 		<column name="recommended" required="true" type="BOOLEAN"
 			description="Does reviewer recommend book?" />
 		<column name="status" type="VARCHAR" size="8"
@@ -155,15 +154,16 @@
 			description="Employee job title" />
 		<column name="supervisor_id" type="INTEGER"
 			description="Fkey to supervisor." />
-		<column name="photo" type="BLOB" lazyLoad="true"/>
+		<column name="photo" type="BLOB" lazyLoad="true" />
 		<foreign-key foreignTable="bookstore_employee"
-			phpName="Supervisor" refPhpName="Subordinate">
+			phpName="Supervisor" refPhpName="Subordinate" onDelete="SETNULL">
 			<reference local="supervisor_id" foreign="id" />
 		</foreign-key>
 	</table>
 
-	<!-- Test one-to-one relationship -->
-	<table name="bookstore_employee_account"
+	<!-- Test one-to-one (1:1) relationship, default values -->
+	<table name="bookstore_employee_account" reloadOnInsert="true"
+		reloadOnUpdate="true"
 		description="A table that represents a bookstore employees login credentials.">
 		<column name="employee_id" type="INTEGER" primaryKey="true"
 			description="Primary key for the account ..." />
@@ -173,25 +173,28 @@
 		<column name="enabled" type="BOOLEAN" default="true" />
 		<column name="created" type="TIMESTAMP"
 			defaultExpr="CURRENT_TIMESTAMP" />
-		<column name="role_id" type="INTEGER" required="false"/>
+		<column name="role_id" type="INTEGER" required="false" />
+		<column name="authenticator" type="VARCHAR" size="32"
+			defaultExpr="'Password'" />
 		<foreign-key foreignTable="bookstore_employee"
 			onDelete="cascade">
 			<reference local="employee_id" foreign="id" />
 		</foreign-key>
-		<foreign-key foreignTable="acct_access_role" onDelete="setnull">
-			<reference local="role_id" foreign="id"/>
+		<foreign-key foreignTable="acct_access_role"
+			onDelete="setnull">
+			<reference local="role_id" foreign="id" />
 		</foreign-key>
 		<unique>
 			<unique-column name="login" />
 		</unique>
 	</table>
-	
+
 	<table name="acct_access_role">
 		<column name="id" type="INTEGER" primaryKey="true"
 			autoIncrement="true" description="Role ID number" />
-		<column name="name" type="VARCHAR" size="25" required="true"/>
+		<column name="name" type="VARCHAR" size="25" required="true" />
 	</table>
-	
+
 	<!--  book_reader, book_opinion, and reader_favorite test some foreign key issues  
 		(see: http://propel.phpdb.org/trac/ticket/228) -->
 	<table name="book_reader">
@@ -222,12 +225,12 @@
 		<foreign-key foreignTable="book_reader" onDelete="cascade">
 			<reference local="reader_id" foreign="id" />
 		</foreign-key>
-		<!-- 
-			<foreign-key foreignTable="book_opinion" onDelete="cascade">
+		
+		<foreign-key foreignTable="book_opinion" onDelete="cascade">
 			<reference local="book_id" foreign="book_id"/>
 			<reference local="reader_id" foreign="reader_id"/>
-			</foreign-key>
-		-->
+		</foreign-key>
+		
 	</table>
 
 	<!--  Test some custom php column types. -->
@@ -240,10 +243,14 @@
 		<column name="population_served" type="BIGINT" />
 		<column name="total_books" type="INTEGER" />
 		<column name="store_open_time" type="TIME" />
+		<column name="website" type="VARCHAR" size="255"/>
+		<validator column="website">
+			<rule name="match" value="/^((ht|f)tp(s?)\:\/\/[a-zA-Z0-9\-\._]+(\.[a-zA-Z0-9\-\._]+){2,}(\/?)([a-zA-Z0-9\-\.\?\,'\/\\\+&amp;amp;%\$#_]*)?$|$)/" message="wrong url"/>
+		</validator>
 	</table>
 
-	<!--  test default values on foreign keys -->
-	<table name="bookstore_sale">
+	<!--  test default values on foreign keys, default expr w/ reloadOnUpdate="true" -->
+	<table name="bookstore_sale" reloadOnUpdate="true">
 		<column name="id" type="INTEGER" primaryKey="true"
 			autoIncrement="true" />
 		<column name="bookstore_id" type="INTEGER" required="false"
@@ -252,7 +259,7 @@
 		<column name="sale_name" type="VARCHAR" size="100"
 			required="false" />
 		<column name="discount" type="TINYINT"
-			description="Discount percentage" />
+			description="Discount percentage" defaultExpr="10" />
 		<foreign-key foreignTable="bookstore" onDelete="cascade">
 			<reference local="bookstore_id" foreign="id" />
 		</foreign-key>
@@ -260,22 +267,24 @@
 			<reference local="publisher_id" foreign="id" />
 		</foreign-key>
 	</table>
-	
-	<table name="customer">
-		<column name="id" type="INTEGER" primaryKey="true" autoIncrement="true"/>
-		<column name="name" type="VARCHAR" size="255"/>
-		<column name="join_date" type="DATE" defaultExpr="CURRENT_DATE"/>
+
+	<table name="customer" allowPkInsert="true">
+		<column name="id" type="INTEGER" primaryKey="true"
+			autoIncrement="true" />
+		<column name="name" type="VARCHAR" size="255" />
+		<column name="join_date" type="DATE" />
 	</table>
-	
+
 	<table name="contest">
-		<column name="id" type="INTEGER" primaryKey="true" autoIncrement="true"/>
-		<column name="name" type="VARCHAR" size="100"/>
+		<column name="id" type="INTEGER" primaryKey="true"
+			autoIncrement="true" />
+		<column name="name" type="VARCHAR" size="100" />
 	</table>
-	
+
 	<table name="bookstore_contest">
-		<column name="bookstore_id" type="INTEGER" primaryKey="true"/>
-		<column name="contest_id" type="INTEGER" primaryKey="true"/>
-		<column name="prize_book_id" type="INTEGER"/>
+		<column name="bookstore_id" type="INTEGER" primaryKey="true" />
+		<column name="contest_id" type="INTEGER" primaryKey="true" />
+		<column name="prize_book_id" type="INTEGER" />
 		<foreign-key foreignTable="bookstore" onDelete="CASCADE">
 			<reference local="bookstore_id" foreign="id" />
 		</foreign-key>
@@ -287,18 +296,20 @@
 		</foreign-key>
 	</table>
 
-	<table name="bookstore_contest_entry">
-		<column name="bookstore_id" type="INTEGER" primaryKey="true"/>
-		<column name="contest_id" type="INTEGER" primaryKey="true"/>
-		<column name="customer_id" type="INTEGER" primaryKey="true"/>
-		<column name="entry_date" type="TIMESTAMP" defaultExpr="CURRENT_TIMESTAMP"/>
+	<table name="bookstore_contest_entry" reloadOnInsert="true">
+		<column name="bookstore_id" type="INTEGER" primaryKey="true" />
+		<column name="contest_id" type="INTEGER" primaryKey="true" />
+		<column name="customer_id" type="INTEGER" primaryKey="true" />
+		<column name="entry_date" type="TIMESTAMP"
+			defaultExpr="CURRENT_TIMESTAMP" />
 		<foreign-key foreignTable="bookstore" onDelete="CASCADE">
 			<reference local="bookstore_id" foreign="id" />
 		</foreign-key>
 		<foreign-key foreignTable="customer" onDelete="CASCADE">
 			<reference local="customer_id" foreign="id" />
 		</foreign-key>
-		<foreign-key foreignTable="bookstore_contest" onDelete="CASCADE">
+		<foreign-key foreignTable="bookstore_contest"
+			onDelete="CASCADE">
 			<reference local="bookstore_id" foreign="bookstore_id" />
 			<reference local="contest_id" foreign="contest_id" />
 		</foreign-key>

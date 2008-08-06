@@ -21,7 +21,7 @@
 
 
 /**
- * PDO connection subclass that provides some enhanced functionality needed by Propel.
+ * PDO connection subclass that provides the basic fixes to PDO that are required by Propel.
  *
  * This class was designed to work around the limitation in PDO where attempting to begin
  * a transaction when one has already been begun will trigger a PDOException.  Propel
@@ -35,16 +35,36 @@
  *
  * @author     Cameron Brunner <cameron.brunner@gmail.com>
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Christian Abegg <abegg.ch@gmail.com>
  * @since      2006-09-22
  * @package    propel.util
  */
 class PropelPDO extends PDO {
 
 	/**
+	 * Attribute to use to set whether to cache prepared statements.
+	 */
+	const PROPEL_ATTR_CACHE_PREPARES = -1;
+
+	/**
 	 * The current transaction depth.
 	 * @var        int
 	 */
 	protected $nestedTransactionCount = 0;
+
+	/**
+	 * Cache of prepared statements (PDOStatement) keyed by md5 of SQL.
+	 *
+	 * @var        array [md5(sql) => PDOStatement]
+	 */
+	protected $preparedStatements = array();
+
+	/**
+	 * Whether to cache prepared statements.
+	 *
+	 * @var        boolean
+	 */
+	protected $cachePreparedStatements = false;
 
 	/**
 	 * Gets the current transaction depth.
@@ -123,16 +143,16 @@ class PropelPDO extends PDO {
 	}
 
 	/**
-	 * Overrides PDO::rollback() to only rollback the transaction if we are in the outermost
+	 * Overrides PDO::rollBack() to only rollback the transaction if we are in the outermost
 	 * transaction nesting level.
 	 */
-	public function rollback()
+	public function rollBack()
 	{
 		$return = true;
 		$opcount = $this->getNestedTransactionCount();
 		if ($opcount > 0) {
 			if ($opcount === 1) {
-				$return = parent::rollback();
+				$return = parent::rollBack();
 			}
 			$this->decrementNestedTransactionCount();
 		}
@@ -140,11 +160,74 @@ class PropelPDO extends PDO {
 	}
 
 	/**
-	 * Overrides PDO::prepare() to add logging.
+	 * Sets a connection attribute.
+	 *
+	 * This is overridden here to provide support for setting Propel-specific attributes
+	 * too.
+	 *
+	 * @param      int $attribute The attribute to set (e.g. PropelPDO::PROPEL_ATTR_CACHE_PREPARES).
+	 * @param      mixed $value The attribute value.
+	 */
+	public function setAttribute($attribute, $value)
+	{
+		switch($attribute) {
+			case self::PROPEL_ATTR_CACHE_PREPARES:
+				$this->cachePreparedStatements = $value;
+				break;
+			default:
+				parent::setAttribute($attribute, $value);
+		}
+	}
+
+	/**
+	 * Gets a connection attribute.
+	 *
+	 * This is overridden here to provide support for setting Propel-specific attributes
+	 * too.
+	 *
+	 * @param      int $attribute The attribute to get (e.g. PropelPDO::PROPEL_ATTR_CACHE_PREPARES).
+	 */
+	public function getAttribute($attribute)
+	{
+		switch($attribute) {
+			case self::PROPEL_ATTR_CACHE_PREPARES:
+				return $this->cachePreparedStatements;
+				break;
+			default:
+				return parent::getAttribute($attribute);
+		}
+	}
+
+	/**
+	 * Overrides PDO::prepare() to add query caching support if the
+	 * PropelPDO::PROPEL_ATTR_CACHE_PREPARES was set to true.
+	 * .
+	 * @param      string $sql
+	 * @param      array
+	 * @return     PDOStatement
 	 */
 	public function prepare($sql, $driver_options = array())
 	{
-		Propel::log($sql, Propel::LOG_DEBUG);
-		return parent::prepare($sql, $driver_options);
+		if ($this->cachePreparedStatements) {
+			$key = $sql;
+			if (!isset($this->preparedStatements[$key])) {
+				$stmt = parent::prepare($sql, $driver_options);
+				$this->preparedStatements[$key] = $stmt;
+				return $stmt;
+			} else {
+				return $this->preparedStatements[$key];
+			}
+		} else {
+			return parent::prepare($sql, $driver_options);
+		}
 	}
+
+	/**
+	 * Clears any stored prepared statements for this connection.
+	 */
+	public function clearStatementCache()
+	{
+		$this->preparedStatements = array();
+	}
+
 }

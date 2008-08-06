@@ -269,7 +269,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 			. ($this->databaseUser ? " user: " . $this->databaseUser . "\n" : "")
 			. ($this->databasePassword ? " password: " . $this->databasePassword . "\n" : "");
 
-		$this->log($buf, PROJECT_MSG_VERBOSE);
+		$this->log($buf, Project::MSG_VERBOSE);
 
 		// 1) First create the Data XML -> database name map.
 		$this->createDataDbMap();
@@ -291,7 +291,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 						$url = str_replace("@DB@", $database->getName(), $this->databaseUrl);
 
 						if ($url !== $this->databaseUrl) {
-							$this->log("New (resolved) URL: " . $url, PROJECT_MSG_VERBOSE);
+							$this->log("New (resolved) URL: " . $url, Project::MSG_VERBOSE);
 						}
 
 						if (empty($url)) {
@@ -305,7 +305,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 						$doc->save($outFile->getAbsolutePath());
 
 					} catch (SQLException $se) {
-						$this->log("SQLException while connecting to DB: ". $se->getMessage(), PROJECT_MSG_ERR);
+						$this->log("SQLException while connecting to DB: ". $se->getMessage(), Project::MSG_ERR);
 						throw new BuildException($se);
 					}
 				} // if databaseName && database->getName == databaseName
@@ -314,16 +314,14 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 	}
 
 	/**
-	 * Gets ResultSet of query to fetch all data from a table.
+	 * Gets PDOStatement of query to fetch all data from a table.
 	 * @param      string $tableName
-	 * @return     ResultSet
+	 * @param      Platform $platform
+	 * @return     PDOStatement
 	 */
-	private function getTableDataStmt($tableName) {
-		// Set Statement object in associated PropelDataDump
-		// instance.
-		$stmt = $this->conn->prepare("SELECT * FROM " . $this->getPlatformForTargetDatabase()->quoteIdentifier ( $tableName ) );
-		$stmt->execute();
-		return $stmt;
+	private function getTableDataStmt($tableName, Platform $platform)
+	{
+		return $this->conn->query("SELECT * FROM " . $platform->quoteIdentifier( $tableName ) );
 	}
 
 	/**
@@ -331,8 +329,8 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 	 * @param      Database $database
 	 * @return     DOMDocument
 	 */
-	private function createXMLDoc(Database $database) {
-
+	private function createXMLDoc(Database $database)
+	{
 		$doc = new DOMDocument('1.0', 'utf-8');
 		$doc->formatOutput = true; // pretty printing
 		$doc->appendChild($doc->createComment("Created by data/dump/Control.tpl template."));
@@ -341,11 +339,13 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask {
 		$dsNode->setAttribute("name", "all");
 		$doc->appendChild($dsNode);
 
+		$platform = $this->getGeneratorConfig()->getConfiguredPlatform($this->conn);
+
 		$this->log("Building DOM tree containing data from tables:");
 
 		foreach ($database->getTables() as $tbl) {
 			$this->log("\t+ " . $tbl->getName());
-			$stmt = $this->getTableDataStmt($tbl->getName());
+			$stmt = $this->getTableDataStmt($tbl->getName(), $platform);
 			while ($row = $stmt->fetch()) {
 				$rowNode = $doc->createElement($tbl->getPhpName());
 				foreach ($tbl->getColumns() as $col) {

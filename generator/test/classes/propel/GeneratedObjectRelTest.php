@@ -1,6 +1,6 @@
 <?php
 /*
- *  $Id: GeneratedObjectTest.php 793 2007-11-09 02:43:08Z hans $
+ *  $Id$
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -175,5 +175,59 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 
 		$this->assertNull($bce->getBookstoreContest());
 		$this->assertNull($bce->getBookstore());
+	}
+
+	/**
+	 * Test the clearing of related object collection.
+	 * @link       http://propel.phpdb.org/trac/ticket/529
+	 */
+	public function testClearRefFk()
+	{
+		$book = new Book();
+		$book->setISBN("Foo-bar-baz");
+		$book->setTitle("The book title");
+
+		// No save ...
+
+		$r = new Review();
+		$r->setReviewedBy('Me');
+		$r->setReviewDate(new DateTime("now"));
+
+		$book->addReview($r);
+
+		// No save (yet) ...
+
+		$this->assertEquals(1, count($book->getReviews()) );
+		$book->clearReviews();
+		$this->assertEquals(0, count($book->getReviews()));
+	}
+
+	/**
+	 * This tests to see whether modified objects are being silently overwritten by calls to fk accessor methods.
+	 * @link       http://propel.phpdb.org/trac/ticket/509#comment:5
+	 */
+	public function testModifiedObjectOverwrite()
+	{
+		$author = new Author();
+		$author->setFirstName("John");
+		$author->setLastName("Public");
+
+		$books = $author->getBooks(); // empty, of course
+		$this->assertEquals(array(), $books, "Expected empty array.");
+
+		$book = new Book();
+		$book->setTitle("A sample book");
+		$book->setISBN("INITIAL ISBN");
+
+		$author->addBook($book);
+
+		$author->save();
+
+		$book->setISBN("MODIFIED ISBN");
+
+		$books = $author->getBooks();
+		$this->assertEquals(1, count($books), "Expected 1 book.");
+		$this->assertSame($book, $books[0], "Expected the same object to be returned by fk accessor.");
+		$this->assertEquals("MODIFIED ISBN", $books[0]->getISBN(), "Expected the modified value NOT to have been overwritten.");
 	}
 }

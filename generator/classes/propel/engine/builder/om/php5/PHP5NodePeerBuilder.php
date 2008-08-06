@@ -51,7 +51,7 @@ class PHP5NodePeerBuilder extends PeerBuilder {
 	 */
 	public function getUnprefixedClassname()
 	{
-		return $this->getBuildProperty('basePrefix') . $this->getStubNodePeerBuilder()->getClassname();
+		return $this->getBuildProperty('basePrefix') . $this->getStubNodePeerBuilder()->getUnprefixedClassname();
 	}
 
 	/**
@@ -206,11 +206,11 @@ abstract class ".$this->getClassname()." {
 	public static function createNewRootNode(\$obj, PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
-
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+		
+		\$con->beginTransaction();
+		
 		try {
-			\$con->beginTransaction();
-
 			self::deleteNodeSubTree('1', \$con);
 
 			\$setNodePath = 'set' . self::NPATH_PHPNAME;
@@ -219,9 +219,8 @@ abstract class ".$this->getClassname()." {
 			\$obj->save(\$con);
 
 			\$con->commit();
-
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			\$con->rollBack();
 			throw \$e;
 		}
 
@@ -252,12 +251,10 @@ abstract class ".$this->getClassname()." {
 	public static function insertNewRootNode(\$obj, PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
-
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+		
+		\$con->beginTransaction();
 		try {
-
-			\$con->beginTransaction();
-
 			// Move root tree to an invalid node path.
 			$nodePeerClassname::moveNodeSubTree('1', '0', \$con);
 
@@ -271,9 +268,8 @@ abstract class ".$this->getClassname()." {
 			$nodePeerClassname::moveNodeSubTree('0', '1' . self::NPATH_SEP . '1', \$con);
 
 			\$con->commit();
-
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			\$con->rollBack();
 			throw \$e;
 		}
 
@@ -313,8 +309,8 @@ abstract class ".$this->getClassname()." {
 	public static function retrieveNodes(\$criteria, \$ancestors = false, \$descendants = false, PropelPDO \$con = null)
 	{
 		\$criteria = $nodePeerClassname::buildFamilyCriteria(\$criteria, \$ancestors, \$descendants);
-		\$rs = ".$this->getStubPeerBuilder()->getClassname()."::doSelectStmt(\$criteria, \$con);
-		return self::populateNodes(\$rs, \$criteria);
+		\$stmt = ".$this->getStubPeerBuilder()->getClassname()."::doSelectStmt(\$criteria, \$con);
+		return self::populateNodes(\$stmt, \$criteria);
 	}
 ";
 	}
@@ -369,8 +365,8 @@ abstract class ".$this->getClassname()." {
 		\$criteria = new Criteria($peerClassname::DATABASE_NAME);
 		\$criteria->add(self::NPATH_COLNAME, \$np, Criteria::EQUAL);
 		\$criteria = self::buildFamilyCriteria(\$criteria, \$ancestors, \$descendants);
-		\$rs = $peerClassname::doSelectStmt(\$criteria, \$con);
-		\$nodes = self::populateNodes(\$rs, \$criteria);
+		\$stmt = $peerClassname::doSelectStmt(\$criteria, \$con);
+		\$nodes = self::populateNodes(\$stmt, \$criteria);
 		return (count(\$nodes) == 1 ? \$nodes[0] : null);
 	}
 ";
@@ -427,7 +423,7 @@ abstract class ".$this->getClassname()." {
 			throw new PropelException('Cannot move a node subtree within itself.');
 
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 
 		/**
 		 * Example:
@@ -461,16 +457,17 @@ abstract class ".$this->getClassname()." {
 				   \"SET \$setcol=\" . \$db->concatString('?', \$db->subString(\$npath, '?', '?')) . \" \" .
 				   \"WHERE \$npath = ? OR \$npath LIKE ?\";
 
-			\$stmt = \$con->prepareStatement(\$sql);
-			\$stmt->setString(1, \$dstPath);
-			\$stmt->setInt(2, strlen(\$srcPath)+1);
-			\$stmt->setInt(3, \$setcollen);
-			\$stmt->setString(4, \$srcPath);
-			\$stmt->setString(5, \$srcPath . $nodePeerClassname::NPATH_SEP . '%');
-			\$stmt->executeUpdate();
+			\$stmt = \$con->prepare(\$sql);
+			\$stmt->bindValue(1, \$dstPath); // string
+			\$srcPathPlus1 = strlen(\$srcPath)+1;
+			\$stmt->bindValue(2, \$srcPathPlus1); // int
+			\$stmt->bindValue(3, \$setcollen);// int
+			\$stmt->bindValue(4, \$srcPath);// string
+			\$srcPathWC = \$srcPath . $nodePeerClassname::NPATH_SEP . '%';
+			\$stmt->bindValue(5, \$srcPathWC); // string
+			\$stmt->execute();			
 		// <hack>
 		}
-		// </hack>
 	}
 ";
 	}
@@ -496,7 +493,7 @@ abstract class ".$this->getClassname()." {
 	public static function deleteNodeSubTree(\$nodePath, PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 
 		/**
 		 * DELETE FROM table
@@ -506,10 +503,7 @@ abstract class ".$this->getClassname()." {
 		\$criteria = new Criteria($peerClassname::DATABASE_NAME);
 		\$criteria->add($nodePeerClassname::NPATH_COLNAME, \$nodePath, Criteria::EQUAL);
 		\$criteria->addOr($nodePeerClassname::NPATH_COLNAME, \$nodePath . self::NPATH_SEP . '%', Criteria::LIKE);
-// For now, we call BasePeer directly since $peerClassname tries to
-// do a cascade delete.
-//          $peerClassname::doDelete(\$criteria, \$con);
-		BasePeer::doDelete(\$criteria, \$con);
+		{$this->basePeerClassname}::doDelete(\$criteria, \$con);
 	}
 ";
 	}
@@ -714,11 +708,11 @@ abstract class ".$this->getClassname()." {
 	 * The ancestors/descendants will be cached in memory and are accessible via
 	 * the getNode() methods.
 	 *
-	 * @param      ResultSet
+	 * @param      PDOStatement \$stmt	Executed PDOStatement
 	 * @param      Criteria
 	 * @return     array Array of $nodeObjectClassname objects.
 	 */
-	public static function populateNodes(\$rs, \$criteria)
+	public static function populateNodes(PDOStatement \$stmt, \$criteria)
 	{
 		\$nodes = array();
 		\$targets = array();
@@ -735,29 +729,29 @@ abstract class ".$this->getClassname()." {
 
 		$script .= "
 		// populate the object(s)
-		while (\$rs->next())
+		foreach(\$stmt->fetchAll() AS \$row)
 		{
-			if (!isset(\$nodes[\$rs->getString(1)]))
+			if (!isset(\$nodes[\$row[0]]))
 			{
 ";
 		if ($table->getChildrenColumn()) {
 			$script .= "
 				// class must be set each time from the record row
-				\$cls = $peerClassname::getOMClass(\$rs, 1);
+				\$cls = $peerClassname::getOMClass(\$row, 1);
 				\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);
 ";
 		}
 
 		$script .= "
 		" . $this->buildObjectInstanceCreationCode('$obj', '$cls') . "
-				\$obj->hydrate(\$rs);
+				\$obj->hydrate(\$row);
 
-				\$nodes[\$rs->getString(1)] = new $nodeObjectClassname(\$obj);
+				\$nodes[\$row[0]] = new $nodeObjectClassname(\$obj);
 			}
 
-			\$node = \$nodes[\$rs->getString(1)];
+			\$node = \$nodes[\$row[0]];
 
-			if (\$node->getNodePath() === \$rs->getString(\$targetfld))
+			if (\$node->getNodePath() === \$row[\$targetfld])
 				\$targets[\$node->getNodePath()] = \$node;
 		}
 

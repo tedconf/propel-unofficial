@@ -1,7 +1,6 @@
 <?php
-
 /*
- *  $Id$
+ *  $Id: PropelDateTimeTest.php 784 2007-11-08 10:15:50Z heltem $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,14 +19,26 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/engine/builder/sql/mysql/MysqlDDLBuilder.php';
+require_once 'bookstore/BookstoreTestBase.php';
+require_once 'propel/util/PropelPDO.php';
 
 /**
- * DDL Builder class for MySQL, specifically using new mysqli API.
+ * Test for PropelPDO subclass.
  *
- * @author     Hans Lellelid
- * @package    propel.engine.builder.sql.mysql
+ * @package    propel.util
  */
-class MysqliDDLBuilder extends MysqlDDLBuilder {
+class PropelPDOTest extends BookstoreTestBase
+{
+
+	public function testSetAttribute()
+	{
+		$con = Propel::getConnection(BookPeer::DATABASE_NAME);
+		$this->assertFalse($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+		$con->setAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES, true);
+		$this->assertTrue($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+
+		$con->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
+		$this->assertEquals(PDO::CASE_LOWER, $con->getAttribute(PDO::ATTR_CASE));
+	}
 
 }

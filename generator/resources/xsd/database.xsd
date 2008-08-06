@@ -137,7 +137,7 @@
 	
 	<xs:simpleType name="sql_type">
 		<xs:restriction base="xs:string">
-			<xs:pattern value="[\w_]+"/>
+			<xs:pattern value="[\w_\[\]]+"/>
 		</xs:restriction>
 	</xs:simpleType>
 	
@@ -351,6 +351,7 @@
 		<xs:attribute name="defaultAccessorVisibility" type="visibility" use="optional"/>
 		<xs:attribute name="defaultMutatorVisibility" type="visibility" use="optional"/>
 		<xs:attribute name="idMethod" type="idmethod" use='optional'/>
+		<xs:attribute name="allowPkInsert" type="xs:boolean" default="false" use="optional"/>
 		<xs:attribute name="skipSql" type="xs:boolean" default="false"/>
 		<xs:attribute name="readOnly" type="xs:boolean" default="false"/>
 		<xs:attribute name="abstract" type="xs:boolean" default="false"/>
@@ -363,6 +364,8 @@
 		<xs:attribute name="heavyIndexing" type="xs:boolean" use="optional"/>
 		<xs:attribute name="description" type="xs:string"/>
 		<xs:attribute name="treeMode" type="treemode" use="optional"/>
+		<xs:attribute name="reloadOnInsert" type="xs:boolean" default="false"/>
+		<xs:attribute name="reloadOnUpdate" type="xs:boolean" default="false"/>
 	</xs:complexType>
 
 	<xs:complexType name="database">

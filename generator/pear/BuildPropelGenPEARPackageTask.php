@@ -71,9 +71,9 @@ class BuildPropelGenPEARPackageTask extends MatchingTask {
 			$options['packagefile'] = $f->getName();
 			// must end in trailing slash
 			$options['outputdirectory'] = $f->getParent() . DIRECTORY_SEPARATOR;
-			$this->log("Creating package file: " . $f->getPath(), PROJECT_MSG_INFO);
+			$this->log("Creating package file: " . $f->getPath(), Project::MSG_INFO);
 		} else {
-			$this->log("Creating [default] package.xml file in base directory.", PROJECT_MSG_INFO);
+			$this->log("Creating [default] package.xml file in base directory.", Project::MSG_INFO);
 		}
 
 		// add install exceptions
@@ -168,7 +168,7 @@ class BuildPropelGenPEARPackageTask extends MatchingTask {
 		$package->setPearinstallerDep('1.4.0');
 
 		// "package" dependencies
-		$package->addPackageDepWithChannel( 'required', 'phing', 'pear.phing.info', '2.2.0');
+		$package->addPackageDepWithChannel( 'required', 'phing', 'pear.phing.info', '2.3.0');
 		$package->addPackageDepWithChannel( 'optional', 'creole', 'pear.phpdb.org', '1.1.0');
 
 		$package->addExtensionDep('required', 'pdo');

@@ -13,17 +13,31 @@ include_once 'propel/util/BasePeer.php';
  */
 class CriteriaTest extends BaseTestCase {
 
-	/** The criteria to use in the test. */
+	/**
+	 * The criteria to use in the test.
+	 * @var        Criteria
+	 */
 	private $c;
 
 	/**
-	 * Initializes the criteria.
+	 * DB adapter saved for later.
+	 *
+	 * @var        DBAdapter
 	 */
-	public function setUp()
+	private $savedAdapter;
+
+	protected function setUp()
 	{
 		parent::setUp();
 		$this->c = new Criteria();
+		$this->savedAdapter = Propel::getDB(null);
 		Propel::setDB(null, new DBSQLite());
+	}
+
+	protected function tearDown()
+	{
+		Propel::setDB(null, $this->savedAdapter);
+		parent::tearDown();
 	}
 
 	/**
@@ -77,10 +91,10 @@ class CriteriaTest extends BaseTestCase {
 
 		$crit2->addAnd($crit3)->addOr($crit4->addAnd($crit5));
 		$expect =
-			"((myTable2.myColumn2=? "
-				. "AND myTable3.myColumn3=?) "
-			. "OR (myTable4.myColumn4=? "
-				. "AND myTable5.myColumn5=?))";
+			"((myTable2.myColumn2=:p1 "
+				. "AND myTable3.myColumn3=:p2) "
+			. "OR (myTable4.myColumn4=:p3 "
+				. "AND myTable5.myColumn5=:p4))";
 
 		$sb = "";
 		$params = array();
@@ -103,10 +117,10 @@ class CriteriaTest extends BaseTestCase {
 
 		$crit6->addAnd($crit7)->addOr($crit8)->addAnd($crit9);
 		$expect =
-			"(((myTable2.myColumn2=? "
-					. "AND myTable3.myColumn3=?) "
-				. "OR myTable4.myColumn4=?) "
-					. "AND myTable5.myColumn5=?)";
+			"(((myTable2.myColumn2=:p1 "
+					. "AND myTable3.myColumn3=:p2) "
+				. "OR myTable4.myColumn4=:p3) "
+					. "AND myTable5.myColumn5=:p4)";
 
 		$sb = "";
 		$params = array();
@@ -159,7 +173,7 @@ class CriteriaTest extends BaseTestCase {
 		$this->c->add($cn1->addAnd($cn2));
 		$expect =
 			"SELECT  FROM INVOICE WHERE "
-			. "(INVOICE.COST>=? AND INVOICE.COST<=?)";
+			. "(INVOICE.COST>=:p1 AND INVOICE.COST<=:p2)";
 
 		$expect_params = array( array('table' => 'INVOICE', 'column' => 'COST', 'value' => 1000),
 								array('table' => 'INVOICE', 'column' => 'COST', 'value' => 5000),
@@ -190,8 +204,8 @@ class CriteriaTest extends BaseTestCase {
 
 		$expect =
 			"SELECT  FROM INVOICE WHERE "
-			. "((INVOICE.COST>=? AND INVOICE.COST<=?) "
-			. "OR (INVOICE.COST>=? AND INVOICE.COST<=?))";
+			. "((INVOICE.COST>=:p1 AND INVOICE.COST<=:p2) "
+			. "OR (INVOICE.COST>=:p3 AND INVOICE.COST<=:p4))";
 
 		$expect_params = array( array('table' => 'INVOICE', 'column' => 'COST', 'value' => '1000'),
 								array('table' => 'INVOICE', 'column' => 'COST', 'value' => '2000'),
@@ -218,7 +232,7 @@ class CriteriaTest extends BaseTestCase {
 	public function testCriterionIgnoreCase()
 	{
 		$adapters = array(new DBMySQL(), new DBPostgres());
-		$expectedIgnore = array("UPPER(TABLE.COLUMN) LIKE UPPER(?)", "TABLE.COLUMN ILIKE ?");
+		$expectedIgnore = array("UPPER(TABLE.COLUMN) LIKE UPPER(:p1)", "TABLE.COLUMN ILIKE :p1");
 
 		$i =0;
 		foreach ($adapters as $adapter) {
@@ -231,7 +245,7 @@ class CriteriaTest extends BaseTestCase {
 			$sb = "";
 			$params=array();
 			$myCriterion->appendPsTo($sb, $params);
-			$expected = "TABLE.COLUMN LIKE ?";
+			$expected = "TABLE.COLUMN LIKE :p1";
 
 			$this->assertEquals($expected, $sb);
 
@@ -254,7 +268,7 @@ class CriteriaTest extends BaseTestCase {
 		$this->c = new Criteria();
 		$this->c->add("TABLE.COLUMN", true);
 
-		$expect = "SELECT  FROM TABLE WHERE TABLE.COLUMN=?";
+		$expect = "SELECT  FROM TABLE WHERE TABLE.COLUMN=:p1";
 		$expect_params = array( array('table' => 'TABLE', 'column' => 'COLUMN', 'value' => true),
 							   );
 		try {
@@ -317,7 +331,7 @@ class CriteriaTest extends BaseTestCase {
 		$c->add("TABLE.SOME_COLUMN", array(), Criteria::IN);
 		$c->add("TABLE.OTHER_COLUMN", array(1, 2, 3), Criteria::IN);
 
-		$expect = "SELECT * FROM TABLE WHERE 1<>1 AND TABLE.OTHER_COLUMN IN (?,?,?)";
+		$expect = "SELECT * FROM TABLE WHERE 1<>1 AND TABLE.OTHER_COLUMN IN (:p1,:p2,:p3)";
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
 		} catch (PropelException $e) {
@@ -336,7 +350,7 @@ class CriteriaTest extends BaseTestCase {
 		$myCriterion->addOr($c->getNewCriterion("TABLE.COLUMN2", array(1,2), Criteria::IN));
 		$c->add($myCriterion);
 
-		$expect = "SELECT * FROM TABLE WHERE (1<>1 OR TABLE.COLUMN2 IN (?,?))";
+		$expect = "SELECT * FROM TABLE WHERE (1<>1 OR TABLE.COLUMN2 IN (:p1,:p2))";
 		try {
 			$result = BasePeer::createSelectSql($c, $params=array());
 		} catch (PropelException $e) {
@@ -372,6 +386,12 @@ class CriteriaTest extends BaseTestCase {
 		$this->assertEquals('INNER JOIN', $j->getJoinType());
 		$this->assertEquals('TABLE_A.COL_1', $j->getLeftColumn());
 		$this->assertEquals('TABLE_B.COL_1', $j->getRightColumn());
+
+		$j = new Join(array('TABLE_A.COL_1', 'TABLE_A.COL_2'), array('TABLE_B.COL_1', 'TABLE_B.COL_2'), Criteria::INNER_JOIN);
+		$this->assertEquals('TABLE_A.COL_1', $j->getLeftColumn(0));
+		$this->assertEquals('TABLE_A.COL_2', $j->getLeftColumn(1));
+		$this->assertEquals('TABLE_B.COL_1', $j->getRightColumn(0));
+		$this->assertEquals('TABLE_B.COL_2', $j->getRightColumn(1));
 	}
 
 	public function testAddingJoin ()
@@ -524,17 +544,95 @@ class CriteriaTest extends BaseTestCase {
 		$c = new Criteria();
 		$c->clearSelectColumns()->
 			addJoin("TABLE_A.FOO_ID", "TABLE_B.ID", Criteria::LEFT_JOIN)->
-			addJoin("TABLE_A.BAR_ID", "TABLE_C.ID", Criteria::INNER_JOIN)->
+			addJoin("TABLE_A.BAR_ID", "TABLE_C.ID")->
 			addSelectColumn("TABLE_A.ID");
 
-		$expect = 'SELECT TABLE_A.ID FROM (TABLE_A, TABLE_C)'
+		# These are no longer different, see http://propel.phpdb.org/trac/ticket/283#comment:8
+		#$db = Propel::getDB();
+		#
+		#if ($db instanceof DBMySQL) {
+		#	$expect = 'SELECT TABLE_A.ID FROM (TABLE_A CROSS JOIN TABLE_C)'
+		#			.' LEFT JOIN TABLE_B ON (TABLE_A.FOO_ID=TABLE_B.ID) WHERE TABLE_A.BAR_ID=TABLE_C.ID';
+		#} else {
+			$expect = 'SELECT TABLE_A.ID FROM TABLE_A CROSS JOIN TABLE_C'
 					.' LEFT JOIN TABLE_B ON (TABLE_A.FOO_ID=TABLE_B.ID) WHERE TABLE_A.BAR_ID=TABLE_C.ID';
+		#}
 
 		$result = BasePeer::createSelectSql($c, $params=array());
 
-		print "Actual:   " . $result . "\n---\n";
-		print "Expected: " . $expect . "\n";
+		#print "Actual:   " . $result . "\n---\n";
+		#print "Expected: " . $expect . "\n";
 
 		$this->assertEquals($expect, $result);
+	}
+
+	/**
+	 * Test the Criteria::CUSTOM behavior.
+	 */
+	public function testCustomOperator()
+	{
+		$c = new Criteria();
+		$c->addSelectColumn('A.COL');
+		$c->add('A.COL', 'date_part(\'YYYY\', A.COL) = \'2007\'', Criteria::CUSTOM);
+
+		$expected = "SELECT A.COL FROM A WHERE date_part('YYYY', A.COL) = '2007'";
+
+		$result = BasePeer::createSelectSql($c, $params=array());
+		$this->assertEquals($expected, $result);
+	}
+	
+	/**
+	 * Tests adding duplicate joins.
+	 * @link       http://propel.phpdb.org/trac/ticket/613
+	 */
+	public function testAddJoin_Duplicate()
+	{
+		$c = new Criteria();
+		
+		$c->addJoin("tbl.COL1", "tbl.COL2", Criteria::LEFT_JOIN);
+		$c->addJoin("tbl.COL1", "tbl.COL2", Criteria::LEFT_JOIN);
+		$this->assertEquals(1, count($c->getJoins()), "Expected not to have duplciate LJOIN added.");
+		
+		$c->addJoin("tbl.COL1", "tbl.COL2", Criteria::RIGHT_JOIN);
+		$c->addJoin("tbl.COL1", "tbl.COL2", Criteria::RIGHT_JOIN);
+		$this->assertEquals(2, count($c->getJoins()), "Expected 1 new right join to be added.");
+		
+		$c->addJoin("tbl.COL1", "tbl.COL2");
+		$c->addJoin("tbl.COL1", "tbl.COL2");
+		$this->assertEquals(3, count($c->getJoins()), "Expected 1 new implicit join to be added.");
+		
+		$c->addJoin("tbl.COL3", "tbl.COL4");
+		$this->assertEquals(4, count($c->getJoins()), "Expected new col join to be added.");
+		
+	}
+	
+	/**
+	 * @link       http://propel.phpdb.org/trac/ticket/634
+	 */
+	public function testHasSelectClause()
+	{
+		$c = new Criteria();
+		$c->addSelectColumn("foo");
+		
+		$this->assertTrue($c->hasSelectClause());
+		
+		$c = new Criteria();
+		$c->addAsColumn("foo", "bar");
+		
+		$this->assertTrue($c->hasSelectClause());
+	}
+	
+	/**
+	 * Tests including aliases in criterion objects.
+	 * @link       http://propel.phpdb.org/trac/ticket/636
+	 */
+	public function testAliasInCriterion()
+	{
+		$c = new Criteria(); 
+		$c->addAsColumn("column_alias", "tbl.COL1");
+		$crit = $c->getNewCriterion("column_alias", "FOO");
+		$this->assertNull($crit->getTable());
+		$this->assertEquals("column_alias", $crit->getColumn());
+		$c->addHaving($crit); // produces invalid SQL referring to '.olumn_alias'
 	}
 }

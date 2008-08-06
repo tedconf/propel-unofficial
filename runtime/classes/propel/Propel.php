@@ -93,6 +93,31 @@ class Propel
 	const VERSION = '1.3.0-dev';
 
 	/**
+	 * The class name for a PDO object.
+	 */
+	const CLASS_PDO = 'PDO';
+
+	/**
+	 * The class name for a PropelPDO object.
+	 */
+	const CLASS_PROPEL_PDO = 'PropelPDO';
+
+	/**
+	 * The class name for a DebugPDO object.
+	 */
+	const CLASS_DEBUG_PDO = 'DebugPDO';
+
+	/**
+	 * Constant used to request a READ connection (applies to replication).
+	 */
+	const CONNECTION_READ = 'read';
+
+	/**
+	 * Constant used to request a WRITE connection (applies to replication).
+	 */
+	const CONNECTION_WRITE = 'write';
+
+	/**
 	 * @var        string The db name that is specified as the default in the property file
 	 */
 	private static $defaultDBName;
@@ -138,6 +163,11 @@ class Propel
 	private static $instancePoolingEnabled = true;
 
 	/**
+	 * @var        bool For replication, whether to force the use of master connection.
+	 */
+	private static $forceMasterConnection = false;
+
+	/**
 	 * @var        array A map of class names and their file paths for autoloading
 	 */
 	private static $autoloadMap = array(
@@ -177,6 +207,8 @@ class Propel
 		'PropelPDO' => 'propel/util/PropelPDO.php',
 		'PropelPager' => 'propel/util/PropelPager.php',
 		'PropelDateTime' => 'propel/util/PropelDateTime.php',
+		'DebugPDO' => 'propel/util/DebugPDO.php',
+		'DebugPDOStatement' => 'propel/util/DebugPDOStatement.php',
 
 		'BasicValidator' => 'propel/validator/BasicValidator.php',
 		'MatchValidator' => 'propel/validator/MatchValidator.php',
@@ -406,12 +438,12 @@ class Propel
 
 		return self::$dbMaps[$name];
 	}
-	
+
 	/**
 	 * Sets the database map object to use for specified datasource.
 	 *
 	 * @param      string $name The datasource name.
-	 * @param      DatabaseMap $map The database map object to use for specified datasource. 
+	 * @param      DatabaseMap $map The database map object to use for specified datasource.
 	 */
 	public static function setDatabaseMap($name, DatabaseMap $map)
 	{
@@ -422,88 +454,181 @@ class Propel
 	}
 
 	/**
-	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
+	 * For replication, set whether to always force the use of a master connection.
 	 *
-	 * @param      string The name that is used to look up the DSN from the runtime properties file.
-	 *
-	 * @return     PDO A database connection
-	 *
-	 * @throws     PropelException - if no conneciton params, or lower-level exception caught when trying to connect.
+	 * @param      boolean $bit True or False
 	 */
-	public static function getConnection($name = null)
+	public static function setForceMasterConnection($bit)
 	{
-		if ($name === null) {
-			$name = self::getDefaultDB();
-		}
-
-		if (!isset(self::$connectionMap[$name])) {
-
-			$conparams = isset(self::$configuration['datasources'][$name]['connection']) ? self::$configuration['datasources'][$name]['connection'] : null;
-			if ($conparams === null) {
-				throw new PropelException('No connection information in your runtime configuration file for datasource ['.$name.']');
-			}
-
-			$dsn = $conparams['dsn'];
-			if ($dsn === null) {
-				throw new PropelException('No dsn specified in your connection parameters for datasource ['.$name.']');
-			}
-
-			$user = isset($conparams['user']) ? $conparams['user'] : null;
-			$password = isset($conparams['password']) ? $conparams['password'] : null;
-
-			// load any driver options from the config file
-			// driver options are those PDO settings that have to be passed during the connection construction
-			$driver_options = array();
-			if ( isset($conparams['options']) && is_array($conparams['options']) ) {
-				try {
-					self::processDriverOptions( $conparams['options'], $driver_options );
-				} catch (PropelException $e) {
-					throw new PropelException('Error processing driver options for datasource ['.$name.']', $e);
-				}
-			}
-
-			try {
-				$con = new PropelPDO($dsn, $user, $password, $driver_options);
-				$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-				self::$connectionMap[$name] = $con;
-			} catch (PDOException $e) {
-				throw new PropelException("Unable to open PDO connection", $e);
-			}
-
-			// load any connection options from the config file
-			// connection attributes are those PDO flags that have to be set on the initialized connection
-			if (isset($conparams['attributes']) && is_array($conparams['attributes'])) {
-				$attributes = array();
-				try {
-					self::processDriverOptions( $conparams['attributes'], $attributes );
-				} catch (PropelException $e) {
-					throw new PropelException('Error processing connection attributes for datasource ['.$name.']', $e);
-				}
-				foreach ($attributes as $key => $value) {
-					$con->setAttribute($key, $value);
-				}
-			}
-
-			// initialize the connection using the settings provided in the config file. this could be a "SET NAMES <charset>" query for MySQL, for instance
-			$adapter = self::getDB($name);
-			$adapter->initConnection($con, isset($conparams['settings']) && is_array($conparams['settings']) ? $conparams['settings'] : array());
-		}
-
-		return self::$connectionMap[$name];
+		self::$forceMasterConnection = (bool) $bit;
 	}
 
 	/**
-	 * Sets the connection to use for specified datasource.
+	 * For replication, whether to always force the use of a master connection.
 	 *
-	 * @param      string $name The datasource name.
-	 * @param      PropelPDO $con The PDO connection object to use for specified datasource. 
+	 * @return     boolean
 	 */
-	public static function setConnection($name, PropelPDO $con)
+	public static function getForceMasterConnection()
+	{
+		return self::$forceMasterConnection;
+	}
+
+	/**
+	 * Sets a Connection for specified datasource name.
+	 *
+	 * @param      string $name The datasource name for the connection being set.
+	 * @param      PropelPDO $con The PDO connection.
+	 * @param      string $mode Whether this is a READ or WRITE connection (Propel::CONNECTION_READ, Propel::CONNECTION_WRITE)
+	 */
+	public static function setConnection($name, PropelPDO $con, $mode = Propel::CONNECTION_WRITE)
 	{
 		if ($name === null) {
 			$name = self::getDefaultDB();
 		}
-		self::$connectionMap[$name] = $con;
+		if ($mode == Propel::CONNECTION_READ) {
+			self::$connectionMap[$name]['slave'] = $con;
+		} else {
+			self::$connectionMap[$name]['master'] = $con;
+		}
+	}
+
+	/**
+	 * Gets an already-opened PDO connection or opens a new one for passed-in db name.
+	 *
+	 * @param      string $name The datasource name that is used to look up the DSN from the runtime configuation file.
+	 * @param      string $mode The connection mode (this applies to replication systems).
+	 *
+	 * @return     PDO A database connection
+	 *
+	 * @throws     PropelException - if connection cannot be configured or initialized.
+	 */
+	public static function getConnection($name = null, $mode = Propel::CONNECTION_WRITE)
+	{
+		if ($name === null) {
+			$name = self::getDefaultDB();
+		}
+
+		// IF a WRITE-mode connection was requested
+		// or Propel is configured to always use the master connection
+		// or the slave for this connection has already been set to FALSE (indicating no slave)
+		// THEN return the master connection.
+		if ($mode != Propel::CONNECTION_READ || self::$forceMasterConnection || (isset(self::$connectionMap[$name]['slave']) && self::$connectionMap[$name]['slave'] === false)) {
+			if (!isset(self::$connectionMap[$name]['master'])) {
+				// load connection parameter for master connection
+				$conparams = isset(self::$configuration['datasources'][$name]['connection']) ? self::$configuration['datasources'][$name]['connection'] : null;
+				if (empty($conparams)) {
+					throw new PropelException('No connection information in your runtime configuration file for datasource ['.$name.']');
+				}
+				// initialize master connection
+				$con = Propel::initConnection($conparams, $name);
+				self::$connectionMap[$name]['master'] = $con;
+			}
+
+			return self::$connectionMap[$name]['master'];
+
+		} else {
+
+			if (!isset(self::$connectionMap[$name]['slave'])) {
+
+				// we've already ensured that the configuration exists, in previous if-statement
+				$slaveconfigs = isset(self::$configuration['datasources'][$name]['slaves']) ? self::$configuration['datasources'][$name]['slaves'] : null;
+
+				if (empty($slaveconfigs)) { // no slaves configured for this datasource
+					self::$connectionMap[$name]['slave'] = false;
+					return self::getConnection($name, Propel::CONNECTION_WRITE); // Recurse to get the WRITE connection
+				} else { // Initialize a new slave
+					if (isset($slaveconfigs['connection']['dsn'])) { // only one slave connection configured
+						$conparams = $slaveconfigs['connection'];
+					} else {
+						$randkey = array_rand($slaveconfigs['connection']);
+						$conparams = $slaveconfigs['connection'][$randkey];
+						if (empty($conparams)) {
+							throw new PropelException('No connection information in your runtime configuration file for SLAVE ['.$randkey.'] to datasource ['.$name.']');
+						}
+					}
+
+					// initialize master connection
+					$con = Propel::initConnection($conparams, $name);
+					self::$connectionMap[$name]['slave'] = $con;
+				}
+
+			} // if datasource slave not set
+
+			return self::$connectionMap[$name]['slave'];
+
+		} // if mode == CONNECTION_WRITE
+
+	} // getConnection()
+
+	/**
+	 * Opens a new PDO connection for passed-in db name.
+	 *
+	 * @param      array $conparams Connection paramters.
+	 * @param      string $name Datasource name.
+	 * @param      string $defaultClass The PDO subclass to instantiate if there is no explicit classname
+	 * 									specified in the connection params (default is Propel::CLASS_PROPEL_PDO)
+	 *
+	 * @return     PDO A database connection of the given class (PDO, PropelPDO, SlavePDO or user-defined)
+	 *
+	 * @throws     PropelException - if lower-level exception caught when trying to connect.
+	 */
+	public static function initConnection($conparams, $name, $defaultClass = Propel::CLASS_PROPEL_PDO)
+	{
+
+		$dsn = $conparams['dsn'];
+		if ($dsn === null) {
+			throw new PropelException('No dsn specified in your connection parameters for datasource ['.$name.']');
+		}
+
+		if (isset($conparams['classname']) && !empty($conparams['classname'])) {
+			$classname = $conparams['classname'];
+			if (!class_exists($classname)) {
+				throw new PropelException('Unable to load specified PDO subclass: ' . $classname);
+			}
+		} else {
+			$classname = $defaultClass;
+		}
+
+		$user = isset($conparams['user']) ? $conparams['user'] : null;
+		$password = isset($conparams['password']) ? $conparams['password'] : null;
+
+		// load any driver options from the config file
+		// driver options are those PDO settings that have to be passed during the connection construction
+		$driver_options = array();
+		if ( isset($conparams['options']) && is_array($conparams['options']) ) {
+			try {
+				self::processDriverOptions( $conparams['options'], $driver_options );
+			} catch (PropelException $e) {
+				throw new PropelException('Error processing driver options for datasource ['.$name.']', $e);
+			}
+		}
+
+		try {
+			$con = new $classname($dsn, $user, $password, $driver_options);
+			$con->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		} catch (PDOException $e) {
+			throw new PropelException("Unable to open PDO connection", $e);
+		}
+
+		// load any connection options from the config file
+		// connection attributes are those PDO flags that have to be set on the initialized connection
+		if (isset($conparams['attributes']) && is_array($conparams['attributes'])) {
+			$attributes = array();
+			try {
+				self::processDriverOptions( $conparams['attributes'], $attributes );
+			} catch (PropelException $e) {
+				throw new PropelException('Error processing connection attributes for datasource ['.$name.']', $e);
+			}
+			foreach ($attributes as $key => $value) {
+				$con->setAttribute($key, $value);
+			}
+		}
+
+		// initialize the connection using the settings provided in the config file. this could be a "SET NAMES <charset>" query for MySQL, for instance
+		$adapter = self::getDB($name);
+		$adapter->initConnection($con, isset($conparams['settings']) && is_array($conparams['settings']) ? $conparams['settings'] : array());
+
+		return $con;
 	}
 
 	/**
@@ -519,10 +644,10 @@ class Propel
 	private static function processDriverOptions($source, &$write_to)
 	{
 		foreach ($source as $option => $optiondata) {
-			if (is_string($option) && strpos($option, 'PDO::') !== false) {
+			if (is_string($option) && strpos($option, '::') !== false) {
 				$key = $option;
 			} elseif (is_string($option)) {
-				$key = 'PDO::' . $option;
+				$key = 'PropelPDO::' . $option;
 			}
 			if (!defined($key)) {
 				throw new PropelException("Invalid PDO option/attribute name specified: ".$key);
@@ -530,7 +655,7 @@ class Propel
 			$key = constant($key);
 
 			$value = $optiondata['value'];
-			if (is_string($value) && strpos($value, 'PDO::') !== false) {
+			if (is_string($value) && strpos($value, '::') !== false) {
 				if (!defined($value)) {
 					throw new PropelException("Invalid PDO option/attribute value specified: ".$value);
 				}
@@ -604,8 +729,9 @@ class Propel
 	 */
 	public static function close()
 	{
-		foreach (self::$connectionMap as $con) {
-			$con = null; // close for PDO
+		foreach (self::$connectionMap as $idx => $cons) {
+			// Propel::log("Closing connections for " . $idx, Propel::LOG_DEBUG);
+			unset(self::$connectionMap[$idx]);
 		}
 	}
 
@@ -623,6 +749,45 @@ class Propel
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Include once a file specified in DOT notation and reutrn unqualified clasname.
+	 *
+	 * Typically, Propel uses autoload is used to load classes and expects that all classes
+	 * referenced within Propel are included in Propel's autoload map.  This method is only
+	 * called when a specific non-Propel classname was specified -- for example, the
+	 * classname of a validator in the schema.xml.  This method will attempt to include that
+	 * class via autoload and then relative to a location on the include_path.
+	 *
+	 * @param      string $class dot-path to clas (e.g. path.to.my.ClassName).
+	 * @return     string unqualified classname
+	 */
+	public static function importClass($path) {
+
+		// extract classname
+		if (($pos = strrpos($path, '.')) === false) {
+			$class = $path;
+		} else {
+			$class = substr($path, $pos + 1);
+		}
+
+		// check if class exists, using autoloader to attempt to load it.
+		if (class_exists($class, $useAutoload=true)) {
+			return $class;
+		}
+
+		// turn to filesystem path
+		$path = strtr($path, '.', DIRECTORY_SEPARATOR) . '.php';
+
+		// include class
+		$ret = include_once($path);
+		if ($ret === false) {
+			throw new PropelException("Unable to import class: " . $class . " from " . $path);
+		}
+
+		// return qualified name
+		return $class;
 	}
 
 	/**

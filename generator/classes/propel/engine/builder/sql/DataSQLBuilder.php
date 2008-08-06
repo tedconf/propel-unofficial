@@ -32,6 +32,56 @@ require_once 'propel/engine/database/model/PropelTypes.php';
 abstract class DataSQLBuilder extends DataModelBuilder {
 
 	/**
+	 * Perform any reset between runs of this builder.
+	 *
+	 * This can be used, for example, to clear any stored start/end SQL.
+	 */
+	public static function reset()
+	{
+		// does nothing by default
+	}
+
+	/**
+	 * Gets any SQL to place at the start of all the row inserts.
+	 *
+	 * @return     string
+	 */
+	public static function getDatabaseStartSql()
+	{
+		return '';
+	}
+
+	/**
+	 * Gets any SQL to place at the end of all the row inserts.
+	 *
+	 * @return     string
+	 */
+	public static function getDatabaseEndSql()
+	{
+		return '';
+	}
+
+	/**
+	 * Gets any SQL to place before row inserts for a new table.
+	 *
+	 * @return     string
+	 */
+	public function getTableStartSql()
+	{
+		return '';
+	}
+
+	/**
+	 * Gets any SQL to place at the end of row inserts for a table.
+	 *
+	 * @return     string
+	 */
+	public function getTableEndSql()
+	{
+		return '';
+	}
+
+	/**
 	 * The main method in this class, returns the SQL for INSERTing data into a row.
 	 * @param      DataRow $row The row to process.
 	 * @return     string
@@ -42,7 +92,7 @@ abstract class DataSQLBuilder extends DataModelBuilder {
 		$platform = $this->getPlatform();
 		$table = $this->getTable();
 
-		$sql .= "INSERT INTO ".$this->quoteIdentifier(DataModelBuilder::prefixTablename($this->getTable()->getName()))." (";
+		$sql .= "INSERT INTO ".$this->quoteIdentifier($this->prefixTablename($this->getTable()->getName()))." (";
 
 		// add column names to SQL
 		$colNames = array();

@@ -1,7 +1,6 @@
 <?php
-
 /*
- *  $Id$
+ *  $Id: MatchValidator.php 521 2007-01-05 13:29:36Z heltem $
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -20,14 +19,22 @@
  * <http://propel.phpdb.org>.
  */
 
-require_once 'propel/engine/builder/sql/DataSQLBuilder.php';
-
 /**
- * MySQL class for building data dump SQL.
+ * A custom validator for ISBN.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
- * @package    propel.engine.builder.sql.mysql
+ * @version    $Revision$
+ * @package    propel.validator
  */
-class MysqliDataSQLBuilder extends DataSQLBuilder {
+class ISBNValidator implements BasicValidator
+{
+	const NOT_ISBN_REGEXP = '/[^0-9A-Z]/';
 
+	/**
+	 * Whether the passed string matches regular expression.
+	 */
+	public function isValid (ValidatorMap $map, $str)
+	{
+		return !(preg_match(self::NOT_ISBN_REGEXP, $str));
+	}
 }

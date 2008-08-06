@@ -34,6 +34,35 @@ require_once 'propel/engine/builder/om/PeerBuilder.php';
 class PHP5PeerBuilder extends PeerBuilder {
 
 	/**
+	 * Validates the current table to make sure that it won't
+	 * result in generated code that will not parse.
+	 *
+	 * This method may emit warnings for code which may cause problems
+	 * and will throw exceptions for errors that will definitely cause
+	 * problems.
+	 */
+	protected function validateModel()
+	{
+		parent::validateModel();
+
+		$table = $this->getTable();
+
+		// Check to see if any of the column constants are PHP reserved words.
+		$colConstants = array();
+
+		foreach ($table->getColumns() as $col) {
+			$colConstants[] = $this->getColumnName($col);
+		}
+
+		$reservedConstants = array_map('strtoupper', ClassTools::getPhpReservedWords());
+
+		$intersect = array_intersect($reservedConstants, $colConstants);
+		if (!empty($intersect)) {
+			throw new EngineException("One or more of your column names for [" . $table->getName() . "] table conflict with a PHP reserved word (" . implode(", ", $intersect) . ")");
+		}
+	}
+
+	/**
 	 * Returns the name of the current class being built.
 	 * @return     string
 	 */
@@ -82,10 +111,16 @@ class PHP5PeerBuilder extends PeerBuilder {
  * $now
  *";
 		}
+
+		$extendingPeerClass = '';
+		if ($this->basePeerClassname !== 'BasePeer') {
+			$extendingPeerClass = ' extends ' . $this->basePeerClassname;
+		}
+
 		$script .= "
  * @package    ".$this->getPackage()."
  */
-abstract class ".$this->getClassname()." {
+abstract class ".$this->getClassname(). $extendingPeerClass . " {
 ";
 	}
 
@@ -134,7 +169,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addConstantsAndAttributes(&$script)
 	{
-		$tableName = DataModelBuilder::prefixTableName($this->getTable()->getName());
+		$tableName = $this->prefixTableName($this->getTable()->getName());
 		$dbName = $this->getDatabase()->getName();
 		$script .= "
 	/** the default database name for this class */
@@ -151,7 +186,6 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 	/** The number of lazy-loaded columns. */
 	const NUM_LAZY_LOAD_COLUMNS = ".$this->getTable()->getNumLazyLoadColumns().";
-
 ";
 		$this->addColumnNameConstants($script);
 		$this->addInheritanceColumnConstants($script);
@@ -184,10 +218,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	protected function addColumnNameConstants(&$script)
 	{
 		foreach ($this->getTable()->getColumns() as $col) {
-
 			$script .= "
 	/** the column name for the ".strtoupper($col->getName()) ." field */
-	const ".$this->getColumnName($col) ." = '".DataModelBuilder::prefixTablename($this->getTable()->getName()).".".strtoupper($col->getName())."';
+	const ".$this->getColumnName($col) ." = '".$this->prefixTablename($this->getTable()->getName()).".".strtoupper($col->getName())."';
 ";
 		} // foreach
 	}
@@ -283,7 +316,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{
 		$script .= "
 	/**
-	 * Returns an array of of field names.
+	 * Returns an array of field names.
 	 *
 	 * @param      string \$type The type of fieldnames to return:
 	 *                      One of the class type constants BasePeer::TYPE_PHPNAME, BasePeer::TYPE_STUDLYPHPNAME
@@ -448,34 +481,6 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 	} // addAddSelectColumns()
 
-
-
-	/**
-	 * Adds the COUNT constants.
-	 * @param      string &$script The script will be modified in this method.
-	 */
-	protected function addCountConstants(&$script)
-	{
-		$table = $this->getTable();
-		$count_col = "*";
-		/*
-		 * FIXME
-		 * (HL) wanted to remove this because AFAIK count(*) is generally
-		 * optimized in databases, and furthermore the code below isn't correct
-		 * (multi-pkey needs to be accounted for)....
-		 */
-		if ($table->hasPrimaryKey()) {
-			$pk = $table->getPrimaryKey();
-			$count_col = DataModelBuilder::prefixTablename($table->getName())
-			. "." . strtoupper($pk[0]->getName());
-		}
-
-		$script .= "
-	const COUNT = 'COUNT($count_col)';
-	const COUNT_DISTINCT = 'COUNT(DISTINCT $count_col)';
-";
-	}
-
 	/**
 	 * Adds the doCount() method.
 	 * @param      string &$script The script will be modified in this method.
@@ -487,36 +492,44 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * Returns the number of rows matching criteria.
 	 *
 	 * @param      Criteria \$criteria
-	 * @param      boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
+	 * @param      boolean \$distinct Whether to select only distinct columns; deprecated: use Criteria->setDistinct() instead.
 	 * @param      PropelPDO \$con
 	 * @return     int Number of matching rows.
 	 */
 	public static function doCount(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
 	{
-		// we're going to modify criteria, so copy it first
+		// we may modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 
-		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
-		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+		// We need to set the primary table name, since in the case that there are no WHERE columns
+		// it will be impossible for the BasePeer::createSelectSql() method to determine which
+		// tables go into the FROM clause.
+		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
+
+		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+			\$criteria->setDistinct();
 		}
 
-		// just in case we're grouping: add those columns to the select statement
-		foreach (\$criteria->getGroupByColumns() as \$column)
-		{
-			\$criteria->addSelectColumn(\$column);
+		if (!\$criteria->hasSelectClause()) {
+			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
 		}
 
-		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
+		\$criteria->clearOrderByColumns(); // ORDER BY won't ever affect the count
+		\$criteria->setDbName(self::DATABASE_NAME); // Set the correct dbName
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+		}
+		// BasePeer returns a PDOStatement
+		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
-			return (int) \$row[0];
+			\$count = (int) \$row[0];
 		} else {
-			// no rows returned; we infer that means 0 matches.
-			return 0;
+			\$count = 0; // no rows returned; we infer that means 0 matches.
 		}
+		\$stmt->closeCursor();
+		return \$count;
 	}";
 	}
 
@@ -594,10 +607,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function doSelectStmt(Criteria \$criteria, PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 
-		if (!\$criteria->getSelectColumns()) {
+		if (!\$criteria->hasSelectClause()) {
 			\$criteria = clone \$criteria;
 			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
 		}
@@ -608,6 +621,28 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// BasePeer returns a PDOStatement
 		return ".$this->basePeerClassname."::doSelect(\$criteria, \$con);
 	}";
+	}
+
+	/**
+	 * Adds the PHP code to return a instance pool key for the passed-in primary key variable names.
+	 *
+	 * @param      array $pkphp An array of PHP var names / method calls representing complete pk.
+	 */
+	protected function getInstancePoolKeySnippet($pkphp)
+	{
+		$pkphp = (array) $pkphp; // make it an array if it is not.
+		$script = "";
+		if (count($pkphp) > 1) {
+			$script .= "serialize(array(";
+			$i = 0;
+			foreach ($pkphp as $pkvar) {
+				$script .= ($i++ ? ', ' : '') . "(string) $pkvar";
+			}
+			$script .= "))";
+		} else {
+			$script .= "(string) " . $pkphp[0];
+		}
+		return $script;
 	}
 
 	/**
@@ -634,14 +669,15 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{
 		if (Propel::isInstancePoolingEnabled()) {
 			if (\$key === null) {";
-		$pk = $this->getTable()->getPrimaryKey();
-		if (count($pk) > 1) {
-			$script .= "
-				\$key = serialize(\$obj->getPrimaryKey());";
-		} else {
-			$script .= "
-				\$key = (string) \$obj->getPrimaryKey();";
+
+		$pks = $this->getTable()->getPrimaryKey();
+
+		$php = array();
+		foreach ($pks as $pk) {
+			$php[] = '$obj->get' . $pk->getPhpName() . '()';
 		}
+		$script .= "
+				\$key = ".$this->getInstancePoolKeySnippet($php).";";
 		$script .= "
 			} // if key === null
 			self::\$instances[\$key] = \$obj;
@@ -672,29 +708,32 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{";
 		$script .= "
 		if (Propel::isInstancePoolingEnabled() && \$value !== null) {";
-		$pk = $table->getPrimaryKey();
+		$pks = $table->getPrimaryKey();
 
 		$script .= "
 			if (is_object(\$value) && \$value instanceof ".$this->getObjectClassname().") {";
-		if (count($pk) > 1) {
+
+			$php = array();
+			foreach ($pks as $pk) {
+				$php[] = '$value->get' . $pk->getPhpName() . '()';
+			}
 			$script .= "
-				\$key = serialize(\$value->getPrimaryKey());";
-		} else {
-			$script .= "
-				\$key = (string) \$value->getPrimaryKey();";
-		}
+				\$key = ".$this->getInstancePoolKeySnippet($php).";";
 
 		$script .= "
-			} elseif (".(count($pk) > 1 ? "is_array(\$value)" : "is_scalar(\$value)").") {
+			} elseif (".(count($pks) > 1 ? "is_array(\$value) && count(\$value) === " . count($pks) : "is_scalar(\$value)").") {
 				// assume we've been passed a primary key";
 
-		if ($pk > 1) {
-			$script .= "
-				\$key = serialize(\$value);";
+		if (count($pks) > 1) {
+			$php = array();
+			for ($i=0; $i < count($pks); $i++) {
+				$php[] = "\$value[$i]";
+			}
 		} else {
-			$script .= "
-				\$key = (string) \$value;";
+			$php = '$value';
 		}
+		$script .= "
+				\$key = ".$this->getInstancePoolKeySnippet($php).";";
 		$script .= "
 			} else {
 				\$e = new PropelException(\"Invalid value passed to removeInstanceFromPool().  Expected primary key or ".$this->getObjectClassname()." object; got \" . (is_object(\$value) ? get_class(\$value) . ' object.' : var_export(\$value,true)));
@@ -715,14 +754,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{
 		$script .= "
 	/**
-	 * Retrieves a string version of the primary key from the DB resultset row that can be used to uniquely identify a row in this table.
+	 * Clear the instance pool.
 	 *
-	 * For tables with a single-column primary key, that simple pkey value will be returned.  For tables with
-	 * a multi-column primary key, a serialize()d version of the primary key will be returned.
-	 *
-	 * @param      array \$row PropelPDO resultset row.
-	 * @param      int \$startcol The 0-based offset for reading from the resultset row.
-	 * @return     string
+	 * @return     void
 	 */
 	public static function clearInstancePool()
 	{
@@ -783,18 +817,17 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// We have to iterate through all the columns so that we know the offset of the primary
 		// key columns.
 		$n = 0;
+		$pk = array();
+		$cond = array();
 		foreach ($this->getTable()->getColumns() as $col) {
 			if (!$col->isLazyLoad()) {
 				if ($col->isPrimaryKey()) {
-					$pk[] = "\$row[\$startcol + $n]";
+					$part = "\$row[\$startcol + $n]";
+					$cond[] = $part . " === null";
+					$pk[] = $part;
 				}
 				$n++;
 			}
-		}
-
-		$cond = array();
-		foreach ($pk as $part) {
-			$cond[] = $part . " === null";
 		}
 
 		$script .= "
@@ -802,17 +835,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		if (".implode(' && ', $cond).") {
 			return null;
 		}
-";
-		// the general case is a single column
-		if (count($pk) == 1) {
-			$script .= "
-		return (string) ".$pk[0].";";
-		} else {
-			$script .= "
-		return serialize(array(".implode(',', $pk)."));";
-		}
-
-		$script .= "
+		return ".$this->getInstancePoolKeySnippet($pk).";
 	}
 ";
 	} // addGetPrimaryKeyHash
@@ -848,7 +871,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$key = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(\$key))) {
-				\$obj->hydrate(\$row, 0, true); // rehydrate
+				// We no longer rehydrate the object, since this can cause data loss.
+				// See http://propel.phpdb.org/trac/ticket/509
+				// \$obj->hydrate(\$row, 0, true); // rehydrate
 				\$results[] = \$obj;
 			} else {
 		";
@@ -871,6 +896,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 			} // if key exists
 		}
+		\$stmt->closeCursor();
 		return \$results;
 	}";
 	}
@@ -1015,7 +1041,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function doInsert(\$values, PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 
 		if (\$values instanceof Criteria) {
@@ -1027,9 +1053,11 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		foreach ($table->getColumns() as $col) {
 			$cfc = $col->getPhpName();
-			if ($col->isPrimaryKey() && $col->isAutoIncrement() && $table->getIdMethod() != "none") {
+			if ($col->isPrimaryKey() && $col->isAutoIncrement() && $table->getIdMethod() != "none" && !$table->isAllowPkInsert()) {
 				$script .= "
-		\$criteria->remove(".$this->getColumnConstant($col)."); // remove pkey col since this table uses auto-increment
+		if (\$criteria->containsKey(".$this->getColumnConstant($col).") && \$criteria->keyContainsValue(" . $this->getColumnConstant($col) . ") ) {
+			throw new PropelException('Cannot insert a value for auto-increment primary key ('.".$this->getColumnConstant($col).".')');
+		}
 ";
 			}
 		}
@@ -1045,7 +1073,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$pk = ".$this->basePeerClassname."::doInsert(\$criteria, \$con);
 			\$con->commit();
 		} catch(PropelException \$e) {
-			\$con->rollback();
+			\$con->rollBack();
 			throw \$e;
 		}
 
@@ -1074,7 +1102,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function doUpdate(\$values, PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 
 		\$selectCriteria = new Criteria(self::DATABASE_NAME);
@@ -1121,7 +1149,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function doDeleteAll(\$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 		\$affectedRows = 0; // initialize var to track total num of affected rows
 		try {
@@ -1130,18 +1158,18 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$con->beginTransaction();
 			";
 		if ($this->isDeleteCascadeEmulationNeeded()) {
-			$script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(), \$con);
+			$script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(".$this->getPeerClassname()."::DATABASE_NAME), \$con);
 			";
 		}
 		if ($this->isDeleteSetNullEmulationNeeded()) {
-			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(new Criteria(), \$con);
+			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(new Criteria(".$this->getPeerClassname() . "::DATABASE_NAME), \$con);
 			";
 		}
-		$script .= "\$affectedRows += BasePeer::doDeleteAll(".$this->getPeerClassname()."::TABLE_NAME, \$con);
+		$script .= "\$affectedRows += {$this->basePeerClassname}::doDeleteAll(".$this->getPeerClassname()."::TABLE_NAME, \$con);
 			\$con->commit();
 			return \$affectedRows;
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			\$con->rollBack();
 			throw \$e;
 		}
 	}
@@ -1170,7 +1198,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 public static function doDelete(\$values, PropelPDO \$con = null)
 	 {
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		}
 
 		if (\$values instanceof Criteria) {
@@ -1199,8 +1227,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		} else {
 			// it must be the primary key
 
-			// we can invalidate the cache for this single object
-			".$this->getPeerClassname()."::removeInstanceFromPool(\$values);
+
 
 			\$criteria = new Criteria(self::DATABASE_NAME);";
 
@@ -1208,7 +1235,13 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			$pkey = $table->getPrimaryKey();
 			$col = array_shift($pkey);
 			$script .= "
-			\$criteria->add(".$this->getColumnConstant($col).", (array) \$values, Criteria::IN);";
+			\$criteria->add(".$this->getColumnConstant($col).", (array) \$values, Criteria::IN);
+
+			foreach ((array) \$values as \$singleval) {
+				// we can invalidate the cache for this single object
+				".$this->getPeerClassname()."::removeInstanceFromPool(\$singleval);
+			}";
+
 		} else {
 			$script .= "
 			// primary key is composite; we therefore, expect
@@ -1218,7 +1251,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 				// array is not multi-dimensional
 				\$values = array(\$values);
 			}
-			
+
 			foreach (\$values as \$value) {
 ";
 			$i=0;
@@ -1234,6 +1267,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			}
 			$script .= "
 				\$criteria->addOr(\$criterion);
+
+				// we can invalidate the cache for this single PK
+				".$this->getPeerClassname()."::removeInstanceFromPool(\$value);
 			}";
 		} /* if count(table->getPrimaryKeys()) */
 
@@ -1252,10 +1288,25 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			";
 
 		if ($this->isDeleteCascadeEmulationNeeded()) {
-			$script .= "\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(\$criteria, \$con);";
+			$script .= "\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(\$criteria, \$con);
+			";
 		}
 		if ($this->isDeleteSetNullEmulationNeeded()) {
-			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(\$criteria, \$con);";
+			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(\$criteria, \$con);
+			";
+		}
+
+		if ($this->isDeleteCascadeEmulationNeeded() || $this->isDeleteSetNullEmulationNeeded()) {
+			$script .= "
+				// Because this db requires some delete cascade/set null emulation, we have to
+				// clear the cached instance *after* the emulation has happened (since
+				// instances get re-added by the select statement contained therein).
+				if (\$values instanceof Criteria) {
+					".$this->getPeerClassname()."::clearInstancePool();
+				} else { // it's a PK or object
+					".$this->getPeerClassname()."::removeInstanceFromPool(\$values);
+				}
+			";
 		}
 
 		$script .= "
@@ -1269,7 +1320,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// actually be the table name of other table
 			$tblFK = $fk->getTable();
 
-			$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($tblFK);
+			$joinedTablePeerBuilder = $this->getNewPeerBuilder($tblFK);
 			$tblFKPackage = $joinedTablePeerBuilder->getStubPeerBuilder()->getPackage();
 
 			if (!$tblFK->isForReferenceOnly()) {
@@ -1298,7 +1349,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$con->commit();
 			return \$affectedRows;
 		} catch (PropelException \$e) {
-			\$con->rollback();
+			\$con->rollBack();
 			throw \$e;
 		}
 	}
@@ -1342,7 +1393,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// actually be the table name of other table
 			$tblFK = $fk->getTable();
 
-			$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($tblFK);
+			$joinedTablePeerBuilder = $this->getNewPeerBuilder($tblFK);
 			$tblFKPackage = $joinedTablePeerBuilder->getStubPeerBuilder()->getPackage();
 
 			if (!$tblFK->isForReferenceOnly()) {
@@ -1362,7 +1413,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					$script .= "
 
 			// delete related $fkClassName objects
-			\$c = new Criteria();
+			\$c = new Criteria(".$joinedTablePeerBuilder->getPeerClassname()."::DATABASE_NAME);
 			";
 					for ($x=0,$xlen=count($columnNamesF); $x < $xlen; $x++) {
 						$columnFK = $tblFK->getColumn($columnNamesF[$x]);
@@ -1424,7 +1475,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// $fk is the foreign key in the other table, so localTableName will
 			// actually be the table name of other table
 			$tblFK = $fk->getTable();
-			$refTablePeerBuilder = OMBuilder::getNewPeerBuilder($tblFK);
+			$refTablePeerBuilder = $this->getNewPeerBuilder($tblFK);
 
 			if (!$tblFK->isForReferenceOnly()) {
 				// we can't perform operations on tables that are
@@ -1532,40 +1583,30 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	protected function addRetrieveByPK_SinglePK(&$script)
 	{
 		$table = $this->getTable();
+		$pks = $table->getPrimaryKey();
+		$col = $pks[0];
+
 		$script .= "
 	/**
 	 * Retrieve a single object by pkey.
 	 *
-	 * @param      mixed \$pk the primary key.
+	 * @param      ".$col->getPhpType()." \$pk the primary key.
 	 * @param      PropelPDO \$con the connection to use
 	 * @return     " .$this->getObjectClassname(). "
 	 */
 	public static function ".$this->getRetrieveMethodName()."(\$pk, PropelPDO \$con = null)
 	{
+
+		if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(".$this->getInstancePoolKeySnippet('$pk')."))) {
+			return \$obj;
+		}
+
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 
 		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
-";
-		if (count($table->getPrimaryKey()) === 1) {
-			$pkey = $table->getPrimaryKey();
-			$col = array_shift($pkey);
-			$script .= "
 		\$criteria->add(".$this->getColumnConstant($col).", \$pk);
-";
-		} else {
-			// primary key is composite; we therefore, expect
-			// the primary key passed to be an array of pkey
-			// values
-			$i=0;
-			foreach ($table->getPrimaryKey() as $col) {
-				$script .= "
-		\$criteria->add(".$this->getColumnConstant($col).", \$pk[$i]);";
-				$i++;
-			}
-		} /* if count(table.PrimaryKeys) */
-		$script .= "
 
 		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
 
@@ -1593,38 +1634,17 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function ".$this->getRetrieveMethodName()."s(\$pks, PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 
 		\$objs = null;
 		if (empty(\$pks)) {
 			\$objs = array();
 		} else {
-			\$criteria = new Criteria();";
-		if (count($table->getPrimaryKey()) == 1) {
-			$k1 = $table->getPrimaryKey();
-			$script .= "
+			\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
+		$k1 = $table->getPrimaryKey();
+		$script .= "
 			\$criteria->add(".$this->getColumnConstant($k1[0]).", \$pks, Criteria::IN);";
-		} else {
-			$script .= "
-			foreach (\$pks as \$pk) {";
-			$i = 0;
-			foreach ($table->getPrimaryKey() as $col) {
-				$script .= "
-				\$c{$i} = \$criteria->getNewCriterion(".$this->getPeerClassname($col).", \$pk[$i], Criteria::EQUAL);";
-				$j = $i - 1;
-				if ($i > 0) {
-					$script .= "
-				\$c{$j}->addAnd(\$c{$i});";
-				} /* if $i > 0 */
-				$i++;
-			} /* foreach */
-
-			$script .= "
-
-				\$criteria->addOr(\$c0);
-			}";
-		} /* if count prim keys == 1 */
 		$script .= "
 			\$objs = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
 		}
@@ -1647,7 +1667,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$cptype = $col->getPhpType();
-			$script .= "@param $cptype $".$clo."
+			$script .= "@param      $cptype $".$clo."
 	   ";
 		}
 		$script .= "
@@ -1655,16 +1675,26 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @return     ".$this->getObjectClassname()."
 	 */
 	public static function ".$this->getRetrieveMethodName()."(";
-		$co = 0;
+
+		$php = array();
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
-			$script .= ($co++ ? "," : "") . " $".$clo;
+			$php[] = '$' . $clo;
 		} /* foreach */
+
+		$script .= implode(', ', $php);
+
 		$script .= ", PropelPDO \$con = null) {
-		if (\$con === null) {
-			\$con = Propel::getConnection(self::DATABASE_NAME);
+		\$key = ".$this->getInstancePoolKeySnippet($php).";";
+ 		$script .= "
+ 		if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(\$key))) {
+ 			return \$obj;
 		}
-		\$criteria = new Criteria();";
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+		}
+		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
@@ -1764,24 +1794,23 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$table = $this->getTable();
 		$className = $this->getObjectClassname();
 		$countFK = count($table->getForeignKeys());
+		$join_behavior = $this->getJoinBehavior();
 
 		if ($countFK >= 1) {
 
 			foreach ($table->getForeignKeys() as $fk) {
 
 				$joinTable = $table->getDatabase()->getTable($fk->getForeignTableName());
-				
+
 				if (!$joinTable->isForReferenceOnly()) {
 
-					// FIXME - look into removing this next condition; it may not
-					// be necessary:
-					// --- IT is necessary because there needs to be a system for
+					// This condition is necessary because Propel lacks a system for
 					// aliasing the table if it is the same table.
 					if ( $fk->getForeignTableName() != $table->getName() ) {
 
-						$thisTableObjectBuilder = OMBuilder::getNewObjectBuilder($table);
-						$joinedTableObjectBuilder = OMBuilder::getNewObjectBuilder($joinTable);
-						$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+						$thisTableObjectBuilder = $this->getNewObjectBuilder($table);
+						$joinedTableObjectBuilder = $this->getNewObjectBuilder($joinTable);
+						$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 						$joinClassName = $joinedTableObjectBuilder->getObjectClassname();
 
@@ -1789,12 +1818,14 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 	/**
 	 * Selects a collection of $className objects pre-filled with their $joinClassName objects.
-	 *
+	 * @param      Criteria  \$c
+	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     array Array of $className objects.
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null)
+	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
@@ -1809,20 +1840,37 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 
 						$lfMap = $fk->getLocalForeignMapping();
+						$left = array();
+						$right = array();
 						foreach ($fk->getLocalColumns() as $columnName ) {
-							$column = $table->getColumn($columnName);
-							$columnFk = $joinTable->getColumn( $lfMap[$columnName] );
-							$script .= "
-		\$c->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);";
+							array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+							array_push($right, $joinedTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 						}
 						$script .= "
+		\$c->addJoin(array(";
+						foreach ($left as $lCol) {
+							$script .= $lCol;
+							if ($lCol != $left[count($left)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), array(";
+						foreach ($right as $rCol) {
+							$script .= $rCol;
+							if ($rCol != $right[count($right)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), \$join_behavior);
 		\$stmt = ".$this->basePeerClassname."::doSelect(\$c, \$con);
 		\$results = array();
 
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
-				\$obj1->hydrate(\$row, 0, true); // rehydrate
+				// We no longer rehydrate the object, since this can cause data loss.
+				// See http://propel.phpdb.org/trac/ticket/509
+				// \$obj1->hydrate(\$row, 0, true); // rehydrate
 			} else {
 ";
 						if ($table->getChildrenColumn()) {
@@ -1862,7 +1910,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					\$obj2->hydrate(\$row, \$startcol);
 					".$joinedTablePeerBuilder->getPeerClassname()."::addInstanceToPool(\$obj2, \$key2);
 				} // if obj2 already loaded
-				
+
 				// Add the \$obj1 (".$this->getObjectClassname().") to \$obj2 (".$joinedTablePeerBuilder->getObjectClassname().")
 				\$obj2->".($fk->isLocalPrimaryKey() ? 'set' : 'add') . $joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);
 
@@ -1870,6 +1918,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 			\$results[] = \$obj1;
 		}
+		\$stmt->closeCursor();
 		return \$results;
 	}
 ";
@@ -1889,6 +1938,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$table = $this->getTable();
 		$className = $this->getObjectClassname();
 		$countFK = count($table->getForeignKeys());
+		$join_behavior = $this->getJoinBehavior();
 
 		if ($countFK >= 1) {
 
@@ -1900,9 +1950,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 					if ( $fk->getForeignTableName() != $table->getName() ) {
 
-						$thisTableObjectBuilder = OMBuilder::getNewObjectBuilder($table);
-						$joinedTableObjectBuilder = OMBuilder::getNewObjectBuilder($joinTable);
-						$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+						$thisTableObjectBuilder = $this->getNewObjectBuilder($table);
+						$joinedTableObjectBuilder = $this->getNewObjectBuilder($joinTable);
+						$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 						$joinClassName = $joinedTableObjectBuilder->getObjectClassname();
 
@@ -1912,45 +1962,71 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * Returns the number of rows matching criteria, joining the related ".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)." table
 	 *
 	 * @param      Criteria \$c
-	 * @param      boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
+	 * @param      boolean \$distinct Whether to select only distinct columns; deprecated: use Criteria->setDistinct() instead.
 	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
+	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 
-		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
-		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+		// We need to set the primary table name, since in the case that there are no WHERE columns
+		// it will be impossible for the BasePeer::createSelectSql() method to determine which
+		// tables go into the FROM clause.
+		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
+
+		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+			\$criteria->setDistinct();
 		}
 
-		// just in case we're grouping: add those columns to the select statement
-		foreach (\$criteria->getGroupByColumns() as \$column)
-		{
-			\$criteria->addSelectColumn(\$column);
+		if (!\$criteria->hasSelectClause()) {
+			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
+		}
+		
+		\$criteria->clearOrderByColumns(); // ORDER BY won't ever affect the count
+		
+		// Set the correct dbName
+		\$criteria->setDbName(self::DATABASE_NAME);
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 ";
+
 						$lfMap = $fk->getLocalForeignMapping();
+						$left = array();
+						$right = array();
 						foreach ($fk->getLocalColumns() as $columnName ) {
-							$column = $table->getColumn($columnName);
-							$columnFk = $joinTable->getColumn( $lfMap[$columnName] );
-							$script .= "
-		\$criteria->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);
-";
+							array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+							array_push($right, $joinedTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 						}
 						$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
+		\$criteria->addJoin(array(";
+						foreach ($left as $lCol) {
+							$script .= $lCol;
+							if ($lCol != $left[count($left)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), array(";
+						foreach ($right as $rCol) {
+							$script .= $rCol;
+							if ($rCol != $right[count($right)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), \$join_behavior);
+		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
-			return (int) \$row[0];
+			\$count = (int) \$row[0];
 		} else {
-			// no rows returned; we infer that means 0 matches.
-			return 0;
+			\$count = 0; // no rows returned; we infer that means 0 matches.
 		}
+		\$stmt->closeCursor();
+		return \$count;
 	}
 ";
 					} // if fk table name != this table name
@@ -1968,17 +2044,21 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{
 		$table = $this->getTable();
 		$className = $this->getObjectClassname();
+		$join_behavior = $this->getJoinBehavior();
 
 		$script .= "
 
 	/**
 	 * Selects a collection of $className objects pre-filled with all related objects.
 	 *
+	 * @param      Criteria  \$c
+	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     array Array of $className objects.
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAll(Criteria \$c, \$con = null)
+	public static function doSelectJoinAll(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
@@ -1992,13 +2072,14 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 ";
 		$index = 2;
 		foreach ($table->getForeignKeys() as $fk) {
-			// want to cover this case, but the code is not there yet.
-			// FIXME: why "is the code not there yet" ?
+
+			// Want to cover this case, but the code is not there yet.
+			// Propel lacks a system for aliasing tables of the same name.
 			if ( $fk->getForeignTableName() != $table->getName() ) {
 				$joinTable = $table->getDatabase()->getTable($fk->getForeignTableName());
 				$new_index = $index + 1;
 
-				$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+				$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 				$joinClassName = $joinedTablePeerBuilder->getObjectClassname();
 
 				$script .= "
@@ -2014,17 +2095,32 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// want to cover this case, but the code is not there yet.
 			if ( $fk->getForeignTableName() != $table->getName() ) {
 				$joinTable = $table->getDatabase()->getTable($fk->getForeignTableName());
-				$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+				$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 				$joinClassName = $joinedTablePeerBuilder->getObjectClassname();
 				$lfMap = $fk->getLocalForeignMapping();
+				$left = array();
+				$right = array();
 				foreach ($fk->getLocalColumns() as $columnName ) {
-					$column = $table->getColumn($columnName);
-					$columnFk = $joinTable->getColumn( $lfMap[$columnName]);
-					$script .= "
-		\$c->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);
-";
+					array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+					array_push($right, $joinedTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 				}
+				$script .= "
+		\$c->addJoin(array(";
+				foreach ($left as $lCol) {
+					$script .= $lCol;
+					if ($lCol != $left[count($left)]) {
+						$script .= ",";
+					}
+				}
+				$script .= "), array(";
+				foreach ($right as $rCol) {
+					$script .= $rCol;
+					if ($rCol != $right[count($right)]) {
+						$script .= ",";
+					}
+				}
+				$script .= "), \$join_behavior);";
 			}
 		}
 
@@ -2035,7 +2131,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
-				\$obj1->hydrate(\$row, 0, true); // rehydrate
+				// We no longer rehydrate the object, since this can cause data loss.
+				// See http://propel.phpdb.org/trac/ticket/509
+				// \$obj1->hydrate(\$row, 0, true); // rehydrate
 			} else {";
 
 		if ($table->getChildrenColumn()) {
@@ -2059,20 +2157,20 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$index = 1;
 		foreach ($table->getForeignKeys() as $fk ) {
 			// want to cover this case, but the code is not there yet.
-			// FIXME -- why not? -because we'd have to alias the tables in the JOIN
+			// Why not? -because we'd have to alias the tables in the JOIN
 			if ( $fk->getForeignTableName() != $table->getName() ) {
 				$joinTable = $table->getDatabase()->getTable($fk->getForeignTableName());
 
-				$thisTableObjectBuilder = OMBuilder::getNewObjectBuilder($table);
-				$joinedTableObjectBuilder = OMBuilder::getNewObjectBuilder($joinTable);
-				$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+				$thisTableObjectBuilder = $this->getNewObjectBuilder($table);
+				$joinedTableObjectBuilder = $this->getNewObjectBuilder($joinTable);
+				$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 
 				$joinClassName = $joinedTableObjectBuilder->getObjectClassname();
 				$interfaceName = $joinClassName;
 
 				if ($joinTable->getInterface()) {
-					$interfaceName = DataModelPeer::prefixClassname($joinTable->getInterface());
+					$interfaceName = $this->prefixClassname($joinTable->getInterface());
 				}
 
 				$index++;
@@ -2104,7 +2202,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 				} // if obj$index loaded
 
 				// Add the \$obj1 (".$this->getObjectClassname().") to the collection in \$obj".$index." (".$joinedTablePeerBuilder->getObjectClassname().")
-				\$obj".$index."->".($fk->isLocalPrimaryKey() ? 'set' : 'add') . $joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);
+				".($fk->isLocalPrimaryKey() ?
+				"\$obj1->set".$joinedTablePeerBuilder->getObjectClassname()."(\$obj".$index.");" :
+				"\$obj".$index."->add".$joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);")."
 			} // if joined row not null
 ";
 
@@ -2114,11 +2214,13 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 			\$results[] = \$obj1;
 		}
+		\$stmt->closeCursor();
 		return \$results;
 	}
 ";
 
 	} // end addDoSelectJoinAll()
+
 
 	/**
 	 * Adds the doCountJoinAll() method.
@@ -2128,6 +2230,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	{
 		$table = $this->getTable();
 		$className = $this->getObjectClassname();
+		$join_behavior = $this->getJoinBehavior();
 
 		$script .= "
 
@@ -2135,26 +2238,36 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * Returns the number of rows matching criteria, joining all related tables
 	 *
 	 * @param      Criteria \$c
-	 * @param      boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
+	 * @param      boolean \$distinct Whether to select only distinct columns; deprecated: use Criteria->setDistinct() instead.
 	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
+	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
+		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 
-		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
-		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+		// We need to set the primary table name, since in the case that there are no WHERE columns
+		// it will be impossible for the BasePeer::createSelectSql() method to determine which
+		// tables go into the FROM clause.
+		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
+
+		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+			\$criteria->setDistinct();
 		}
 
-		// just in case we're grouping: add those columns to the select statement
-		foreach (\$criteria->getGroupByColumns() as \$column)
-		{
-			\$criteria->addSelectColumn(\$column);
+		if (!\$criteria->hasSelectClause()) {
+			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
+		}
+		
+		\$criteria->clearOrderByColumns(); // ORDER BY won't ever affect the count
+		
+		// Set the correct dbName
+		\$criteria->setDbName(self::DATABASE_NAME);
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
 		}
 ";
 
@@ -2162,31 +2275,47 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// want to cover this case, but the code is not there yet.
 			if ( $fk->getForeignTableName() != $table->getName() ) {
 				$joinTable = $table->getDatabase()->getTable($fk->getForeignTableName());
-				$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+				$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 				$joinClassName = $joinedTablePeerBuilder->getObjectClassname();
 
 				$lfMap = $fk->getLocalForeignMapping();
+				$left = array();
+				$right = array();
 				foreach ($fk->getLocalColumns() as $columnName ) {
-					$column = $table->getColumn($columnName);
-					$columnFk = $joinTable->getColumn( $lfMap[$columnName]);
-					$script .= "
-		\$criteria->addJoin(".$this->getColumnConstant($column).", ".$joinedTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);
-";
+					array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+					array_push($right, $joinedTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 				}
+				$script .= "
+		\$criteria->addJoin(array(";
+				foreach ($left as $lCol) {
+					$script .= $lCol;
+					if ($lCol != $left[count($left)]) {
+						$script .= ",";
+					}
+				}
+				$script .= "), array(";
+				foreach ($right as $rCol) {
+					$script .= $rCol;
+					if ($rCol != $right[count($right)]) {
+						$script .= ",";
+					}
+				}
+				$script .= "), \$join_behavior);";
 			} // if fk->getForeignTableName != table->getName
 		} // foreach [sub] foreign keys
 
 		$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
+		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
-			return (int) \$row[0];
+			\$count = (int) \$row[0];
 		} else {
-			// no rows returned; we infer that means 0 matches.
-			return 0;
+			\$count = 0; // no rows returned; we infer that means 0 matches.
 		}
-	}
-";
+		\$stmt->closeCursor();
+		return \$count;
+	}";
 	} // end addDoCountJoinAll()
 
 	/**
@@ -2196,6 +2325,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	protected function addDoSelectJoinAllExcept(&$script)
 	{
 		$table = $this->getTable();
+		$join_behavior = $this->getJoinBehavior();
 
 		// ------------------------------------------------------------------------
 		// doSelectJoinAllExcept*()
@@ -2212,9 +2342,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 			$excludedTable = $table->getDatabase()->getTable($fk->getForeignTableName());
 
-			$thisTableObjectBuilder = OMBuilder::getNewObjectBuilder($table);
-			$excludedTableObjectBuilder = OMBuilder::getNewObjectBuilder($excludedTable);
-			$excludedTablePeerBuilder = OMBuilder::getNewPeerBuilder($excludedTable);
+			$thisTableObjectBuilder = $this->getNewObjectBuilder($table);
+			$excludedTableObjectBuilder = $this->getNewObjectBuilder($excludedTable);
+			$excludedTablePeerBuilder = $this->getNewPeerBuilder($excludedTable);
 
 			$excludedClassName = $excludedTableObjectBuilder->getObjectClassname();
 
@@ -2224,11 +2354,14 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	/**
 	 * Selects a collection of ".$this->getObjectClassname()." objects pre-filled with all related objects except ".$thisTableObjectBuilder->getFKPhpNameAffix($fk).".
 	 *
+	 * @param      Criteria  \$c
+	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     array Array of ".$this->getObjectClassname()." objects.
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null)
+	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
@@ -2245,10 +2378,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			$index = 2;
 			foreach ($table->getForeignKeys() as $subfk) {
 				// want to cover this case, but the code is not there yet.
-				// FIXME - why not?
+				// Why not? - because we would have to alias the tables in the join
 				if ( !($subfk->getForeignTableName() == $table->getName())) {
 					$joinTable = $table->getDatabase()->getTable($subfk->getForeignTableName());
-					$joinTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+					$joinTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 					$joinClassName = $joinTablePeerBuilder->getObjectClassname();
 
 					if ($joinClassName != $excludedClassName) {
@@ -2266,19 +2399,34 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 				// want to cover this case, but the code is not there yet.
 				if ( $subfk->getForeignTableName() != $table->getName() ) {
 					$joinTable = $table->getDatabase()->getTable($subfk->getForeignTableName());
-					$joinTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+					$joinTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 					$joinClassName = $joinTablePeerBuilder->getObjectClassname();
 
 					if ($joinClassName != $excludedClassName)
 					{
 						$lfMap = $subfk->getLocalForeignMapping();
+						$left = array();
+						$right = array();
 						foreach ($subfk->getLocalColumns() as $columnName ) {
-							$column = $table->getColumn($columnName);
-							$columnFk = $joinTable->getColumn( $lfMap[$columnName]);
-							$script .= "
-		\$c->addJoin(".$this->getColumnConstant($column).", ".$joinTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);
-";
+							array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+							array_push($right, $joinTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 						}
+						$script .= "
+				\$c->addJoin(array(";
+						foreach ($left as $lCol) {
+							$script .= $lCol;
+							if ($lCol != $left[count($left)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), array(";
+						foreach ($right as $rCol) {
+							$script .= $rCol;
+							if ($rCol != $right[count($right)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), \$join_behavior);";
 					}
 				}
 			} // foreach fkeys
@@ -2289,8 +2437,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
-			if (null !== (".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
-				\$obj1->hydrate(\$row, 0, true); // rehydrate
+			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
+				// We no longer rehydrate the object, since this can cause data loss.
+				// See http://propel.phpdb.org/trac/ticket/509
+				// \$obj1->hydrate(\$row, 0, true); // rehydrate
 			} else {";
 			if ($table->getChildrenColumn()) {
 				$script .= "
@@ -2317,14 +2467,14 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		  	$joinTable = $table->getDatabase()->getTable($subfk->getForeignTableName());
 
-		  	$joinedTableObjectBuilder = OMBuilder::getNewObjectBuilder($joinTable);
-		  	$joinedTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+		  	$joinedTableObjectBuilder = $this->getNewObjectBuilder($joinTable);
+		  	$joinedTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 
 		  	$joinClassName = $joinedTableObjectBuilder->getObjectClassname();
 
 		  	$interfaceName = $joinClassName;
 		  	if ($joinTable->getInterface()) {
-		  		$interfaceName = DataModelBuilder::prefixClassname($joinTable->getInterface());
+		  		$interfaceName = $this->prefixClassname($joinTable->getInterface());
 		  	}
 
 		  	if ($joinClassName != $excludedClassName) {
@@ -2368,6 +2518,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			$script .= "
 			\$results[] = \$obj1;
 		}
+		\$stmt->closeCursor();
 		return \$results;
 	}
 ";
@@ -2382,6 +2533,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	protected function addDoCountJoinAllExcept(&$script)
 	{
 		$table = $this->getTable();
+		$join_behavior = $this->getJoinBehavior();
 
 		$fkeys = $table->getForeignKeys();  // this sep assignment is necessary otherwise sub-loops over
 		// getForeignKeys() will cause this to only execute one time.
@@ -2391,9 +2543,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 			$excludedTable = $table->getDatabase()->getTable($fk->getForeignTableName());
 
-			$thisTableObjectBuilder = OMBuilder::getNewObjectBuilder($table);
-			$excludedTableObjectBuilder = OMBuilder::getNewObjectBuilder($excludedTable);
-			$excludedTablePeerBuilder = OMBuilder::getNewPeerBuilder($excludedTable);
+			$thisTableObjectBuilder = $this->getNewObjectBuilder($table);
+			$excludedTableObjectBuilder = $this->getNewObjectBuilder($excludedTable);
+			$excludedTablePeerBuilder = $this->getNewPeerBuilder($excludedTable);
 
 			$excludedClassName = $excludedTableObjectBuilder->getObjectClassname();
 
@@ -2403,62 +2555,98 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * Returns the number of rows matching criteria, joining the related ".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)." table
 	 *
 	 * @param      Criteria \$c
-	 * @param      boolean \$distinct Whether to select only distinct columns (You can also set DISTINCT modifier in Criteria).
+	 * @param      boolean \$distinct Whether to select only distinct columns; deprecated: use Criteria->setDistinct() instead.
 	 * @param      PropelPDO \$con
+	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
+	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
 
-		// clear out anything that might confuse the ORDER BY clause
-		\$criteria->clearSelectColumns()->clearOrderByColumns();
-		if (\$distinct || in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT_DISTINCT);
-		} else {
-			\$criteria->addSelectColumn(".$this->getPeerClassname()."::COUNT);
+		// We need to set the primary table name, since in the case that there are no WHERE columns
+		// it will be impossible for the BasePeer::createSelectSql() method to determine which
+		// tables go into the FROM clause.
+		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
+		
+		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+			\$criteria->setDistinct();
 		}
 
-		// just in case we're grouping: add those columns to the select statement
-		foreach (\$criteria->getGroupByColumns() as \$column)
-		{
-			\$criteria->addSelectColumn(\$column);
+		if (!\$criteria->hasSelectClause()) {
+			".$this->getPeerClassname()."::addSelectColumns(\$criteria);
 		}
-";
+		
+		\$criteria->clearOrderByColumns(); // ORDER BY should not affect count
+		
+		// Set the correct dbName
+		\$criteria->setDbName(self::DATABASE_NAME);
+
+		if (\$con === null) {
+			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+		}
+	";
 
 			foreach ($table->getForeignKeys() as $subfk) {
 				// want to cover this case, but the code is not there yet.
 				if ( $subfk->getForeignTableName() != $table->getName() ) {
 					$joinTable = $table->getDatabase()->getTable($subfk->getForeignTableName());
-					$joinTablePeerBuilder = OMBuilder::getNewPeerBuilder($joinTable);
+					$joinTablePeerBuilder = $this->getNewPeerBuilder($joinTable);
 					$joinClassName = $joinTablePeerBuilder->getObjectClassname();
 
 					if ($joinClassName != $excludedClassName)
 					{
 						$lfMap = $subfk->getLocalForeignMapping();
+						$left = array();
+						$right = array();
 						foreach ($subfk->getLocalColumns() as $columnName ) {
-							$column = $table->getColumn($columnName);
-							$columnFk = $joinTable->getColumn( $lfMap[$columnName]);
-							$script .= "
-		\$criteria->addJoin(".$this->getColumnConstant($column).", ".$joinTablePeerBuilder->getColumnConstant($columnFk).", Criteria::LEFT_JOIN);
-";
+							array_push($left, $this->getColumnConstant($table->getColumn($columnName) ) );
+							array_push($right, $joinTablePeerBuilder->getColumnConstant($joinTable->getColumn( $lfMap[$columnName] ) ) );
 						}
+						$script .= "
+				\$criteria->addJoin(array(";
+						foreach ($left as $lCol) {
+							$script .= $lCol;
+							if ($lCol != $left[count($left)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), array(";
+						foreach ($right as $rCol) {
+							$script .= $rCol;
+							if ($rCol != $right[count($right)]) {
+								$script .= ",";
+							}
+						}
+						$script .= "), \$join_behavior);";
 					}
 				}
 			} // foreach fkeys
 			$script .= "
-		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con);
+		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
-			return (int) \$row[0];
+			\$count = (int) \$row[0];
 		} else {
-			// no rows returned; we infer that means 0 matches.
-			return 0;
+			\$count = 0; // no rows returned; we infer that means 0 matches.
 		}
+		\$stmt->closeCursor();
+		return \$count;
 	}
 ";
 		} // foreach fk
 
 	} // addDoCountJoinAllExcept
+
+	/**
+	 * returns the desired join behavior as set in the build properties
+	 * see trac ticket #588, #491
+	 *
+	 */
+	protected function getJoinBehavior()
+	{
+		return $this->getGeneratorConfig()->getBuildProperty('useLeftJoinsInDoJoinMethods') ? 'Criteria::LEFT_JOIN' : 'Criteria::INNER_JOIN';
+	}
 
 } // PHP5PeerBuilder
