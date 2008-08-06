@@ -45,7 +45,7 @@
     classname="propel.phing.PropelDataModelTemplateTask" classpathRef="propelclasses"/>
   <taskdef
     name="propel-om"
-    classname="propel.phing\.tmp.PropelOMTask" classpathRef="propelclasses"/>
+    classname="propel.phing.PropelOMTask" classpathRef="propelclasses"/>
   <taskdef
     name="propel-data-dtd"
     classname="propel.phing.PropelDataDTDTask" classpathRef="propelclasses"/>

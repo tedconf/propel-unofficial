@@ -539,7 +539,19 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoSelectOne(&$script)
 	{
+		$this->addDoSelectOneComment($script);
+		$this->addDoSelectOneOpen($script);
+		$this->addDoSelectOneBody($script);
+		$this->addDoSelectOneClose($script);
+	}
+
+	/**
+	 * Adds the comment part of the doSelectOne() method
+	 * @param      string &$script
+	 **/
+	protected function addDoSelectOneComment (&$script) {
 		$script .= "
+
 	/**
 	 * Method to select one object from the DB.
 	 *
@@ -549,16 +561,53 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectOne(Criteria \$criteria, PropelPDO \$con = null)
+";
+	}
+
+	/**
+	 * Adds the opening part of the doSelectOne() method
+	 * @param      string &$script
+	 **/
+	protected function addDoSelectOneOpen (&$script) {
+		$script .= "	public static function doSelectOne(Criteria \$criteria, PropelPDO \$con = null)
 	{
-		\$critcopy = clone \$criteria;
+";
+	}
+
+	/**
+	 * Adds the body part of the doSelectOne() method
+	 * @param      string &$script
+	 **/
+	protected function addDoSelectOneBody (&$script) {
+		$script .= "		\$critcopy = clone \$criteria;
 		\$critcopy->setLimit(1);
 		\$objects = ".$this->getPeerClassname()."::doSelect(\$critcopy, \$con);
-		if (\$objects) {
+";
+	}
+
+	/**
+	 * Adds the closing part of the doSelectOne() method
+	 * @param      string &$script
+	 * @todo       move iteratorClass code to plugin
+	 **/
+	protected function addDoSelectOneClose (&$script) {
+		$collectionClass = $this->getBuildProperty("iteratorClass");
+
+		if (isset($collectionClass) && !empty($collectionClass) ) {
+			$script .= "		if (\$objects->count() === 1) {
+			\$objects->seek(0);	
+			return \$objects->current();
+		}
+		return null;
+	}";
+		}
+		else {
+			$script .= "		if (\$objects) {
 			return \$objects[0];
 		}
 		return null;
 	}";
+		}
 	}
 
 	/**
@@ -846,7 +895,17 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addPopulateObjects(&$script)
 	{
-		$table = $this->getTable();
+		$this->addPopupulateObjectsComment($script);
+		$this->addPopupulateObjectsOpen($script);
+		$this->addPopupulateObjectsBody($script);
+		$this->addPopupulateObjectsClose($script);
+	}
+
+	/**
+	 * Adds the comment for the populateObjects method
+	 * @param      string &$script The script will be modified in this method.
+	 **/
+	protected function addPopupulateObjectsComment(&$script) { 
 		$script .= "
 	/**
 	 * The returned array will contain objects of the default type or
@@ -854,9 +913,26 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 *
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
-	 */
+	 */";
+	}
+
+	/**
+	 * Adds the function declaration for the populateObjects method
+	 * @param      string &$script The script will be modified in this method.
+	 **/
+	protected function addPopupulateObjectsOpen(&$script) {
+		$script .= "
 	public static function populateObjects(PDOStatement \$stmt)
-	{
+	{";
+	}
+
+	/**
+	 * Adds the function body for the populateObjects method
+	 * @param      string &$script The script will be modified in this method.
+	 **/
+	protected function addPopupulateObjectsBody(&$script) {
+		$table = $this->getTable();
+		$script .= "
 		\$results = array();
 	";
 		if (!$table->getChildrenColumn()) {
@@ -896,7 +972,23 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 			} // if key exists
 		}
-		\$stmt->closeCursor();
+		\$stmt->closeCursor();";
+	}
+
+	/**
+	 * Adds the function close for the populateObjects method
+	 * @param      string &$script The script will be modified in this method.
+	 * @todo       move the iteratorClass part to some (to be developed) plugin structure
+	 **/
+	protected function addPopupulateObjectsClose(&$script) {
+		$collectionClass = $this->getBuildProperty("iteratorClass");
+
+		if (isset($collectionClass) && !empty($collectionClass) ) {
+			$script .= "
+		\$results = new $collectionClass(\$results);";
+		}
+
+		$script .= "
 		return \$results;
 	}";
 	}
@@ -1582,10 +1674,20 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addRetrieveByPK_SinglePK(&$script)
 	{
+		$this->addRetrieveByPK_SinglePKComment($script);
+		$this->addRetrieveByPK_SinglePKOpen($script);
+		$this->addRetrieveByPK_SinglePKBody($script);
+		$this->addRetrieveByPK_SinglePKClose($script);
+	}
+	
+	/**
+	 * Adds the retrieveByPK method for tables with single-column primary key.
+	 * @param      string &$script The script will be modified in this method.
+	 */
+	protected function addRetrieveByPK_SinglePKComment(&$script) {
 		$table = $this->getTable();
 		$pks = $table->getPrimaryKey();
 		$col = $pks[0];
-
 		$script .= "
 	/**
 	 * Retrieve a single object by pkey.
@@ -1593,10 +1695,29 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      ".$col->getPhpType()." \$pk the primary key.
 	 * @param      PropelPDO \$con the connection to use
 	 * @return     " .$this->getObjectClassname(). "
+	 */";
+	}
+	
+	/**
+	 * Adds the retrieveByPK method for tables with single-column primary key.
+	 * @param      string &$script The script will be modified in this method.
 	 */
+	protected function addRetrieveByPK_SinglePKOpen(&$script) {
+		$script .= "
 	public static function ".$this->getRetrieveMethodName()."(\$pk, PropelPDO \$con = null)
-	{
+	{";
+	}
 
+	/**
+	 * Adds the retrieveByPK method for tables with single-column primary key.
+	 * @param      string &$script The script will be modified in this method.
+	 */
+	protected function addRetrieveByPK_SinglePKBody(&$script) {
+		$table = $this->getTable();
+		$pks = $table->getPrimaryKey();
+		$col = $pks[0];
+
+		$script .= "
 		if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(".$this->getInstancePoolKeySnippet('$pk')."))) {
 			return \$obj;
 		}
@@ -1608,11 +1729,29 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
 		\$criteria->add(".$this->getColumnConstant($col).", \$pk);
 
-		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
+		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);";
+	}
 
+	/**
+	 * Adds the retrieveByPK method for tables with single-column primary key.
+	 * @param      string &$script The script will be modified in this method.
+	 * @todo       move iteratorClass stuff to plugin structure
+	 */
+	protected function addRetrieveByPK_SinglePKClose(&$script) {
+		$collectionClass = $this->getBuildProperty("iteratorClass");
+
+		if (isset($collectionClass) && !empty($collectionClass) ) {
+			$script .= "
+		return \$v->current();
+	}
+";
+		}
+		else {
+			$script .= "
 		return !empty(\$v) > 0 ? \$v[0] : null;
 	}
 ";
+		}
 	}
 
 	/**

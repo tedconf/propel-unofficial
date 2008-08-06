@@ -3001,10 +3001,12 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	/**
 	 * Adds the method that adds an object into the referrer fkey collection.
 	 * @param      string &$script The script will be modified in this method.
+	 * @todo       move iteratorClass code to plugin
 	 */
 	protected function addRefFKAdd(&$script, ForeignKey $refFK)
 	{
 		$tblFK = $refFK->getTable();
+		$collectionClass = $this->getBuildProperty("iteratorClass");
 
 		$joinedTableObjectBuilder = $this->getNewObjectBuilder($refFK->getTable());
 		$className = $joinedTableObjectBuilder->getObjectClassname();
@@ -3025,10 +3027,30 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		if (\$this->$collName === null) {
 			\$this->init".$this->getRefFKPhpNameAffix($refFK, $plural = true)."();
 		}
+	";
+		if (isset($collectionClass) && !empty($collectionClass) ) {
+			$script .= "
+		\$double = false;
+		\$values = array();
+		foreach (\$this->$collName as \$val) {
+			array_push(\$values, \$val);
+			if (\$val === \$l) {
+				\$double = true;
+			}
+		}
+		if (!\$double) {
+			array_push(\$values, \$l);
+		}
+		\$this->$collName = new $collectionClass(\$values);";
+		}
+		else {
+			$script .= "
 		if (!in_array(\$l, \$this->$collName, true)) { // only add it if the **same** object is not already associated
 			array_push(\$this->$collName, \$l);
 			\$l->set".$this->getFKPhpNameAffix($refFK, $plural = false)."(\$this);
+		}";
 		}
+		$script .= "
 	}
 ";
 	} // addRefererAdd
