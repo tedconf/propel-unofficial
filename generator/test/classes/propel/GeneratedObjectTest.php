@@ -1019,4 +1019,18 @@ class GeneratedObjectTest extends BookstoreTestBase {
 				
 		$this->assertFalse($bookreader->isNew() );
 	}
+	/**
+	 * Checks if the disabling of tables works
+	 */
+	public function testDisableTable()
+	{
+		$this->assertFalse(class_exists("BookstoreNonExistingTable") );
+	}
+	/**
+	 * Checks if the disabling of columns works
+	 */
+	public function testDisableColumn()
+	{
+		$this->assertNull(constant("BookstoreNonExistingTableFkPeer::BOOKSTORE_NON_EXISTING_TABLE_ID") );
+	}
 }

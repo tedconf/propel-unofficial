@@ -315,4 +315,21 @@
 		</foreign-key>
 	</table>
 
+	<table name='bookstore_non_existing_table'>
+		<column name="dummy" type="INTEGER" primaryKey="true" />
+	</table>
+	<table name='bookstore_non_existing_table_fk'>
+		<column name="dummy" type="INTEGER" primaryKey="true" />
+		<column name="bookstore_non_existing_table_id" type="INTEGER" />
+		<foreign-key foreignTable="bookstore_non_existing_table">
+			<reference local="bookstore_non_existing_table_id" foreign="dummy" />
+		</foreign-key>
+	</table>
+
+
+	<disable>
+		<table>bookstore_non_existing_table</table>
+		<column>bookstore_non_existing_table_id</column>
+	</disable>
+
 </database>

@@ -120,6 +120,11 @@
 	</xsl:template>
 
 	<!--
+	Adds disable table support
+	-->
+	<xsl:template match='table[/database/disable/table = @name]'/>
+
+	<!--
 	Normalize a foreign-key, add some attribute with default values if ommitted and normalize all attribute and childnodes
 	-->
 	<xsl:template match='foreign-key'>
@@ -135,6 +140,12 @@
 			<xsl:apply-templates select='vendor'/>
 		</foreign-key>
 	</xsl:template>
+
+	<!--
+	Disable fks to disabled tables
+	-->
+	<xsl:template match='foreign-key[/database/disable/table = @foreignTable]'/>
+
 
 	<!--
 	Just copy the index node with attributes and add the index-column
@@ -266,6 +277,11 @@
 			<xsl:apply-templates select='vendor'/>
 		</column>
 	</xsl:template>
+	
+	<!--
+	Adds disable column support
+	-->
+	<xsl:template match='column[/database/disable/column = @name]'/>
 
 	<!--
 	Strip all childnodes from an reference node
