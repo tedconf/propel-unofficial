@@ -347,6 +347,7 @@
 		</xs:choice>
 		<xs:attribute name="name" type="table_name" use="required"/>
 		<xs:attribute name="phpName" type="php_class" use="optional"/>
+		<xs:attribute name="middleClass" type="php_class" use="optional"/>
 		<xs:attribute name="columnPrefix" type="column_name" use="optional"/>
 		<xs:attribute name="defaultAccessorVisibility" type="visibility" use="optional"/>
 		<xs:attribute name="defaultMutatorVisibility" type="visibility" use="optional"/>

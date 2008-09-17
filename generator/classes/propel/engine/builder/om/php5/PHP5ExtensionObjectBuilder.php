@@ -91,6 +91,11 @@ require '".$requiredClassFilePath."';
 			break;
 		}
 
+		$middleClass = $table->getMiddleClass(); 
+		if (!empty($middleClass) ) { 
+ 			$baseClassname = $middleClass; 
+		}
+
 		$script .= "
 
 /**

@@ -282,6 +282,13 @@ class Table extends XMLElement implements IDMethod {
 	 */
 	private $reloadOnUpdate;
 
+	/** 
+ 	 * A middle class 
+ 	 * 
+ 	 * @var        string 
+ 	 **/ 
+ 	protected $middleClass;  
+
 	/**
 	 * Constructs a table object with a name
 	 *
@@ -321,6 +328,8 @@ class Table extends XMLElement implements IDMethod {
 		$this->description = $this->getAttribute("description");
 		$this->enterface = $this->getAttribute("interface"); // sic ('interface' is reserved word)
 		$this->treeMode = $this->getAttribute("treeMode");
+
+		$this->middleClass = $this->getAttribute("middleClass");
 
 		$this->reloadOnInsert = $this->booleanValue($this->getAttribute("reloadOnInsert"));
 		$this->reloadOnUpdate = $this->booleanValue($this->getAttribute("reloadOnUpdate"));
@@ -922,6 +931,15 @@ class Table extends XMLElement implements IDMethod {
 		$this->alias = $v;
 	}
 
+
+	/**
+	 * Gets this table's middle class
+	 * @return     value of middleClass.
+	 */
+	public function getMiddleClass()
+	{
+		return $this->middleClass;
+	}
 
 	/**
 	 * Interface which objects for this table will implement
