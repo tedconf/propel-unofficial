@@ -32,6 +32,7 @@ require_once 'propel/engine/builder/om/ObjectBuilder.php';
  * to customize (through extending & overriding).
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
 class PHP5MultiExtendObjectBuilder extends ObjectBuilder {
@@ -121,6 +122,18 @@ class PHP5MultiExtendObjectBuilder extends ObjectBuilder {
 	} // addIncludes()
 
 	/**
+	 * Adds the namespace declaration if configured to do so.  
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addNamespace(&$script)
+	{
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
+		
+		$namespaceToUse = $this->getBuildProperty('namespaceOm');
+		$script .= "\nnamespace $namespaceToUse;\n";
+	}
+	
+	/**
 	 * Adds class phpdoc comment and openning of class.
 	 * @param      string &$script The script will be modified in this method.
 	 */
@@ -155,7 +168,7 @@ class PHP5MultiExtendObjectBuilder extends ObjectBuilder {
  *
  * @package    ".$this->getPackage()."
  */
-class ".$this->getClassname()." extends ".$this->getParentClassname()." {
+class ".$this->getClassname(false)." extends ".$this->getParentClassname()." {
 ";
 	}
 

@@ -29,10 +29,24 @@ require_once 'propel/engine/builder/om/ObjectBuilder.php';
  * the custom-built accessor and setter methods.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
 class PHP5ObjectBuilder extends ObjectBuilder {
-
+	/**
+	 * Get the column constant name (e.g. PeerName::COLUMN_NAME).
+	 *
+	 * NOTE: we override this so we can tack on namespace prefix
+	 * @param      Column $col The column we need a name for.
+	 * @param      string $classname The Peer classname to use.
+	 *
+	 * @return     string If $classname is provided, then will return $classname::COLUMN_NAME; if not, then the peername is looked up for current table to yield $currTablePeer::COLUMN_NAME.
+	 */
+	public function getColumnConstant($col, $classname = null)
+	{
+		return parent::getColumnConstant($col, $classname);
+	}
+	
 	/**
 	 * Gets the package for the [base] object classes.
 	 * @return     string
@@ -42,6 +56,19 @@ class PHP5ObjectBuilder extends ObjectBuilder {
 		return parent::getPackage() . ".om";
 	}
 
+	/**
+	 * Adds the namespace declaration if configured to do so.  
+	 * @param string &$script The script will be modified in this method.
+	 */
+	public function addNamespace(&$script) 
+	{
+		// If not enabled bail.
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
+		
+		$namespaceToUse = $this->getBuildProperty('namespaceOm');
+		$script .= "\nnamespace $namespaceToUse;\n";		
+	}
+	
 	/**
 	 * Returns the name of the current class being built.
 	 * @return     string
@@ -187,11 +214,11 @@ class PHP5ObjectBuilder extends ObjectBuilder {
 		$script .= "
  * @package    ".$this->getPackage()."
  */
-abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->getBaseClass())." ";
+abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).ClassTools::classname($this->getBaseClass())." ";
 
 		$interface = ClassTools::getInterface($table);
 		if ($interface) {
-			$script .= " implements " . ClassTools::classname($interface);
+			$script .= " implements " . $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL). ClassTools::classname($interface);
 		}
 
 		$script .= " {
@@ -756,7 +783,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			try {
 				\$dt = new $dateTimeClass(\$this->$clo);
 			} catch (Exception \$x) {
-				throw new PropelException(\"Internally stored date/time/timestamp value could not be converted to $dateTimeClass: \" . var_export(\$this->$clo, true), \$x);
+				throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Internally stored date/time/timestamp value could not be converted to $dateTimeClass: \" . var_export(\$this->$clo, true), \$x);
 			}
 		}
 ";
@@ -766,7 +793,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		try {
 			\$dt = new $dateTimeClass(\$this->$clo);
 		} catch (Exception \$x) {
-			throw new PropelException(\"Internally stored date/time/timestamp value could not be converted to $dateTimeClass: \" . var_export(\$this->$clo, true), \$x);
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Internally stored date/time/timestamp value could not be converted to $dateTimeClass: \" . var_export(\$this->$clo, true), \$x);
 		}
 ";
 		} // if handleMyqlDate
@@ -851,7 +878,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 
 		$script .= "
 	".$visibility." function get$cfc(";
-		if ($col->isLazyLoad()) $script .= "PropelPDO \$con = null";
+		if ($col->isLazyLoad()) $script .= $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null";
 		$script .= ")
 	{";
 	}
@@ -935,7 +962,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	protected function addLazyLoaderOpen(&$script, Column $col) {
 		$cfc = $col->getPhpName();
 		$script .= "
-	protected function load$cfc(PropelPDO \$con = null)
+	protected function load$cfc(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 	}
 
@@ -980,7 +1007,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$script .= "
 			\$this->".$clo."_isLoaded = true;
 		} catch (Exception \$e) {
-			throw new PropelException(\"Error loading value for [$clo] column on demand.\", \$e);
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Error loading value for [$clo] column on demand.\", \$e);
 		}";
 	}
 
@@ -1241,7 +1268,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 					\$dt = new $dateTimeClass(\$v);
 				}
 			} catch (Exception \$x) {
-				throw new PropelException('Error parsing date/time value: ' . var_export(\$v, true), \$x);
+				throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Error parsing date/time value: ' . var_export(\$v, true), \$x);
 			}
 		}
 
@@ -1500,7 +1527,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			return \$startcol + $n; // $n = ".$this->getPeerClassname()."::NUM_COLUMNS - ".$this->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS).
 
 		} catch (Exception \$e) {
-			throw new PropelException(\"Error populating ".$table->getPhpName()." object\", \$e);
+			throw new ". $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Error populating ".$table->getPhpName()." object\", \$e);
 		}";
 	}
 
@@ -1561,7 +1588,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addBuildPkeyCriteriaBody(&$script) {
 		$script .= "
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
@@ -1629,7 +1656,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addBuildCriteriaBody(&$script) {
 		$script .= "
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
 			$clo = strtolower($col->getName());
@@ -1690,7 +1717,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addToArrayOpen(&$script) {
 		$script .= "
-	public function toArray(\$keyType = BasePeer::TYPE_PHPNAME, \$includeLazyLoadColumns = true)
+	public function toArray(\$keyType = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME, \$includeLazyLoadColumns = true)
 	{";
 	}
 
@@ -1765,7 +1792,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addGetByNameOpen(&$script) {
 		$script .= "
-	public function getByName(\$name, \$type = BasePeer::TYPE_PHPNAME)
+	public function getByName(\$name, \$type = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME)
 	{";
 	}
 
@@ -1776,7 +1803,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addGetByNameBody(&$script) {
 		$script .= "
-		\$pos = ".$this->getPeerClassname()."::translateFieldName(\$name, \$type, BasePeer::TYPE_NUM);
+		\$pos = ".$this->getPeerClassname()."::translateFieldName(\$name, \$type, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_NUM);
 		\$field = \$this->getByPosition(\$pos);";
 	}
 
@@ -1884,7 +1911,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 */
 	public function setByName(\$name, \$value, \$type = BasePeer::TYPE_PHPNAME)
 	{
-		\$pos = ".$this->getPeerClassname()."::translateFieldName(\$name, \$type, BasePeer::TYPE_NUM);
+		\$pos = ".$this->getPeerClassname()."::translateFieldName(\$name, \$type, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_NUM);
 		return \$this->setByPosition(\$pos, \$value);
 	}
 ";
@@ -1942,7 +1969,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @param      string \$keyType The type of keys the array uses.
 	 * @return     void
 	 */
-	public function fromArray(\$arr, \$keyType = BasePeer::TYPE_PHPNAME)
+	public function fromArray(\$arr, \$keyType = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME)
 	{
 		\$keys = ".$this->getPeerClassname()."::getFieldNames(\$keyType);
 ";
@@ -1994,7 +2021,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 **/
 	protected function addDeleteOpen(&$script) {
 		$script .= "
-	public function delete(PropelPDO \$con = null)
+	public function delete(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 	}
 
@@ -2006,11 +2033,11 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	protected function addDeleteBody(&$script) {
 		$script .= "
 		if (\$this->isDeleted()) {
-			throw new PropelException(\"This object has already been deleted.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"This object has already been deleted.\");
 		}
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 		
 		\$con->beginTransaction();
@@ -2018,7 +2045,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			".$this->getPeerClassname()."::doDelete(\$this, \$con);
 			\$this->setDeleted(true);
 			\$con->commit();
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}";
@@ -2053,18 +2080,18 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return     void
 	 * @throws     PropelException - if this object is deleted, unsaved or doesn't have pk match in db
 	 */
-	public function reload(\$deep = false, PropelPDO \$con = null)
+	public function reload(\$deep = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->isDeleted()) {
-			throw new PropelException(\"Cannot reload a deleted object.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Cannot reload a deleted object.\");
 		}
 
 		if (\$this->isNew()) {
-			throw new PropelException(\"Cannot reload an unsaved object.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Cannot reload an unsaved object.\");
 		}
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 
 		// We don't need to alter the object instance pool; we're just modifying this instance
@@ -2074,7 +2101,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		\$row = \$stmt->fetch(PDO::FETCH_NUM);
 		\$stmt->closeCursor();
 		if (!\$row) {
-			throw new PropelException('Cannot find matching row in the database to reload object values.');
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Cannot find matching row in the database to reload object values.');
 		}
 		\$this->hydrate(\$row, 0, true); // rehydrate
 ";
@@ -2681,7 +2708,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return     $className The associated $className object.
 	 * @throws     PropelException
 	 */
-	public function get".$this->getFKPhpNameAffix($fk, $plural = false)."(PropelPDO \$con = null)
+	public function get".$this->getFKPhpNameAffix($fk, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 		$script .= "
 		if (\$this->$varName === null && ($conditional)) {";
@@ -2778,7 +2805,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{
 		$table = $this->getTable();
 		$tblFK = $refFK->getTable();
-		$join_behavior = $this->getGeneratorConfig()->getBuildProperty('useLeftJoinsInDoJoinMethods') ? 'Criteria::LEFT_JOIN' : 'Criteria::INNER_JOIN';
+		$join_behavior = $this->getGeneratorConfig()->getBuildProperty('useLeftJoinsInDoJoinMethods') ? $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).'Criteria::LEFT_JOIN' : $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).'Criteria::INNER_JOIN';
 
 		$peerClassname = $this->getStubPeerBuilder()->getClassname();
 		$relCol = $this->getRefFKPhpNameAffix($refFK, $plural=true);
@@ -2824,9 +2851,9 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	{";
 				$script .= "
 		if (\$criteria === null) {
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		}
-		elseif (\$criteria instanceof Criteria)
+		elseif (\$criteria instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria)
 		{
 			\$criteria = clone \$criteria;
 		}
@@ -3084,12 +3111,12 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return     int Count of related $className objects.
 	 * @throws     PropelException
 	 */
-	public function count$relCol(Criteria \$criteria = null, \$distinct = false, PropelPDO \$con = null)
+	public function count$relCol(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria = null, \$distinct = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 
 		$script .= "
 		if (\$criteria === null) {
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		} else {
 			\$criteria = clone \$criteria;
 		}
@@ -3185,14 +3212,14 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return     array {$className}[]
 	 * @throws     PropelException
 	 */
-	public function get$relCol(\$criteria = null, PropelPDO \$con = null)
+	public function get$relCol(\$criteria = null, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 
 		$script .= "
 		if (\$criteria === null) {
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		}
-		elseif (\$criteria instanceof Criteria)
+		elseif (\$criteria instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria)
 		{
 			\$criteria = clone \$criteria;
 		}
@@ -3274,7 +3301,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @return     $className
 	 * @throws     PropelException
 	 */
-	public function get".$this->getRefFKPhpNameAffix($refFK, $plural = false)."(PropelPDO \$con = null)
+	public function get".$this->getRefFKPhpNameAffix($refFK, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 ";
 		$script .= "
@@ -3378,7 +3405,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 	 * @throws     PropelException
 	 * @see        save()
 	 */
-	protected function doSave(PropelPDO \$con".($reloadOnUpdate || $reloadOnInsert ? ", \$skipReload = false" : "").")
+	protected function doSave(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con".($reloadOnUpdate || $reloadOnInsert ? ", \$skipReload = false" : "").")
 	{
 		\$affectedRows = 0; // initialize var to track total num of affected rows
 		if (!\$this->alreadyInSave) {
@@ -3611,7 +3638,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		$reloadOnUpdate = $table->isReloadOnUpdate();
 		$reloadOnInsert = $table->isReloadOnInsert();
 		$script .= "
-	public function save(PropelPDO \$con = null".($reloadOnUpdate || $reloadOnInsert ? ", \$skipReload = false" : "").")
+	public function save(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null".($reloadOnUpdate || $reloadOnInsert ? ", \$skipReload = false" : "").")
 	{";
 	}
 
@@ -3627,11 +3654,11 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 
 		$script .= "
 		if (\$this->isDeleted()) {
-			throw new PropelException(\"You cannot save an object that has been deleted.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"You cannot save an object that has been deleted.\");
 		}
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 		
 		\$con->beginTransaction();
@@ -3640,7 +3667,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 			\$con->commit();
 			".$this->getPeerClassname()."::addInstanceToPool(\$this);
 			return \$affectedRows;
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}";

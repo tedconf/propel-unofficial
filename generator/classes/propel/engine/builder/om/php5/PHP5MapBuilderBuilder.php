@@ -29,10 +29,10 @@ require_once 'propel/engine/builder/om/OMBuilder.php';
  * to customize (through extending & overriding).
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
-class PHP5MapBuilderBuilder extends OMBuilder {
-
+class PHP5MapBuilderBuilder extends OMBuilder {	
 	/**
 	 * Gets the package for the map builder classes.
 	 * @return     string
@@ -42,6 +42,19 @@ class PHP5MapBuilderBuilder extends OMBuilder {
 		return parent::getPackage() . '.map';
 	}
 
+    /**
+	 * Adds the namespace declaration if configured to do so.  
+	 * @param string &$script The script will be modified in this method.
+	 */
+	public function addNamespace(&$script) 
+	{
+		// If not enabled bail.
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
+		
+		$namespaceToUse = $this->getBuildProperty('namespaceMap');
+		$script .= "\nnamespace $namespaceToUse;\n";		
+	}
+	
 	/**
 	 * Returns the name of the current class being built.
 	 * @return     string
@@ -89,7 +102,7 @@ class PHP5MapBuilderBuilder extends OMBuilder {
  *
  * @package    ".$this->getPackage()."
  */
-class ".$this->getClassname()." implements MapBuilder {
+class ".$this->getClassname(false)." implements ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."MapBuilder {
 ";
 	}
 
@@ -202,11 +215,11 @@ class ".$this->getClassname()." implements MapBuilder {
 	 * The doBuild() method builds the DatabaseMap
 	 *
 	 * @return     void
-	 * @throws     PropelException
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
 	public function doBuild()
 	{
-		\$this->dbMap = Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$this->dbMap = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME);
 
 		\$tMap = \$this->dbMap->addTable(".$this->getPeerClassname()."::TABLE_NAME);
 		\$tMap->setPhpName('".$table->getPhpName()."');

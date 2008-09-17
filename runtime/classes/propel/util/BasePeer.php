@@ -30,6 +30,7 @@
  *
  * @author     Hans Lellelid <hans@xmpl.org> (Propel)
  * @author     Kaspars Jaudzems <kaspars.jaudzems@inbox.lv> (Propel)
+ * @author     Tony Bibbs <tony@tonybibbs.com> (Propel)
  * @author     Heltem <heltem@o2php.com> (Propel)
  * @author     Frank Y. Kim <frank.kim@clearink.com> (Torque)
  * @author     John D. McNally <jmcnally@collab.net> (Torque)
@@ -82,6 +83,10 @@ class BasePeer
 		// TODO we should take care of including the peer class here
 
 		$peerclass = 'Base' . $classname . 'Peer'; // TODO is this always true?
+                $config = Propel::getConfiguration();
+                if ($config['namespaces']['enabled'] == 1) {
+                    $peerclass = $config['namespaces']['peer']['value'] . '::' . $peerclass;
+                }
 		$callable = array($peerclass, 'getFieldnames');
 		$args = array($type);
 
@@ -93,6 +98,10 @@ class BasePeer
 		// TODO we should take care of including the peer class here
 
 		$peerclass = 'Base' . $classname . 'Peer'; // TODO is this always true?
+                $config = Propel::getConfiguration();
+                if ($config['namespaces']['enabled'] == 1) {
+                    $peerclass = $config['namespaces']['peer']['value'] . '::' . $peerclass;
+                }
 		$callable = array($peerclass, 'translateFieldname');
 		$args = array($fieldname, $fromType, $toType);
 

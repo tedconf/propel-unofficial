@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+use bookstore::Model as PropelModel;
+
 /*
  *  $Id: GeneratedObjectTest.php 928 2008-01-18 12:21:27Z hans $
  *
@@ -82,9 +86,9 @@ class GeneratedObjectLobTest extends BookstoreTestBase {
 		$blob_path = $this->getLobFile('tin_drum.gif');
 		$clob_path = $this->getLobFile('tin_drum.txt');
 
-		$book = BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
 
-		$m1 = new Media();
+		$m1 = new PropelModel::Media();
 		$m1->setBook($book);
 		$m1->setCoverImage(file_get_contents($blob_path));
 		$m1->setExcerpt(file_get_contents($clob_path));
@@ -122,9 +126,9 @@ class GeneratedObjectLobTest extends BookstoreTestBase {
 		$blob_path = $this->getLobFile('tin_drum.gif');
 		$clob_path = $this->getLobFile('tin_drum.txt');
 
-		$book = BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
 
-		$m1 = new Media();
+		$m1 = new PropelModel::Media();
 		$m1->setBook($book);
 		$m1->setCoverImage(file_get_contents($blob_path));
 		$m1->setExcerpt(file_get_contents($clob_path));
@@ -161,9 +165,9 @@ class GeneratedObjectLobTest extends BookstoreTestBase {
 		$blob2_path = $this->getLobFile('propel.gif');
 
 		$clob_path = $this->getLobFile('tin_drum.txt');
-		$book = BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
 
-		$m1 = new Media();
+		$m1 = new PropelModel::Media();
 		$m1->setBook($book);
 		$m1->setCoverImage(file_get_contents($blob_path));
 		$m1->setExcerpt(file_get_contents($clob_path));
@@ -228,18 +232,18 @@ class GeneratedObjectLobTest extends BookstoreTestBase {
 		$blob2_path = $this->getLobFile('propel.gif');
 
 		$clob_path = $this->getLobFile('tin_drum.txt');
-		$book = BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
 
-		$m1 = new Media();
+		$m1 = new PropelModel::Media();
 		$m1->setBook($book);
 		$m1->setCoverImage(file_get_contents($blob_path));
 		$m1->setExcerpt(file_get_contents($clob_path));
 		$m1->save();
 
-		MediaPeer::clearInstancePool();
+		PropelPeer::MediaPeer::clearInstancePool();
 
 		// make sure we have the latest from the db:
-		$m2 = MediaPeer::retrieveByPK($m1->getId());
+		$m2 = PropelPeer::MediaPeer::retrieveByPK($m1->getId());
 
 		// now attempt to assign a temporary stream, opened in 'w' mode, to the db
 
@@ -266,3 +270,5 @@ class GeneratedObjectLobTest extends BookstoreTestBase {
 	}
 
 }
+
+?>

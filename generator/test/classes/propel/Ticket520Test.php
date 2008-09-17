@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Model as PropelModel;
+use bookstore::Peer as PropelPeer;
+
 require_once 'bookstore/BookstoreTestBase.php';
 
 /* It's only fair to admit that these tests were carefully crafted
@@ -8,15 +12,15 @@ possible. I am really sorry. :-( */
 class Ticket520Test extends BookstoreTestBase {
 
 	public function testNewObjectsAvailableWhenSaveNotCalled() {
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
-		$b2 = new Book();
+		$b2 = new PropelModel::Book();
 		$b2->setTitle("The Restaurant At The End Of The Universe");
 		$a->addBook($b2);
 
@@ -30,20 +34,20 @@ class Ticket520Test extends BookstoreTestBase {
 
 	public function testNewObjectsWithCriteria() {
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
-		$b2 = new Book();
+		$b2 = new PropelModel::Book();
 		$b2->setTitle("The Restaurant At The End Of The Universe");
 		$a->addBook($b2);
 
-		$c = new Criteria();
-		$c->add(BookPeer::TITLE, "%Hitchhiker%", Criteria::LIKE);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::BookPeer::TITLE, "%Hitchhiker%", ::Criteria::LIKE);
 
 		/* As of revision 851, this fails because new objects like the Author
 		always contain added objects in their internal collection but are unable
@@ -57,20 +61,20 @@ class Ticket520Test extends BookstoreTestBase {
 	}
 
 	public function testSavedObjectsWithCriteria() {
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
-		$b2 = new Book();
+		$b2 = new PropelModel::Book();
 		$b2->setTitle("The Restaurant At The End Of The Universe");
 		$a->addBook($b2);
 
-		$c = new Criteria();
-		$c->add(BookPeer::TITLE, "%Hitchhiker%", Criteria::LIKE);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::BookPeer::TITLE, "%Hitchhiker%", ::Criteria::LIKE);
 
 		/* This is the same as testNewObjectsWithCriteria EXCEPT we're now going
 		to save(). Now the $author and related objects are no longer new
@@ -98,13 +102,13 @@ class Ticket520Test extends BookstoreTestBase {
 		/* This is like testNewObjectsAvailableWhenSaveNotCalled(),
 		but this time we save the author before adding the book. */
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
 		$a->save();
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
@@ -128,14 +132,14 @@ class Ticket520Test extends BookstoreTestBase {
 		but this time we "poison" the author's $colBooks cache
 		before adding the book by calling getBooks(). */
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
 		$a->save();
 		$a->getBooks();
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
@@ -152,18 +156,18 @@ class Ticket520Test extends BookstoreTestBase {
 		/* Like testAddNewObjectAfterSaveWithPoisonedCache, emphasizing
 		cache poisoning. */
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
 		$a->save();
 
-		$c = new Criteria();
-		$c->add(BookPeer::TITLE, "%Restaurant%", Criteria::LIKE);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::BookPeer::TITLE, "%Restaurant%", ::Criteria::LIKE);
 
 		$this->assertEquals(0, count($a->getBooks($c)));
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
@@ -186,15 +190,15 @@ class Ticket520Test extends BookstoreTestBase {
 	}
 
 	public function testDeletedBookDisappears() {
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$a->addBook($b1);
 
-		$b2 = new Book();
+		$b2 = new PropelModel::Book();
 		$b2->setTitle("The Restaurant At The End Of The Universe");
 		$a->addBook($b2);
 
@@ -220,19 +224,19 @@ class Ticket520Test extends BookstoreTestBase {
 		the current object is new, it will always consult the DB and lose the
 		new objects entirely. Thus the test fails. (At least for Propel 1.2 ?!?) */
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Douglas");
 		$a->setLastName("Adams");
 
-		$p = new Publisher();
+		$p = new PropelModel::Publisher();
 		$p->setName('Pan Books Ltd.');
 
-		$b1 = new Book();
+		$b1 = new PropelModel::Book();
 		$b1->setTitle("The Hitchhikers Guide To The Galaxy");
 		$b1->setPublisher($p); // uh... did not check that :^)
 		$a->addBook($b1);
 
-		$b2 = new Book();
+		$b2 = new PropelModel::Book();
 		$b2->setTitle("The Restaurant At The End Of The Universe");
 		$b2->setPublisher($p);
 		$a->addBook($b2);
@@ -248,3 +252,5 @@ class Ticket520Test extends BookstoreTestBase {
 	}
 
 }
+
+?>

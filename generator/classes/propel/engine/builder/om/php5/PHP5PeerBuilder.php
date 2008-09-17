@@ -29,10 +29,10 @@ require_once 'propel/engine/builder/om/PeerBuilder.php';
  * the custom-built query and manipulator methods.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
-class PHP5PeerBuilder extends PeerBuilder {
-
+class PHP5PeerBuilder extends PeerBuilder {	
 	/**
 	 * Validates the current table to make sure that it won't
 	 * result in generated code that will not parse.
@@ -120,7 +120,7 @@ class PHP5PeerBuilder extends PeerBuilder {
 		$script .= "
  * @package    ".$this->getPackage()."
  */
-abstract class ".$this->getClassname(). $extendingPeerClass . " {
+abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 ";
 	}
 
@@ -147,6 +147,9 @@ abstract class ".$this->getClassname(). $extendingPeerClass . " {
 		$table = $this->getTable();
 		$mapBuilderFile = $this->getMapBuilderBuilder()->getClassFilePath();
 
+		
+		
+		
 		$script .= "
 // This is the static code needed to register the MapBuilder for this table with the main Propel class.
 //
@@ -157,8 +160,7 @@ abstract class ".$this->getClassname(). $extendingPeerClass . " {
 //
 // Doing so will effectively overwrite the registration below.
 
-Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilder(".$this->getClassname()."::TABLE_NAME, ".$this->getClassname()."::getMapBuilder());
-
+".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDatabaseMap(".$this->getClassname(true)."::DATABASE_NAME)->addTableBuilder(".$this->getClassname(true)."::TABLE_NAME, ".$this->getClassname(true)."::getMapBuilder());
 ";
 	}
 
@@ -230,7 +232,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$table = $this->getTable();
 
 		$tableColumns = $table->getColumns();
-
+		
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * holds an array of fieldnames
@@ -239,27 +243,27 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * e.g. self::\$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
 	 */
 	private static \$fieldNames = array (
-		BasePeer::TYPE_PHPNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME => array (";
 		foreach ($tableColumns as $col) {
 			$script .= "'".$col->getPhpName()."', ";
 		}
 		$script .= "),
-		BasePeer::TYPE_STUDLYPHPNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_STUDLYPHPNAME => array (";
 		foreach ($tableColumns as $col) {
 			$script .= "'".$col->getStudlyPhpName()."', ";
 		}
 		$script .= "),
-		BasePeer::TYPE_COLNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_COLNAME => array (";
 		foreach ($tableColumns as $col) {
 			$script .= $this->getColumnConstant($col, 'self').", ";
 		}
 		$script .= "),
-		BasePeer::TYPE_FIELDNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_FIELDNAME => array (";
 		foreach ($tableColumns as $col) {
 			$script .= "'".$col->getName()."', ";
 		}
 		$script .= "),
-		BasePeer::TYPE_NUM => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_NUM => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= "$num, ";
 		}
@@ -274,6 +278,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		$tableColumns = $table->getColumns();
 
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * holds an array of keys for quick access to the fieldnames array
@@ -282,27 +288,27 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * e.g. self::\$fieldNames[BasePeer::TYPE_PHPNAME]['Id'] = 0
 	 */
 	private static \$fieldKeys = array (
-		BasePeer::TYPE_PHPNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= "'".$col->getPhpName()."' => $num, ";
 		}
 		$script .= "),
-		BasePeer::TYPE_STUDLYPHPNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_STUDLYPHPNAME => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= "'".$col->getStudlyPhpName()."' => $num, ";
 		}
 		$script .= "),
-		BasePeer::TYPE_COLNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_COLNAME => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= $this->getColumnConstant($col, 'self')." => $num, ";
 		}
 		$script .= "),
-		BasePeer::TYPE_FIELDNAME => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_FIELDNAME => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= "'".$col->getName()."' => $num, ";
 		}
 		$script .= "),
-		BasePeer::TYPE_NUM => array (";
+		".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_NUM => array (";
 		foreach ($tableColumns as $num => $col) {
 			$script .= "$num, ";
 		}
@@ -314,6 +320,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 	protected function addGetFieldNames(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Returns an array of field names.
@@ -324,10 +332,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @return     array A list of field names
 	 */
 
-	static public function getFieldNames(\$type = BasePeer::TYPE_PHPNAME)
+	static public function getFieldNames(\$type = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."BasePeer::TYPE_PHPNAME)
 	{
 		if (!array_key_exists(\$type, self::\$fieldNames)) {
-			throw new PropelException('Method getFieldNames() expects the parameter \$type to be one of the class constants BasePeer::TYPE_PHPNAME, BasePeer::TYPE_STUDLYPHPNAME, BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME, BasePeer::TYPE_NUM. ' . \$type . ' was given.');
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Method getFieldNames() expects the parameter \$type to be one of the class constants BasePeer::TYPE_PHPNAME, BasePeer::TYPE_STUDLYPHPNAME, BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME, BasePeer::TYPE_NUM. ' . \$type . ' was given.');
 		}
 		return self::\$fieldNames[\$type];
 	}
@@ -337,6 +345,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 	protected function addTranslateFieldName(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Translates a fieldname to another type
@@ -353,7 +363,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$toNames = self::getFieldNames(\$toType);
 		\$key = isset(self::\$fieldKeys[\$fromType][\$name]) ? self::\$fieldKeys[\$fromType][\$name] : null;
 		if (\$key === null) {
-			throw new PropelException(\"'\$name' could not be found in the field names of type '\$fromType'. These are: \" . print_r(self::\$fieldKeys[\$fromType], true));
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"'\$name' could not be found in the field names of type '\$fromType'. These are: \" . print_r(self::\$fieldKeys[\$fromType], true));
 		}
 		return \$toNames[\$key];
 	}
@@ -366,6 +376,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addGetMapBuilder(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Get a (singleton) instance of the MapBuilder for this peer class.
@@ -466,7 +478,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function addSelectColumns(Criteria \$criteria)
+	public static function addSelectColumns(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria)
 	{
 ";
 		foreach ($this->getTable()->getColumns() as $col) {
@@ -487,6 +499,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoCount(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Returns the number of rows matching criteria.
@@ -496,7 +510,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      PropelPDO \$con
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCount(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null)
+	public static function doCount(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, \$distinct = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		// we may modify criteria, so copy it first
 		\$criteria = clone \$criteria;
@@ -506,7 +520,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// tables go into the FROM clause.
 		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
 
-		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+		if (\$distinct && !in_array(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
 			\$criteria->setDistinct();
 		}
 
@@ -518,10 +532,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->setDbName(self::DATABASE_NAME); // Set the correct dbName
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 		// BasePeer returns a PDOStatement
-		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
@@ -569,7 +583,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      string &$script
 	 **/
 	protected function addDoSelectOneOpen (&$script) {
-		$script .= "	public static function doSelectOne(Criteria \$criteria, PropelPDO \$con = null)
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
+		$script .= "	public static function doSelectOne(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 ";
 	}
@@ -616,6 +632,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoSelect(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Method to do selects.
@@ -626,7 +644,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelect(Criteria \$criteria, PropelPDO \$con = null)
+	public static function doSelect(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return ".$this->getPeerClassname()."::populateObjects(".$this->getPeerClassname()."::doSelectStmt(\$criteria, \$con));
 	}";
@@ -638,7 +656,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoSelectStmt(&$script)
 	{
-
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Prepares the Criteria object and uses the parent doSelect() method to execute a PDOStatement.
@@ -653,10 +672,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @return     PDOStatement The executed PDOStatement object.
 	 * @see        ".$this->basePeerClassname."::doSelect()
 	 */
-	public static function doSelectStmt(Criteria \$criteria, PropelPDO \$con = null)
+	public static function doSelectStmt(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 
 		if (!\$criteria->hasSelectClause()) {
@@ -668,7 +687,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->setDbName(self::DATABASE_NAME);
 
 		// BasePeer returns a PDOStatement
-		return ".$this->basePeerClassname."::doSelect(\$criteria, \$con);
+		return ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$criteria, \$con);
 	}";
 	}
 
@@ -700,6 +719,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addAddInstanceToPool(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -716,7 +737,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	public static function addInstanceToPool(".$this->getObjectClassname()." \$obj, \$key = null)
 	{
-		if (Propel::isInstancePoolingEnabled()) {
+		if (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::isInstancePoolingEnabled()) {
 			if (\$key === null) {";
 
 		$pks = $this->getTable()->getPrimaryKey();
@@ -741,6 +762,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addRemoveInstanceFromPool(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -756,7 +779,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function removeInstanceFromPool(\$value)
 	{";
 		$script .= "
-		if (Propel::isInstancePoolingEnabled() && \$value !== null) {";
+		if (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::isInstancePoolingEnabled() && \$value !== null) {";
 		$pks = $table->getPrimaryKey();
 
 		$script .= "
@@ -785,7 +808,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 				\$key = ".$this->getInstancePoolKeySnippet($php).";";
 		$script .= "
 			} else {
-				\$e = new PropelException(\"Invalid value passed to removeInstanceFromPool().  Expected primary key or ".$this->getObjectClassname()." object; got \" . (is_object(\$value) ? get_class(\$value) . ' object.' : var_export(\$value,true)));
+				\$e = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"Invalid value passed to removeInstanceFromPool().  Expected primary key or ".$this->getObjectClassname()." object; got \" . (is_object(\$value) ? get_class(\$value) . ' object.' : var_export(\$value,true)));
 				throw \$e;
 			}
 
@@ -820,6 +843,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addGetInstanceFromPool(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$script .= "
 	/**
 	 * Retrieves a string version of the primary key from the DB resultset row that can be used to uniquely identify a row in this table.
@@ -833,7 +858,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	public static function getInstanceFromPool(\$key)
 	{
-		if (Propel::isInstancePoolingEnabled()) {
+		if (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::isInstancePoolingEnabled()) {
 			if (isset(self::\$instances[\$key])) {
 				return self::\$instances[\$key];
 			}
@@ -999,6 +1024,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addGetOMClass_Inheritance(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$col = $this->getTable()->getChildrenColumn();
 		$script .= "
 	/**
@@ -1043,7 +1070,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		}
 		$script .= "
 		} catch (Exception \$e) {
-			throw new PropelException('Unable to get OM class.', \$e);
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Unable to get OM class.', \$e);
 		}
 		return \$omClass;
 	}
@@ -1119,6 +1146,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoInsert(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -1130,13 +1159,13 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doInsert(\$values, PropelPDO \$con = null)
+	public static function doInsert(\$values, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 
-		if (\$values instanceof Criteria) {
+		if (\$values instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria) {
 			\$criteria = clone \$values; // rename for clarity
 		} else {
 			\$criteria = \$values->buildCriteria(); // build Criteria from ".$this->getObjectClassname()." object
@@ -1148,7 +1177,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			if ($col->isPrimaryKey() && $col->isAutoIncrement() && $table->getIdMethod() != "none" && !$table->isAllowPkInsert()) {
 				$script .= "
 		if (\$criteria->containsKey(".$this->getColumnConstant($col).") && \$criteria->keyContainsValue(" . $this->getColumnConstant($col) . ") ) {
-			throw new PropelException('Cannot insert a value for auto-increment primary key ('.".$this->getColumnConstant($col).".')');
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Cannot insert a value for auto-increment primary key ('.".$this->getColumnConstant($col).".')');
 		}
 ";
 			}
@@ -1162,9 +1191,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			// use transaction because \$criteria could contain info
 			// for more than one table (I guess, conceivably)
 			\$con->beginTransaction();
-			\$pk = ".$this->basePeerClassname."::doInsert(\$criteria, \$con);
+			\$pk = ".$this->getNamespaceQualifiedBasePeer()."::doInsert(\$criteria, \$con);
 			\$con->commit();
-		} catch(PropelException \$e) {
+		} catch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}
@@ -1180,6 +1209,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoUpdate(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -1191,15 +1222,15 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doUpdate(\$values, PropelPDO \$con = null)
+	public static function doUpdate(\$values, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 
-		\$selectCriteria = new Criteria(self::DATABASE_NAME);
+		\$selectCriteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(self::DATABASE_NAME);
 
-		if (\$values instanceof Criteria) {
+		if (\$values instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria) {
 			\$criteria = clone \$values; // rename for clarity
 ";
 		foreach ($table->getColumns() as $col) {
@@ -1220,7 +1251,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// set the correct dbName
 		\$criteria->setDbName(self::DATABASE_NAME);
 
-		return {$this->basePeerClassname}::doUpdate(\$selectCriteria, \$criteria, \$con);
+		return ".$this->getNamespaceQualifiedBasePeer()."::doUpdate(\$selectCriteria, \$criteria, \$con);
 	}
 ";
 	}
@@ -1231,6 +1262,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoDeleteAll(&$script)
 	{
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -1241,7 +1273,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	public static function doDeleteAll(\$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 		\$affectedRows = 0; // initialize var to track total num of affected rows
 		try {
@@ -1250,17 +1282,17 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			\$con->beginTransaction();
 			";
 		if ($this->isDeleteCascadeEmulationNeeded()) {
-			$script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new Criteria(".$this->getPeerClassname()."::DATABASE_NAME), \$con);
+			$script .="\$affectedRows += ".$this->getPeerClassname()."::doOnDeleteCascade(new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME), \$con);
 			";
 		}
 		if ($this->isDeleteSetNullEmulationNeeded()) {
-			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(new Criteria(".$this->getPeerClassname() . "::DATABASE_NAME), \$con);
+			$script .= $this->getNamespaceQualifier(self::NAMESPACE_PEER).$this->getPeerClassname() . "::doOnDeleteSetNull(new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$this->getPeerClassname() . "::DATABASE_NAME), \$con);
 			";
 		}
-		$script .= "\$affectedRows += {$this->basePeerClassname}::doDeleteAll(".$this->getPeerClassname()."::TABLE_NAME, \$con);
+		$script .= "\$affectedRows += ".$this->getNamespaceQualifiedBasePeer()."::doDeleteAll(".$this->getPeerClassname()."::TABLE_NAME, \$con);
 			\$con->commit();
 			return \$affectedRows;
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}
@@ -1274,6 +1306,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addDoDelete(&$script)
 	{
+		// Adjust the references to Propel runtime classes if we are using namespaces
+		
 		$table = $this->getTable();
 		$script .= "
 	/**
@@ -1287,13 +1321,13 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	 public static function doDelete(\$values, PropelPDO \$con = null)
+	 public static function doDelete(\$values, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	 {
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_WRITE);
 		}
 
-		if (\$values instanceof Criteria) {
+		if (\$values instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria) {
 			// invalidate the cache for all objects of this type, since we have no
 			// way of knowing (without running a query) what objects should be invalidated
 			// from the cache based on this Criteria.
@@ -1321,13 +1355,13 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 
 
-			\$criteria = new Criteria(self::DATABASE_NAME);";
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(self::DATABASE_NAME);";
 
 		if (count($table->getPrimaryKey()) === 1) {
 			$pkey = $table->getPrimaryKey();
 			$col = array_shift($pkey);
 			$script .= "
-			\$criteria->add(".$this->getColumnConstant($col).", (array) \$values, Criteria::IN);
+			\$criteria->add(".$this->getColumnConstant($col).", (array) \$values, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::IN);
 
 			foreach ((array) \$values as \$singleval) {
 				// we can invalidate the cache for this single object
@@ -1384,7 +1418,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			";
 		}
 		if ($this->isDeleteSetNullEmulationNeeded()) {
-			$script .= $this->getPeerClassname() . "::doOnDeleteSetNull(\$criteria, \$con);
+			$script .= $this->getNamespaceQualifier(self::NAMESPACE_PEER).$this->getPeerClassname() . "::doOnDeleteSetNull(\$criteria, \$con);
 			";
 		}
 
@@ -1402,7 +1436,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		}
 
 		$script .= "
-			\$affectedRows += {$this->basePeerClassname}::doDelete(\$criteria, \$con);
+			\$affectedRows += ".$this->getNamespaceQualifiedBasePeer()."::doDelete(\$criteria, \$con);
 ";
 		// Handle ON DELETE CASCADE for updating instance pool
 
@@ -1440,7 +1474,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 			\$con->commit();
 			return \$affectedRows;
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)." PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}
@@ -1469,7 +1503,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      PropelPDO \$con
 	 * @return     int The number of affected rows (if supported by underlying database driver).
 	 */
-	protected static function doOnDeleteCascade(Criteria \$criteria, PropelPDO \$con)
+	protected static function doOnDeleteCascade(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, PropelPDO \$con)
 	{
 		// initialize var to track total num of affected rows
 		\$affectedRows = 0;
@@ -1505,7 +1539,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					$script .= "
 
 			// delete related $fkClassName objects
-			\$c = new Criteria(".$joinedTablePeerBuilder->getPeerClassname()."::DATABASE_NAME);
+			\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$joinedTablePeerBuilder->getPeerClassname()."::DATABASE_NAME);
 			";
 					for ($x=0,$xlen=count($columnNamesF); $x < $xlen; $x++) {
 						$columnFK = $tblFK->getColumn($columnNamesF[$x]);
@@ -1550,7 +1584,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      PropelPDO \$con
 	 * @return     void
 	 */
-	protected static function doOnDeleteSetNull(Criteria \$criteria, PropelPDO \$con)
+	protected static function doOnDeleteSetNull(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, PropelPDO \$con)
 	{
 
 		// first find the objects that are implicated by the \$criteria
@@ -1585,8 +1619,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					$columnNamesL = $fk->getForeignColumns(); // should be same num as foreign
 					$script .= "
 			// set fkey col in related $fkClassName rows to NULL
-			\$selectCriteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
-			\$updateValues = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
+			\$selectCriteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+			\$updateValues = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
 
 					for ($x=0,$xlen=count($columnNamesF); $x < $xlen; $x++) {
 						$columnFK = $tblFK->getColumn($columnNamesF[$x]);
@@ -1598,7 +1632,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					}
 
 					$script .= "
-					{$this->basePeerClassname}::doUpdate(\$selectCriteria, \$updateValues, \$con); // use BasePeer because generated Peer doUpdate() methods only update using pkey
+					".$this->getNamespaceQualifiedBasePeer()."::doUpdate(\$selectCriteria, \$updateValues, \$con); // use BasePeer because generated Peer doUpdate() methods only update using pkey
 ";
 				} // if setnull && fkey table name != curr table name
 			} // if not for ref only
@@ -1635,7 +1669,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$columns = array();
 
 		if (\$cols) {
-			\$dbMap = Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME);
+			\$dbMap = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDatabaseMap(".$this->getPeerClassname()."::DATABASE_NAME);
 			\$tableMap = \$dbMap->getTable(".$this->getPeerClassname()."::TABLE_NAME);
 
 			if (! is_array(\$cols)) {
@@ -1663,7 +1697,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		$script .= "
 		}
 
-		return {$this->basePeerClassname}::doValidate(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getPeerClassname()."::TABLE_NAME, \$columns);
+		return ".$this->getNamespaceQualifiedBasePeer()."::doValidate(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getPeerClassname()."::TABLE_NAME, \$columns);
 	}
 ";
 	} // end addDoValidate()
@@ -1704,7 +1738,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function addRetrieveByPK_SinglePKOpen(&$script) {
 		$script .= "
-	public static function ".$this->getRetrieveMethodName()."(\$pk, PropelPDO \$con = null)
+	public static function ".$this->getRetrieveMethodName()."(\$pk, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{";
 	}
 
@@ -1723,10 +1757,10 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		}
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);
 		\$criteria->add(".$this->getColumnConstant($col).", \$pk);
 
 		\$v = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);";
@@ -1770,20 +1804,20 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function ".$this->getRetrieveMethodName()."s(\$pks, PropelPDO \$con = null)
+	public static function ".$this->getRetrieveMethodName()."s(\$pks, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 
 		\$objs = null;
 		if (empty(\$pks)) {
 			\$objs = array();
 		} else {
-			\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
 		$k1 = $table->getPrimaryKey();
 		$script .= "
-			\$criteria->add(".$this->getColumnConstant($k1[0]).", \$pks, Criteria::IN);";
+			\$criteria->add(".$this->getColumnConstant($k1[0]).", \$pks, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::IN);";
 		$script .= "
 			\$objs = ".$this->getPeerClassname()."::doSelect(\$criteria, \$con);
 		}
@@ -1823,7 +1857,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 		$script .= implode(', ', $php);
 
-		$script .= ", PropelPDO \$con = null) {
+		$script .= ", ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null) {
 		\$key = ".$this->getInstancePoolKeySnippet($php).";";
  		$script .= "
  		if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(\$key))) {
@@ -1831,9 +1865,9 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		}
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
-		\$criteria = new Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria(".$this->getPeerClassname()."::DATABASE_NAME);";
 		foreach ($table->getPrimaryKey() as $col) {
 			$clo = strtolower($col->getName());
 			$script .= "
@@ -1862,7 +1896,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	public static function getTableMap()
 	{
-		return Propel::getDatabaseMap(self::DATABASE_NAME)->getTable(self::TABLE_NAME);
+		return ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDatabaseMap(self::DATABASE_NAME)->getTable(self::TABLE_NAME);
 	}
 ";
 	}
@@ -1964,12 +1998,12 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
+	public static function doSelectJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
 		// Set the correct dbName if it has not been overridden
-		if (\$c->getDbName() == Propel::getDefaultDB()) {
+		if (\$c->getDbName() == ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDefaultDB()) {
 			\$c->setDbName(self::DATABASE_NAME);
 		}
 
@@ -2001,7 +2035,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 							}
 						}
 						$script .= "), \$join_behavior);
-		\$stmt = ".$this->basePeerClassname."::doSelect(\$c, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
@@ -2050,7 +2084,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					".$joinedTablePeerBuilder->getPeerClassname()."::addInstanceToPool(\$obj2, \$key2);
 				} // if obj2 already loaded
 
-				// Add the \$obj1 (".$this->getObjectClassname().") to \$obj2 (".$joinedTablePeerBuilder->getObjectClassname().")
+				// Add the \$obj1 (".$this->getObjectClassname().") to \$obj2 (".$this->getNamespaceQualifier(self::NAMESPACE_OM).$joinedTablePeerBuilder->getObjectClassname().")
 				\$obj2->".($fk->isLocalPrimaryKey() ? 'set' : 'add') . $joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);
 
 			} // if joined row was not null
@@ -2106,7 +2140,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
+	public static function doCountJoin".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, \$distinct = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
@@ -2116,7 +2150,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// tables go into the FROM clause.
 		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
 
-		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+		if (\$distinct && !in_array(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
 			\$criteria->setDistinct();
 		}
 
@@ -2130,7 +2164,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->setDbName(self::DATABASE_NAME);
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 ";
 
@@ -2157,7 +2191,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 							}
 						}
 						$script .= "), \$join_behavior);
-		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
@@ -2197,12 +2231,12 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAll(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
+	public static function doSelectJoinAll(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
 		// Set the correct dbName if it has not been overridden
-		if (\$c->getDbName() == Propel::getDefaultDB()) {
+		if (\$c->getDbName() == ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDefaultDB()) {
 			\$c->setDbName(self::DATABASE_NAME);
 		}
 
@@ -2264,7 +2298,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		}
 
 		$script .= "
-		\$stmt = ".$this->basePeerClassname."::doSelect(\$c, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
@@ -2342,7 +2376,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 
 				// Add the \$obj1 (".$this->getObjectClassname().") to the collection in \$obj".$index." (".$joinedTablePeerBuilder->getObjectClassname().")
 				".($fk->isLocalPrimaryKey() ?
-				"\$obj1->set".$joinedTablePeerBuilder->getObjectClassname()."(\$obj".$index.");" :
+				"\$obj1->set".$joinedTablePeerBuilder->getObjectClassname(false)."(\$obj".$index.");" :
 				"\$obj".$index."->add".$joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);")."
 			} // if joined row not null
 ";
@@ -2382,7 +2416,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAll(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
+	public static function doCountJoinAll(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, \$distinct = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
@@ -2392,7 +2426,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// tables go into the FROM clause.
 		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
 
-		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+		if (\$distinct && !in_array(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
 			\$criteria->setDistinct();
 		}
 
@@ -2406,7 +2440,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->setDbName(self::DATABASE_NAME);
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 ";
 
@@ -2445,7 +2479,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		} // foreach [sub] foreign keys
 
 		$script .= "
-		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
@@ -2500,14 +2534,14 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @throws     PropelException Any exceptions caught during processing will be
 	 *		 rethrown wrapped into a PropelException.
 	 */
-	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
+	public static function doSelectJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$c, \$con = null, \$join_behavior = $join_behavior)
 	{
 		\$c = clone \$c;
 
 		// Set the correct dbName if it has not been overridden
 		// \$c->getDbName() will return the same object if not set to another value
 		// so == check is okay and faster
-		if (\$c->getDbName() == Propel::getDefaultDB()) {
+		if (\$c->getDbName() == ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getDefaultDB()) {
 			\$c->setDbName(self::DATABASE_NAME);
 		}
 
@@ -2526,8 +2560,8 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					if ($joinClassName != $excludedClassName) {
 						$new_index = $index + 1;
 						$script .= "
-		".$joinTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$c);
-		\$startcol$new_index = \$startcol$index + (".$joinTablePeerBuilder->getPeerClassname()."::NUM_COLUMNS - ".$joinTablePeerBuilder->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS);
+		".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$c);
+		\$startcol$new_index = \$startcol$index + (".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::NUM_COLUMNS - ".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS);
 ";
 						$index = $new_index;
 					} // if joinClassName not excludeClassName
@@ -2571,7 +2605,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 			} // foreach fkeys
 			$script .= "
 
-		\$stmt = ".$this->basePeerClassname ."::doSelect(\$c, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
 		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
@@ -2646,7 +2680,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 					".$joinedTablePeerBuilder->getPeerClassname()."::addInstanceToPool(\$obj$index, \$key$index);
 				} // if \$obj$index already loaded
 
-				// Add the \$obj1 (".$this->getObjectClassname().") to the collection in \$obj".$index." (".$joinedTablePeerBuilder->getObjectClassname().")
+				// Add the \$obj1 (".$this->getObjectClassname().") to the collection in \$obj".$index." (".$this->getNamespaceQualifier(self::NAMESPACE_OM).$joinedTablePeerBuilder->getObjectClassname().")
 				\$obj".$index."->".($fk->isLocalPrimaryKey() ? 'set' : 'add') . $joinedTableObjectBuilder->getRefFKPhpNameAffix($fk, $plural = false)."(\$obj1);
 
 			} // if joined row is not null
@@ -2699,7 +2733,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 * @param      String    \$join_behavior the type of joins to use, defaults to $join_behavior
 	 * @return     int Number of matching rows.
 	 */
-	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(Criteria \$criteria, \$distinct = false, PropelPDO \$con = null, \$join_behavior = $join_behavior)
+	public static function doCountJoinAllExcept".$thisTableObjectBuilder->getFKPhpNameAffix($fk, $plural = false)."(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, \$distinct = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null, \$join_behavior = $join_behavior)
 	{
 		// we're going to modify criteria, so copy it first
 		\$criteria = clone \$criteria;
@@ -2709,7 +2743,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		// tables go into the FROM clause.
 		\$criteria->setPrimaryTableName(".$this->getPeerClassname()."::TABLE_NAME);
 		
-		if (\$distinct && !in_array(Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
+		if (\$distinct && !in_array(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::DISTINCT, \$criteria->getSelectModifiers())) {
 			\$criteria->setDistinct();
 		}
 
@@ -2723,7 +2757,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 		\$criteria->setDbName(self::DATABASE_NAME);
 
 		if (\$con === null) {
-			\$con = Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, Propel::CONNECTION_READ);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection(".$this->getPeerClassname()."::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
 		}
 	";
 
@@ -2763,7 +2797,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 				}
 			} // foreach fkeys
 			$script .= "
-		\$stmt = ".$this->basePeerClassname."::doCount(\$criteria, \$con);
+		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
 		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
@@ -2785,7 +2819,7 @@ Propel::getDatabaseMap(".$this->getClassname()."::DATABASE_NAME)->addTableBuilde
 	 */
 	protected function getJoinBehavior()
 	{
-		return $this->getGeneratorConfig()->getBuildProperty('useLeftJoinsInDoJoinMethods') ? 'Criteria::LEFT_JOIN' : 'Criteria::INNER_JOIN';
+		return $this->getGeneratorConfig()->getBuildProperty('useLeftJoinsInDoJoinMethods') ? $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).'Criteria::LEFT_JOIN' : $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).'Criteria::INNER_JOIN';
 	}
 
 } // PHP5PeerBuilder

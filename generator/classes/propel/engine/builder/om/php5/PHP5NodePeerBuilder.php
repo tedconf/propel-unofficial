@@ -32,6 +32,7 @@ require_once 'propel/engine/builder/om/PeerBuilder.php';
  * to customize (through extending & overriding).
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
 class PHP5NodePeerBuilder extends PeerBuilder {
@@ -90,7 +91,7 @@ class PHP5NodePeerBuilder extends PeerBuilder {
 		$script .= "
  * @package    ".$this->getPackage()."
  */
-abstract class ".$this->getClassname()." {
+abstract class ".$this->getClassname(false)." {
 ";
 	}
 
@@ -174,7 +175,7 @@ abstract class ".$this->getClassname()." {
 	public static function isCodeBase(\$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection($peerClassname::DATABASE_NAME);
 
 		return (get_class(\$con) == 'ODBCConnection' &&
 				get_class(\$con->getAdapter()) == 'CodeBaseAdapter');
@@ -199,14 +200,14 @@ abstract class ".$this->getClassname()." {
 	 * Use at your own risk!
 	 *
 	 * @param      $objectClassname Object wrapped by new node.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     $nodeObjectClassname
-	 * @throws     PropelException
+	 * @throws      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
-	public static function createNewRootNode(\$obj, PropelPDO \$con = null)
+	public static function createNewRootNode(\$obj, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		
 		\$con->beginTransaction();
 		
@@ -219,7 +220,7 @@ abstract class ".$this->getClassname()." {
 			\$obj->save(\$con);
 
 			\$con->commit();
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}
@@ -244,14 +245,14 @@ abstract class ".$this->getClassname()." {
 	 * safer alternative to createNewRootNode().
 	 *
 	 * @param      $objectClassname Object wrapped by new node.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     $nodeObjectClassname
-	 * @throws     PropelException
+	 * @throws      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
-	public static function insertNewRootNode(\$obj, PropelPDO \$con = null)
+	public static function insertNewRootNode(\$obj, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 		
 		\$con->beginTransaction();
 		try {
@@ -268,7 +269,7 @@ abstract class ".$this->getClassname()." {
 			$nodePeerClassname::moveNodeSubTree('0', '1' . self::NPATH_SEP . '1', \$con);
 
 			\$con->commit();
-		} catch (PropelException \$e) {
+		} catch (".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException \$e) {
 			\$con->rollBack();
 			throw \$e;
 		}
@@ -300,13 +301,13 @@ abstract class ".$this->getClassname()." {
 	 * Retrieves an array of tree nodes based on specified criteria. Optionally
 	 * includes all parent and/or child nodes of the matching nodes.
 	 *
-	 * @param      Criteria Criteria to use.
+	 * @param      ".$this->getNamespaceQualifier(self::GLOBAL_NAMESPACE)."Criteria Criteria to use.
 	 * @param      boolean True if ancestors should also be retrieved.
 	 * @param      boolean True if descendants should also be retrieved.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     array Array of root nodes.
 	 */
-	public static function retrieveNodes(\$criteria, \$ancestors = false, \$descendants = false, PropelPDO \$con = null)
+	public static function retrieveNodes(\$criteria, \$ancestors = false, \$descendants = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$criteria = $nodePeerClassname::buildFamilyCriteria(\$criteria, \$ancestors, \$descendants);
 		\$stmt = ".$this->getStubPeerBuilder()->getClassname()."::doSelectStmt(\$criteria, \$con);
@@ -331,12 +332,12 @@ abstract class ".$this->getClassname()." {
 	 * @param      mixed $objectClassname primary key (array for composite keys)
 	 * @param      boolean True if ancestors should also be retrieved.
 	 * @param      boolean True if descendants should also be retrieved.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     $nodeObjectClassname
 	 */
-	public static function retrieveNodeByPK(\$pk, \$ancestors = false, \$descendants = false, PropelPDO \$con = null)
+	public static function retrieveNodeByPK(\$pk, \$ancestors = false, \$descendants = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
-		throw new PropelException('retrieveNodeByPK() not implemented yet.');
+		throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('retrieveNodeByPK() not implemented yet.');
 	}
 ";
 	}
@@ -357,12 +358,12 @@ abstract class ".$this->getClassname()." {
 	 * @param      string Node path to retrieve.
 	 * @param      boolean True if ancestors should also be retrieved.
 	 * @param      boolean True if descendants should also be retrieved.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     $objectClassname
 	 */
-	public static function retrieveNodeByNP(\$np, \$ancestors = false, \$descendants = false, PropelPDO \$con = null)
+	public static function retrieveNodeByNP(\$np, \$ancestors = false, \$descendants = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
-		\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$criteria->add(self::NPATH_COLNAME, \$np, Criteria::EQUAL);
 		\$criteria = self::buildFamilyCriteria(\$criteria, \$ancestors, \$descendants);
 		\$stmt = $peerClassname::doSelectStmt(\$criteria, \$con);
@@ -380,10 +381,10 @@ abstract class ".$this->getClassname()." {
 	 *
 	 * @param      string Node path to retrieve.
 	 * @param      boolean True if descendants should also be retrieved.
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     ".$this->getStubNodeBuilder()->getClassname()."
 	 */
-	public static function retrieveRootNode(\$descendants = false, PropelPDO \$con = null)
+	public static function retrieveRootNode(\$descendants = false, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return self::retrieveNodeByNP('1', false, \$descendants, \$con);
 	}
@@ -409,21 +410,21 @@ abstract class ".$this->getClassname()." {
 	 *
 	 * @param      string Source node path to move (root of the src subtree).
 	 * @param      string Destination node path to move to (root of the dst subtree).
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     void
-	 * @throws     PropelException
+	 * @throws      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 * @todo       This is currently broken for simulated 'onCascadeDelete's.
 	 * @todo       Need to abstract the SQL better. The CONCAT sql function doesn't
 	 *       seem to be standardized (i.e. mssql), so maybe it needs to be moved
 	 *       to DBAdapter.
 	 */
-	public static function moveNodeSubTree(\$srcPath, \$dstPath, PropelPDO \$con = null)
+	public static function moveNodeSubTree(\$srcPath, \$dstPath, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (substr(\$dstPath, 0, strlen(\$srcPath)) == \$srcPath)
-			throw new PropelException('Cannot move a node subtree within itself.');
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Cannot move a node subtree within itself.');
 
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 
 		/**
 		 * Example:
@@ -436,7 +437,7 @@ abstract class ".$this->getClassname()." {
 		//the following dot isn`t mean`t a nodeKeySeperator
 		\$setcol = substr(\$npath, strrpos(\$npath, '.')+1);
 		\$setcollen = $nodePeerClassname::NPATH_LEN;
-		\$db = Propel::getDb($peerClassname::DATABASE_NAME);
+		\$db = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Prope::getDb($peerClassname::DATABASE_NAME);
 
 		// <hack>
 		if ($nodePeerClassname::isCodeBase(\$con))
@@ -485,22 +486,22 @@ abstract class ".$this->getClassname()." {
 	 * Deletes the node subtree at the specified node path from the database.
 	 *
 	 * @param      string Node path to delete
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     void
-	 * @throws     PropelException
+	 * @throws      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 * @todo       This is currently broken for simulated 'onCascadeDelete's.
 	 */
-	public static function deleteNodeSubTree(\$nodePath, PropelPDO \$con = null)
+	public static function deleteNodeSubTree(\$nodePath, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null)
-			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
+			\$con = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::getConnection($peerClassname::DATABASE_NAME, Propel::CONNECTION_WRITE);
 
 		/**
 		 * DELETE FROM table
 		 * WHERE npath = '1.2.2' OR npath LIKE '1.2.2.%'
 		 */
 
-		\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+		\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$criteria->add($nodePeerClassname::NPATH_COLNAME, \$nodePath, Criteria::EQUAL);
 		\$criteria->addOr($nodePeerClassname::NPATH_COLNAME, \$nodePath . self::NPATH_SEP . '%', Criteria::LIKE);
 		{$this->basePeerClassname}::doDelete(\$criteria, \$con);
@@ -520,7 +521,7 @@ abstract class ".$this->getClassname()." {
 	/**
 	 * Builds the criteria needed to retrieve node ancestors and/or descendants.
 	 *
-	 * @param      Criteria Criteria to start with
+	 * @param      ".$this->getNamespaceQualifier(self::GLOBAL_NAMESPACE)."Criteria Criteria to start with
 	 * @param      boolean True if ancestors should be retrieved.
 	 * @param      boolean True if descendants should be retrieved.
 	 * @return     Criteria
@@ -539,12 +540,12 @@ abstract class ".$this->getClassname()." {
 		*/
 
 		if (\$criteria === null)
-			\$criteria = new Criteria($peerClassname::DATABASE_NAME);
+			\$criteria = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 
 		if (!\$criteria->getSelectColumns())
 			$peerClassname::addSelectColumns(\$criteria);
 
-		\$db = Propel::getDb(\$criteria->getDbName());
+		\$db = ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Prope::getDb(\$criteria->getDbName());
 
 		if ((\$ancestors || \$descendants) && \$criteria->size())
 		{
@@ -587,7 +588,7 @@ abstract class ".$this->getClassname()." {
 				// by right-side node paths.
 				\$a = \$criteria->getNewCriterion(\$npathL,
 								                \"\$npathL=\" . \$db->subString(\$npathR, 1, \$db->strLength(\$npathL), \$npath_len),
-								                Criteria::CUSTOM);
+								                ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::CUSTOM);
 			}
 
 			if (\$descendants)
@@ -596,7 +597,7 @@ abstract class ".$this->getClassname()." {
 				// right-side node paths.
 				\$d = \$criteria->getNewCriterion(\$npathR,
 								                \"\$npathR=\" . \$db->subString(\$npathL, 1, \$db->strLength(\$npathR), \$npath_len),
-								                Criteria::CUSTOM);
+								                ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::CUSTOM);
 			}
 
 			if (\$a)
@@ -709,7 +710,7 @@ abstract class ".$this->getClassname()." {
 	 * the getNode() methods.
 	 *
 	 * @param      PDOStatement \$stmt	Executed PDOStatement
-	 * @param      Criteria
+	 * @param      ".$this->getNamespaceQualifier(self::GLOBAL_NAMESPACE)."Criteria
 	 * @return     array Array of $nodeObjectClassname objects.
 	 */
 	public static function populateNodes(PDOStatement \$stmt, \$criteria)

@@ -31,10 +31,10 @@ require_once 'propel/engine/builder/om/OMBuilder.php';
  * methods.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author 	   Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om
  */
 abstract class PeerBuilder extends OMBuilder {
-
 	protected $basePeerClass;
 	protected $basePeerClassname;
 
@@ -49,7 +49,22 @@ abstract class PeerBuilder extends OMBuilder {
 			$this->basePeerClassname = substr($this->basePeerClassname, $pos + 1);
 		}
 	}
-
+	
+	/**
+	 * Adds the namespace declaration if configured to do so.  
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addNamespace(&$script)
+	{
+		// If not enabled bail.
+		//print_r($this->getGeneratorConfig()); exit;
+		//print $this->getBuildProperty('namespaceEnabled'); die("\n\ndone\n\n");
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
+		
+		$namespaceToUse = $this->getBuildProperty('namespacePeer');
+		$script .= "\nnamespace $namespaceToUse;\n";
+	}
+	
 	/**
 	 * Adds the addSelectColumns(), doCount(), etc. methods.
 	 * @param      string &$script The script will be modified in this method.

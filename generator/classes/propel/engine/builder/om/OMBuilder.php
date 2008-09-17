@@ -30,10 +30,82 @@ require_once 'propel/engine/builder/DataModelBuilder.php';
  * Node classes, Nested Set classes, etc.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om
+ * @todo       Explore if the methods listed in build() shouldn't be defined formally in an
+ *             interface
  */
 abstract class OMBuilder extends DataModelBuilder {
-
+	const NAMESPACE_GLOBAL = 1;
+	const NAMESPACE_OM = 2;
+	const NAMESPACE_PEER = 3;
+	const NAMESPACE_MAP = 4;
+	
+	/**
+	 * Generated code needs to behave differently if we are using 5.3+ namespaces
+	 *
+	 * NOTE: this works gracefully if user has disabled namespaces in their properties file.
+	 * 
+	 * @access protected
+	 * @return string Either empty string when we aren't using namepaces or :: if we are.
+	 * 
+	 */
+    protected function getNamespaceQualifier($nameSpaceToGet = self::NAMESPACE_GLOBAL)
+    {
+    	if ($this->getBuildProperty('namespaceEnabled') <> 1) return '';
+    	switch ($nameSpaceToGet) {
+    		case self::NAMESPACE_GLOBAL:
+    			return '::';
+    		case self::NAMESPACE_MAP:
+    			return $this->getBuildProperty('namespaceMap') . '::';
+    		case self::NAMESPACE_OM:
+    			return $this->getBuildProperty('namespaceOm') . '::';
+    		case self::NAMESPACE_PEER:
+    			return $this->getBuildProperty('namespacePeer') . '::';
+    		default:
+    			throw new Exception('Invalid namespace given');
+    	}
+    }
+    
+	/**
+	 * Gets the base peer classname with fully qualified namespace.
+	 *
+	 * @access protected
+	 * @return string fully qualified classname.
+	 * 
+	 */
+	protected function getNamespaceQualifiedBasePeer()
+	{
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return $this->basePeerClassname;
+		if ($this->basePeerClassname == 'BasePeer') return '::BasePeer';
+		return $this->getNamspaceQualifier(self::NAMESPACE_PEER) . $this->basePeerClassname;
+	}
+	
+	/**
+	 * Takes a class name and prepends the namespace.
+	 * 
+	 * NOTE: this is probably not fail proof
+	 * 
+	 * @access protected
+	 * @param	$clsName	string	Name of class to prepend namespace too.
+	 * @return     string Namespaced class name.
+	 * 
+	 */
+	protected function getNamespacedClassName($clsName)
+	{
+		$newClassName = '';
+		
+		// Hardest one to find is the OM so use it by default
+		$newClassName = $this->getNamespaceQualifier(self::NAMESPACE_OM) . $clsName;
+		
+		// Now adjust if needed.
+		if ($clsName == 'BasePeer') $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL) . $clsName;
+		if (strstr($clsName,'Peer')) $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_PEER) . $clsName;
+		if (strstr($clsName,'MapBuilder')) $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_MAP) . $clsName;
+		
+		return $newClassName;
+	}
+	
 	/**
 	 * Builds the PHP source for current class and returns it as a string.
 	 *
@@ -49,6 +121,7 @@ abstract class OMBuilder extends DataModelBuilder {
 		$this->validateModel();
 
 		$script = "<" . "?php\n"; // intentional concatenation
+		$this->addNamespace($script);
 		$this->addIncludes($script);
 		$this->addClassOpen($script);
 		$this->addClassBody($script);
@@ -88,14 +161,22 @@ abstract class OMBuilder extends DataModelBuilder {
 	abstract public function getUnprefixedClassname();
 
 	/**
-	 * Returns the prefixed clasname that is being built by the current class.
+	 * Returns the prefixed classname that is being built by the current class.
+	 * 
+	 * @param $includeNamespace	boolean If true we will include the namespace prefix with the peer
+	 * classname *if* namespace support was enabled in the properties file.
 	 * @return     string
 	 * @see        DataModelBuilder#prefixClassname()
 	 */
-	public function getClassname()
+	public function getClassname($includeNamespace = true)
 	{
-		return $this->prefixClassname($this->getUnprefixedClassname());
+		if ($this->getBuildProperty('namespaceEnabled') <> 1
+		    OR !$includeNamespace) {
+		    return $this->prefixClassname($this->getUnprefixedClassname());
+		}
+		return $this->getNamespacedClassName($this->prefixClassname($this->getUnprefixedClassname()));
 	}
+	
 	/**
 	 * Gets the dot-path representation of current class being built.
 	 * @return     string
@@ -116,7 +197,7 @@ abstract class OMBuilder extends DataModelBuilder {
 	 */
 	public function getClassFilePath()
 	{
-		return ClassTools::getFilePath($this->getPackage(), $this->getClassname());
+		return ClassTools::getFilePath($this->getPackage(), $this->getClassname(false));
 	}
 
 	/**
@@ -146,22 +227,32 @@ abstract class OMBuilder extends DataModelBuilder {
 	 * Shortcut method to return the [stub] peer classname for current table.
 	 * This is the classname that is used whenever object or peer classes want
 	 * to invoke methods of the peer classes.
+	 * @param $includeNamespace	boolean If true we will include the namespace prefix with the peer
+	 * classname *if* namespace support was enabled in the properties file.
 	 * @return     string (e.g. 'MyPeer')
 	 * @see        StubPeerBuilder::getClassname()
 	 */
-	public function getPeerClassname() {
-		return $this->getStubPeerBuilder()->getClassname();
+	public function getPeerClassname($includeNamespace = true) {
+	
+		if ($this->getBuildProperty('namespaceEnabled') <> 1
+		    OR !$includeNamespace) {
+		    return $this->getStubPeerBuilder()->getClassname(false);
+		}
+	    return $this->getStubPeerBuilder()->getClassname();
 	}
 
 	/**
 	 * Returns the object classname for current table.
 	 * This is the classname that is used whenever object or peer classes want
 	 * to invoke methods of the object classes.
+	 * 
+	 * @param $includeNamespace	boolean If true we will include the namespace prefix with the peer
+	 * classname *if* namespace support was enabled in the properties file.
 	 * @return     string (e.g. 'My')
 	 * @see        StubPeerBuilder::getClassname()
 	 */
-	public function getObjectClassname() {
-		return $this->getStubObjectBuilder()->getClassname();
+	public function getObjectClassname($includeNamespace = true) {
+		return $this->getStubObjectBuilder()->getClassname($includeNamespace);
 	}
 
 	/**

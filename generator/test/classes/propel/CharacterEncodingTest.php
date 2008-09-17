@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+use bookstore::Model as PropelModel;
+
 /*
  *  $Id: GeneratedPeerTest.php 842 2007-12-02 16:28:20Z heltem $
  *
@@ -53,20 +57,20 @@ class CharacterEncodingTest extends BookstoreTestBase {
 
 	public function testUtf8()
 	{
-		$db = Propel::getDB(BookPeer::DATABASE_NAME);
+		$db = ::Propel::getDB(PropelPeer::BookPeer::DATABASE_NAME);
 
 		$title = "Смерть на брудершафт. Младенец и черт";
 		//        1234567890123456789012345678901234567
 		//                 1         2         3
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Б.");
 		$a->setLastName("АКУНИН");
 
-		$p = new Publisher();
+		$p = new PropelModel::Publisher();
 		$p->setName("Детектив российский, остросюжетная проза");
 
-		$b = new Book();
+		$b = new PropelModel::Book();
 		$b->setTitle($title);
 		$b->setISBN("B-59246");
 		$b->setAuthor($a);
@@ -82,12 +86,12 @@ class CharacterEncodingTest extends BookstoreTestBase {
 
 	public function testInvalidCharset()
 	{
-		$db = Propel::getDB(BookPeer::DATABASE_NAME);
+		$db = ::Propel::getDB(PropelPeer::BookPeer::DATABASE_NAME);
 		if ($db instanceof DBSQLite) {
 			$this->markTestSkipped();
 		}
 
-		$a = new Author();
+		$a = new PropelModel::Author();
 		$a->setFirstName("Б.");
 		$a->setLastName("АКУНИН");
 		$a->save();
@@ -109,10 +113,12 @@ class CharacterEncodingTest extends BookstoreTestBase {
 			// No exception is thrown by MySQL ... (others need to be tested still)
 			$a->save();
 			$a->reload();
-
+			print_r($a);
 			$this->assertEquals("",$a->getLastName(), "Expected last_name to be empty (after inserting invalid charset data)");
 		}
 
 	}
 
 }
+
+?>

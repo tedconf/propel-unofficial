@@ -1,6 +1,9 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+
 /*
- *  $Id: CmsDataPopulator.php 876 2007-12-19 13:16:31Z heltem $
+ *  $Id$
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -28,7 +31,7 @@ class CmsDataPopulator {
 
 	public static function populate()
 	{
-		$dbh = Propel::getConnection(PagePeer::DATABASE_NAME);
+		$dbh = ::Propel::getConnection(PropelPeer::PagePeer::DATABASE_NAME);
 		$dbh->exec("INSERT INTO Page (ScopeId, LeftChild, RightChild, Title) VALUES (1, 1,194,'home')");
 		$dbh->exec("INSERT INTO Page (ScopeId, LeftChild, RightChild, Title) VALUES (1, 2,5,'school')");
 		$dbh->exec("INSERT INTO Page (ScopeId, LeftChild, RightChild, Title) VALUES (1, 6,43,'education')");
@@ -130,7 +133,7 @@ class CmsDataPopulator {
 
 	public static function depopulate()
 	{
-		$dbh = Propel::getConnection(PagePeer::DATABASE_NAME);
+		$dbh = ::Propel::getConnection(PropelPeer::PagePeer::DATABASE_NAME);
 		$dbh->exec("DELETE FROM Page");
 	}
 

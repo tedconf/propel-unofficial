@@ -34,7 +34,6 @@ require_once 'propel/engine/builder/om/OMBuilder.php';
  * @package    propel.engine.builder.om
  */
 abstract class ObjectBuilder extends OMBuilder {
-
 	/**
 	 * Constructs a new PeerBuilder subclass.
 	 */

@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+use bookstore::Model as PropelModel;
+
 /*
  *  $Id: GeneratedNestedSetObjectTest.php 894 2007-12-27 14:39:01Z heltem $
  *
@@ -42,7 +46,7 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectIsRootTrue()
 	{
-		$pp = PagePeer::retrieveRoot(1);
+		$pp = PropelPeer::PagePeer::retrieveRoot(1);
 		$this->assertTrue($pp->isRoot(), 'Node must be root');
 	}
 
@@ -51,10 +55,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectIsRootFalse()
 	{
-		$c = new Criteria(PagePeer::DATABASE_NAME);
-		$c->add(PagePeer::TITLE, 'school', Criteria::EQUAL);
+		$c = new ::Criteria(PropelPeer::PagePeer::DATABASE_NAME);
+		$c->add(PropelPeer::PagePeer::TITLE, 'school', ::Criteria::EQUAL);
 
-		$school = PagePeer::doSelectOne($c);
+		$school = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertFalse($school->isRoot(), 'Node must not be root');
 	}
 
@@ -63,10 +67,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectRetrieveParentTrue()
 	{
-		$c = new Criteria(PagePeer::DATABASE_NAME);
-		$c->add(PagePeer::TITLE, 'school', Criteria::EQUAL);
+		$c = new ::Criteria(PropelPeer::PagePeer::DATABASE_NAME);
+		$c->add(PropelPeer::PagePeer::TITLE, 'school', ::Criteria::EQUAL);
 
-		$school = PagePeer::doSelectOne($c);
+		$school = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertNotNull($school->retrieveParent(), 'Parent node must exist');
 	}
 
@@ -75,10 +79,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectRetrieveParentFalse()
 	{
-		$c = new Criteria(PagePeer::DATABASE_NAME);
-		$c->add(PagePeer::TITLE, 'home', Criteria::EQUAL);
+		$c = new ::Criteria(PropelPeer::PagePeer::DATABASE_NAME);
+		$c->add(PropelPeer::PagePeer::TITLE, 'home', ::Criteria::EQUAL);
 
-		$home = PagePeer::doSelectOne($c);
+		$home = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertNull($home->retrieveParent(), 'Parent node must not exist and retrieved not be null');
 	}
 
@@ -87,10 +91,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectHasParentTrue()
 	{
-		$c = new Criteria();
-		$c->add(PagePeer::TITLE, 'school', Criteria::EQUAL);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::PagePeer::TITLE, 'school', ::Criteria::EQUAL);
 
-		$school = PagePeer::doSelectOne($c);
+		$school = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertTrue($school->hasParent(), 'Node must have parent node');
 	}
 
@@ -99,10 +103,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectHasParentFalse()
 	{
-		$c = new Criteria();
-		$c->add(PagePeer::TITLE, 'home', Criteria::EQUAL);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::PagePeer::TITLE, 'home', ::Criteria::EQUAL);
 
-		$home = PagePeer::doSelectOne($c);
+		$home = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertFalse($home->hasParent(), 'Root node must not have parent');
 	}
 
@@ -111,10 +115,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectIsLeafTrue()
 	{
-		$c = new Criteria();
-		$c->add(PagePeer::TITLE, 'simulator', Criteria::EQUAL);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::PagePeer::TITLE, 'simulator', ::Criteria::EQUAL);
 
-		$simulator = PagePeer::doSelectOne($c);
+		$simulator = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertTrue($simulator->isLeaf($simulator), 'Node must be a leaf');
 	}
 
@@ -123,10 +127,10 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectIsLeafFalse()
 	{
-		$c = new Criteria();
-		$c->add(PagePeer::TITLE, 'contact', Criteria::EQUAL);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::PagePeer::TITLE, 'contact', ::Criteria::EQUAL);
 
-		$contact = PagePeer::doSelectOne($c);
+		$contact = PropelPeer::PagePeer::doSelectOne($c);
 		$this->assertFalse($contact->isLeaf($contact), 'Node must not be a leaf');
 	}
 
@@ -135,7 +139,7 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectMakeRoot()
 	{
-		$page = new Page();
+		$page = new PropelModel::Page();
 		$page->makeRoot();
 		$this->assertEquals(1, $page->getLeftValue(), 'Node left value must equal 1');
 		$this->assertEquals(2, $page->getRightValue(), 'Node right value must equal 2');
@@ -147,11 +151,13 @@ class GeneratedNestedSetObjectTest extends CmsTestBase {
 	 */
 	public function testObjectMakeRootException()
 	{
-		$c = new Criteria();
-		$c->add(PagePeer::TITLE, 'home', Criteria::EQUAL);
+		$c = new ::Criteria();
+		$c->add(PropelPeer::PagePeer::TITLE, 'home', ::Criteria::EQUAL);
 
-		$home = PagePeer::doSelectOne($c);
+		$home = PropelPeer::PagePeer::doSelectOne($c);
 		$home->makeRoot();
 	}
 
 }
+
+?>

@@ -50,8 +50,11 @@ class UniqueValidator implements BasicValidator
 		$isValid = false;
 
 		$table = $column->getTable()->getPhpName();
-
+                $config = Propel::getConfiguration();
 		$clazz = $table . 'Peer';
+                if ($config[namespaces][enabled] ==  1) {
+                    $clazz = $config[namespaces][peer][value] . '::' . $clazz;
+                }
 		$count = call_user_func(array($clazz, 'doCount'), $c);
 
 		$isValid = ($count === 0);

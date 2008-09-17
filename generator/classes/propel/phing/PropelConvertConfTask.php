@@ -29,6 +29,7 @@ include_once 'propel/engine/builder/om/ClassTools.php';
  * This Task converts the XML runtime configuration file into a PHP array for faster performance.
  *
  * @author     Hans Lellelid <hans@xmpl.org>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.phing
  */
 class PropelConvertConfTask extends AbstractPropelDataModelTask {
@@ -140,13 +141,13 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 						// Add Peer & Object stub classes and MapBuilder classes
 						// -----------------------------------------------------------------------------------------
 						// (this code is based on PropelOMTask)
-
 						foreach (array('mapbuilder', 'peerstub', 'objectstub') as $target) {
 							$builder = $generatorConfig->getConfiguredBuilder($table, $target);
 							$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
 							$classMap[$builder->getClassname()] = $builder->getClassFilePath();
 						}
 
+						// @todo which namespace should be used for objectmultiextend?
 						if ($table->getChildrenColumn()) {
 							$col = $table->getChildrenColumn();
 							if ($col->isEnumeratedClasses()) {
@@ -183,6 +184,7 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 						// Create tree Node classes
 						// -----------------------------------------------------------------------------------------
 
+						// @todo which namespace should be used for node classes?
 						if ('MaterializedPath' == $table->treeMode()) {
 							foreach (array('nodepeerstub', 'nodestub') as $target) {
 								$builder = $generatorConfig->getConfiguredBuilder($table, $target);

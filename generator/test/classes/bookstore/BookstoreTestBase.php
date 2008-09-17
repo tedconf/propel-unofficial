@@ -1,4 +1,6 @@
 <?php
+use bookstore::Peer as PropelPeer;
+
 /*
  *  $Id$
  *
@@ -45,38 +47,38 @@ abstract class BookstoreTestBase extends PHPUnit_Framework_TestCase {
 
 		BookstoreDataPopulator::depopulate();
 
-		$this->assertEquals(0, count(BookPeer::doSelect(new Criteria())), "Expect book table to be empty.");
-		$this->assertEquals(0, count(AuthorPeer::doSelect(new Criteria())), "Expect author table to be empty.");
-		$this->assertEquals(0, count(PublisherPeer::doSelect(new Criteria())), "Expect publisher table to be empty.");
-		$this->assertEquals(0, count(ReviewPeer::doSelect(new Criteria())), "Expect review table to be empty.");
-		$this->assertEquals(0, count(MediaPeer::doSelect(new Criteria())), "Expect media table to be empty.");
-		$this->assertEquals(0, count(BookstoreEmployeePeer::doSelect(new Criteria())), "Expect bookstore_employee table to be empty.");
-		$this->assertEquals(0, count(BookstoreEmployeeAccountPeer::doSelect(new Criteria())), "Expect bookstore_employee_account table to be empty.");
-		$this->assertEquals(0, count(BookstoreSalePeer::doSelect(new Criteria())), "Expect bookstore_sale table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::BookPeer::doSelect(new ::Criteria())), "Expect book table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::AuthorPeer::doSelect(new ::Criteria())), "Expect author table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::PublisherPeer::doSelect(new ::Criteria())), "Expect publisher table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::ReviewPeer::doSelect(new ::Criteria())), "Expect review table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::MediaPeer::doSelect(new ::Criteria())), "Expect media table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::BookstoreEmployeePeer::doSelect(new ::Criteria())), "Expect bookstore_employee table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::BookstoreEmployeeAccountPeer::doSelect(new ::Criteria())), "Expect bookstore_employee_account table to be empty.");
+		$this->assertEquals(0, count(PropelPeer::BookstoreSalePeer::doSelect(new ::Criteria())), "Expect bookstore_sale table to be empty.");
 
-		BookPeer::clearInstancePool();
-		$this->assertEquals(0, count(BookPeer::$instances), "Expected 0 Book instances after clearInstancePool()");
+		PropelPeer::BookPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::BookPeer::$instances), "Expected 0 Book instances after clearInstancePool()");
 
-		AuthorPeer::clearInstancePool();
-		$this->assertEquals(0, count(AuthorPeer::$instances), "Expected 0 Author instances after clearInstancePool()");
+		PropelPeer::AuthorPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::AuthorPeer::$instances), "Expected 0 Author instances after clearInstancePool()");
 
-		PublisherPeer::clearInstancePool();
-		$this->assertEquals(0, count(PublisherPeer::$instances), "Expected 0 Publisher instances after clearInstancePool()");
+		PropelPeer::PublisherPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::PublisherPeer::$instances), "Expected 0 Publisher instances after clearInstancePool()");
 
-		ReviewPeer::clearInstancePool();
-		$this->assertEquals(0, count(ReviewPeer::$instances), "Expected 0 Review instances after clearInstancePool()");
+		PropelPeer::ReviewPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::ReviewPeer::$instances), "Expected 0 Review instances after clearInstancePool()");
 
-		MediaPeer::clearInstancePool();
-		$this->assertEquals(0, count(MediaPeer::$instances), "Expected 0 Media instances after clearInstancePool()");
+		PropelPeer::MediaPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::MediaPeer::$instances), "Expected 0 Media instances after clearInstancePool()");
 
-		BookstoreEmployeePeer::clearInstancePool();
-		$this->assertEquals(0, count(BookstoreEmployeePeer::$instances), "Expected 0 BookstoreEmployee instances after clearInstancePool()");
+		PropelPeer::BookstoreEmployeePeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::BookstoreEmployeePeer::$instances), "Expected 0 BookstoreEmployee instances after clearInstancePool()");
 
-		BookstoreEmployeeAccountPeer::clearInstancePool();
-		$this->assertEquals(0, count(BookstoreEmployeeAccountPeer::$instances), "Expected 0 BookstoreEmployeeAccount instances after clearInstancePool()");
+		PropelPeer::BookstoreEmployeeAccountPeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::BookstoreEmployeeAccountPeer::$instances), "Expected 0 BookstoreEmployeeAccount instances after clearInstancePool()");
 
-		BookstoreSalePeer::clearInstancePool();
-		$this->assertEquals(0, count(BookstoreSalePeer::$instances), "Expected 0 BookstoreSale instances after clearInstancePool()");
+		PropelPeer::BookstoreSalePeer::clearInstancePool();
+		$this->assertEquals(0, count(PropelPeer::BookstoreSalePeer::$instances), "Expected 0 BookstoreSale instances after clearInstancePool()");
 
 		parent::tearDown();
 	}

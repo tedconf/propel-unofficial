@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+use bookstore::Model as PropelModel;
+
 /*
  *  $Id: PropelDateTimeTest.php 784 2007-11-08 10:15:50Z heltem $
  *
@@ -32,13 +36,15 @@ class PropelPDOTest extends BookstoreTestBase
 
 	public function testSetAttribute()
 	{
-		$con = Propel::getConnection(BookPeer::DATABASE_NAME);
-		$this->assertFalse($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
-		$con->setAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES, true);
-		$this->assertTrue($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+		$con = ::Propel::getConnection(PropelPeer::BookPeer::DATABASE_NAME);
+		$this->assertFalse($con->getAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+		$con->setAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES, true);
+		$this->assertTrue($con->getAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
 
 		$con->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
 		$this->assertEquals(PDO::CASE_LOWER, $con->getAttribute(PDO::ATTR_CASE));
 	}
 
 }
+
+?>

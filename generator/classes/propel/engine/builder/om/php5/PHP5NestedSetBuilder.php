@@ -1,4 +1,5 @@
 <?php
+
 /*
  *  $Id$
  *
@@ -28,6 +29,7 @@ require_once 'propel/engine/builder/om/ObjectBuilder.php';
  * the custom-built accessor and setter methods.
  *
  * @author     Heltem <heltem@o2php.com>
+ * @author     Tony Bibbs <tony@tonybibbs.com>
  * @package    propel.engine.builder.om.php5
  */
 class PHP5NestedSetBuilder extends ObjectBuilder {
@@ -41,6 +43,19 @@ class PHP5NestedSetBuilder extends ObjectBuilder {
 		return parent::getPackage() . ".om";
 	}
 
+	/**
+	 * Adds the namespace declaration if configured to do so.  
+	 * @param string &$script The script will be modified in this method.
+	 */
+	protected function addNamespace(&$script)
+	{
+		// If not enabled bail.
+		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
+		
+		$namespaceToUse = $this->getBuildProperty('namespaceNest');
+		$script .= "\nnamespace $namespaceToUse;\n";
+	}
+		
 	/**
 	 * Returns the name of the current class being built.
 	 * @return     string
@@ -89,7 +104,7 @@ require '".$this->getObjectBuilder()->getClassFilePath()."';
 		$script .= "
  * @package    ".$this->getPackage()."
  */
-abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->getClassname()." implements NodeObject {
+abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder()->getClassname()." implements ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject {
 ";
 	}
 
@@ -258,11 +273,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Saves modified object data to the datastore.
 	 * If object is saved without left/right values, set them as undefined (0)
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     void
-	 * @throws     PropelException
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
-	public function save(PropelPDO \$con = null)
+	public function save(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$left = \$this->getLeftValue();
 		\$right = \$this->getRightValue();
@@ -283,11 +298,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Removes this object and all descendants from datastore.
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     void
-	 * @throws     PropelException
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
-	public function delete(PropelPDO \$con = null)
+	public function delete(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		// delete node first
 		parent::delete(\$con);
@@ -307,7 +322,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Sets node properties to make it a root node.
 	 *
 	 * @return     $objectClassName The current object (for fluent API support)
-	 * @throws     PropelException
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException
 	 */
 	public function makeRoot()
 	{
@@ -324,10 +339,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets the level if set, otherwise calculates this and returns it
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     int
 	 */
-	public function getLevel(PropelPDO \$con = null)
+	public function getLevel(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (null === \$this->level) {
 			\$this->level = $peerClassname::getLevel(\$this, \$con);
@@ -384,7 +399,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$parent Propel node object
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function setParentNode(NodeObject \$parent = null)
+	public function setParentNode(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent = null)
 	{
 		\$this->parentNode = (true === (\$this->hasParentNode = $peerClassname::isValid(\$parent))) ? \$parent : null;
 		return \$this;
@@ -403,7 +418,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$node Propel node object
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function setPrevSibling(NodeObject \$node = null)
+	public function setPrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node = null)
 	{
 		\$this->prevSibling = \$node;
 		\$this->hasPrevSibling = $peerClassname::isValid(\$node);
@@ -423,7 +438,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      $objectClassName \$node Propel node object
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function setNextSibling(NodeObject \$node = null)
+	public function setNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node = null)
 	{
 		\$this->nextSibling = \$node;
 		\$this->hasNextSibling = $peerClassname::isValid(\$node);
@@ -439,10 +454,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Get the path to the node in the tree
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     array
 	 */
-	public function getPath(PropelPDO \$con = null)
+	public function getPath(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::getPath(\$this, \$con);
 	}
@@ -456,10 +471,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets the number of children for the node (direct descendants)
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     int
 	 */
-	public function getNumberOfChildren(PropelPDO \$con = null)
+	public function getNumberOfChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::getNumberOfChildren(\$this, \$con);
 	}
@@ -473,10 +488,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets the total number of descendants for the node
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     int
 	 */
-	public function getNumberOfDescendants(PropelPDO \$con = null)
+	public function getNumberOfDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::getNumberOfDescendants(\$this, \$con);
 	}
@@ -490,10 +505,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets the children for the node
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     array
 	 */
-	public function getChildren(PropelPDO \$con = null)
+	public function getChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$this->getLevel();
 
@@ -513,10 +528,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets the descendants for the node
 	 *
-	 * @param      PropelPDO Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO Connection to use.
 	 * @return     array
 	 */
-	public function getDescendants(PropelPDO \$con = null)
+	public function getDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$this->getLevel();
 		if (is_array(\$this->_children)) {
@@ -570,7 +585,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * @param      object \$node		Propel object for node to compare to
 	 * @return     bool
 	 */
-	public function isEqualTo(NodeObject \$node)
+	public function isEqualTo(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node)
 	{
 		return $peerClassname::isEqualTo(\$this, \$node);
 	}
@@ -584,10 +599,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Tests if object has an ancestor
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
-	public function hasParent(PropelPDO \$con = null)
+	public function hasParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (null === \$this->hasParentNode) {
 			$peerClassname::hasParent(\$this, \$con);
@@ -608,7 +623,7 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 */
 	public function hasChildren()
 	{
-		return  $peerClassname::hasChildren(\$this);
+		return $peerClassname::hasChildren(\$this);
 	}
 ";
 	}
@@ -620,10 +635,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Determines if the node has previous sibling
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
-	public function hasPrevSibling(PropelPDO \$con = null)
+	public function hasPrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (null === \$this->hasPrevSibling) {
 			$peerClassname::hasPrevSibling(\$this, \$con);
@@ -640,10 +655,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Determines if the node has next sibling
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     bool
 	 */
-	public function hasNextSibling(PropelPDO \$con = null)
+	public function hasNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (null === \$this->hasNextSibling) {
 			$peerClassname::hasNextSibling(\$this, \$con);
@@ -660,10 +675,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets ancestor for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public function retrieveParent(PropelPDO \$con = null)
+	public function retrieveParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (null === \$this->hasParentNode) {
 			\$this->parentNode = $peerClassname::retrieveParent(\$this, \$con);
@@ -681,10 +696,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets first child if it exists
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public function retrieveFirstChild(PropelPDO \$con = null)
+	public function retrieveFirstChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->hasChildren(\$con)) {
 			if (is_array(\$this->_children)) {
@@ -705,10 +720,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets last child if it exists
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public function retrieveLastChild(PropelPDO \$con = null)
+	public function retrieveLastChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->hasChildren(\$con)) {
 			if (is_array(\$this->_children)) {
@@ -729,10 +744,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets prev sibling for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public function retrievePrevSibling(PropelPDO \$con = null)
+	public function retrievePrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->hasPrevSibling(\$con)) {
 			return \$this->prevSibling;
@@ -748,10 +763,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	/**
 	 * Gets next sibling for the given node if it exists
 	 *
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public function retrieveNextSibling(PropelPDO \$con = null)
+	public function retrieveNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->hasNextSibling(\$con)) {
 			return \$this->nextSibling;
@@ -770,15 +785,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts as first child of given destination node \$parent
 	 *
 	 * @param      $objectClassName \$parent	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
-	 * @throws     PropelException - if this object already exists
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsFirstChildOf(NodeObject \$parent, PropelPDO \$con = null)
+	public function insertAsFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must be new.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must be new.\");
 		}
 		$peerClassname::insertAsFirstChildOf(\$this, \$parent, \$con);
 		return \$this;
@@ -795,15 +810,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts as last child of given destination node \$parent
 	 *
 	 * @param      $objectClassName \$parent	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
-	 * @throws     PropelException - if this object already exists
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsLastChildOf(NodeObject \$parent, PropelPDO \$con = null)
+	public function insertAsLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must be new.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must be new.\");
 		}
 		$peerClassname::insertAsLastChildOf(\$this, \$parent, \$con);
 		return \$this;
@@ -820,11 +835,11 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts \$node as previous sibling to given destination node \$dest
 	 *
 	 * @param      $objectClassName \$dest	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
-	 * @throws     PropelException - if this object already exists
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsPrevSiblingOf(NodeObject \$dest, PropelPDO \$con = null)
+	public function insertAsPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
@@ -845,15 +860,15 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts \$node as next sibling to given destination node \$dest
 	 *
 	 * @param      $objectClassName \$dest	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
-	 * @throws     PropelException - if this object already exists
+	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsNextSiblingOf(NodeObject \$dest, PropelPDO \$con = null)
+	public function insertAsNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must be new.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must be new.\");
 		}
 		$peerClassname::insertAsNextSiblingOf(\$this, \$dest, \$con);
 		return \$this;
@@ -870,14 +885,14 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Moves node to be first child of \$parent
 	 *
 	 * @param      $objectClassName \$parent	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToFirstChildOf(NodeObject \$parent, PropelPDO \$con = null)
+	public function moveToFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must exist in tree.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must exist in tree.\");
 		}
 		$peerClassname::moveToFirstChildOf(\$parent, \$this, \$con);
 		return \$this;
@@ -894,14 +909,14 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Moves node to be last child of \$parent
 	 *
 	 * @param      $objectClassName \$parent	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToLastChildOf(NodeObject \$parent, PropelPDO \$con = null)
+	public function moveToLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must exist in tree.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must exist in tree.\");
 		}
 		$peerClassname::moveToLastChildOf(\$parent, \$this, \$con);
 		return \$this;
@@ -918,14 +933,14 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Moves node to be prev sibling to \$dest
 	 *
 	 * @param      $objectClassName \$dest	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToPrevSiblingOf(NodeObject \$dest, PropelPDO \$con = null)
+	public function moveToPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must exist in tree.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must exist in tree.\");
 		}
 		$peerClassname::moveToPrevSiblingOf(\$dest, \$this, \$con);
 		return \$this;
@@ -942,14 +957,14 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Moves node to be next sibling to \$dest
 	 *
 	 * @param      $objectClassName \$dest	Propel object for destination node
-	 * @param      PropelPDO \$con Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToNextSiblingOf(NodeObject \$dest, PropelPDO \$con = null)
+	public function moveToNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
-			throw new PropelException(\"$objectClassName must exist in tree.\");
+			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException(\"$objectClassName must exist in tree.\");
 		}
 		$peerClassname::moveToNextSiblingOf(\$dest, \$this, \$con);
 		return \$this;
@@ -966,10 +981,10 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	 * Inserts node as parent of given node.
 	 *
 	 * @param      $objectClassName \$node Propel object for destination node
-	 * @param      PropelPDO \$con	Connection to use.
+	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function insertAsParentOf(NodeObject \$node, PropelPDO \$con = null)
+	public function insertAsParentOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		$peerClassname::insertAsParentOf(\$this, \$node, \$con);
 		return \$this;
@@ -1142,3 +1157,5 @@ abstract class ".$this->getClassname()." extends ".$this->getObjectBuilder()->ge
 	}
 
 } // PHP5NestedSetBuilder
+
+?>

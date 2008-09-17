@@ -1,4 +1,8 @@
 <?php
+
+use bookstore::Peer as PropelPeer;
+use bookstore::Model as PropelModel;
+
 /*
  * $Id$
  *
@@ -44,13 +48,14 @@ class ValidatorTest extends BookstoreTestBase
 	 */
 	public function testDoValidate_MinLength()
 	{
-		$book = new Book();
+		$book = new PropelModel::Book();
 		$book->setTitle("12345"); // min length is 10
 
 		$res = $book->validate();
 		$this->assertFalse($res, "Expected validation to fail.");
 
 		$failures = $book->getValidationFailures();
+		
 		$this->assertSingleValidation($failures, "Book title must be more than 10 characters long.");
 	}
 
@@ -59,7 +64,7 @@ class ValidatorTest extends BookstoreTestBase
 	 */
 	public function testDoValidate_Unique()
 	{
-		$book = new Book();
+		$book = new PropelModel::Book();
 		$book->setTitle("Don Juan");
 
 		$ret = $book->validate();
@@ -72,13 +77,13 @@ class ValidatorTest extends BookstoreTestBase
 	 */
 	public function testDoValidate_Complex()
 	{
-		$book = new Book();
+		$book = new PropelModel::Book();
 		$book->setTitle("12345"); // min length is 10
 
-		$author = new Author();
+		$author = new PropelModel::Author();
 		$author->setFirstName("Hans"); // last name required, valid email format, age > 0
 
-		$review = new Review();
+		$review = new PropelModel::Review();
 		$review->setReviewDate("08/09/2001"); // reviewed_by column required, invalid status (new, reviewed, archived)
 
 		$book->setAuthor($author);
@@ -95,9 +100,9 @@ class ValidatorTest extends BookstoreTestBase
 
 		/* Make sure correct columns failed */
 		$expectedCols = array(
-		AuthorPeer::LAST_NAME,
-		BookPeer::TITLE,
-		ReviewPeer::REVIEWED_BY
+		PropelPeer::AuthorPeer::LAST_NAME,
+		PropelPeer::BookPeer::TITLE,
+		PropelPeer::ReviewPeer::REVIEWED_BY
 		);
 		$returnedCols = array_keys($failures);
 
@@ -110,19 +115,19 @@ class ValidatorTest extends BookstoreTestBase
 	 */
 	public function testDoValidate_ComplexSpecifiedCols()
 	{
-		$book = new Book();
+		$book = new PropelModel::Book();
 		$book->setTitle("12345"); // min length is 10
 
-		$author = new Author();
+		$author = new PropelModel::Author();
 		$author->setFirstName("Hans"); // last name required, valid email format, age > 0
 
-		$review = new Review();
+		$review = new PropelModel::Review();
 		$review->setReviewDate("08/09/2001"); // reviewed_by column required, invalid status (new, reviewed, archived)
 
 		$book->setAuthor($author);
 		$book->addReview($review);
 
-		$cols = array(AuthorPeer::LAST_NAME, ReviewPeer::REVIEWED_BY);
+		$cols = array(PropelPeer::AuthorPeer::LAST_NAME, PropelPeer::ReviewPeer::REVIEWED_BY);
 
 		$res = $book->validate($cols);
 
@@ -135,8 +140,8 @@ class ValidatorTest extends BookstoreTestBase
 
 		/* Make sure correct columns failed */
 		$expectedCols = array(
-		AuthorPeer::LAST_NAME,
-		ReviewPeer::REVIEWED_BY
+		PropelPeer::AuthorPeer::LAST_NAME,
+		PropelPeer::ReviewPeer::REVIEWED_BY
 		);
 
 		$returnedCols = array_keys($failures);
@@ -150,7 +155,7 @@ class ValidatorTest extends BookstoreTestBase
 	 */
 	public function testDoValidate_Nulls()
 	{
-		$author = new Author();
+		$author = new PropelModel::Author();
 		$author->setFirstName("Malcolm"); // last name required, valid email format, age > 0
 		$author->setLastName("X");
 
@@ -169,13 +174,13 @@ class ValidatorTest extends BookstoreTestBase
 
 		$failures = $author->getValidationFailures();
 		$this->assertEquals(1, count($failures), "Expected 1 column to fail validation.");
-		$this->assertEquals(array(AuthorPeer::EMAIL), array_keys($failures), "Expected EMAIL to fail validation.");
+		$this->assertEquals(array(PropelPeer::AuthorPeer::EMAIL), array_keys($failures), "Expected EMAIL to fail validation.");
 
 	}
 
 	public function testDoValidate_BasicValidatorObj()
 	{
-		$author = new Author();
+		$author = new PropelModel::Author();
 		$author->setFirstName("Malcolm"); // last name required, valid email format, age > 0
 		$author->setLastName("X");
 		$author->setEmail('malcolm@'); // fail
@@ -187,16 +192,16 @@ class ValidatorTest extends BookstoreTestBase
 		$failures = $author->getValidationFailures();
 
 		$this->assertEquals(1, count($failures), "Expected 1 column to fail validation.");
-		$this->assertEquals(array(AuthorPeer::EMAIL), array_keys($failures), "Expected EMAIL to fail validation.");
+		$this->assertEquals(array(PropelPeer::AuthorPeer::EMAIL), array_keys($failures), "Expected EMAIL to fail validation.");
 
-		$validator = $failures[AuthorPeer::EMAIL]->getValidator();
+		$validator = $failures[PropelPeer::AuthorPeer::EMAIL]->getValidator();
 		$this->assertTrue($validator instanceof MatchValidator, "Expected validator that failed to be MatchValidator");
 
 	}
 
 	public function testDoValidate_CustomValidator()
 	{
-		$book = new Book();
+		$book = new PropelModel::Book();
 		$book->setTitle("testDoValidate_CustomValidator"); // (valid)
 		$book->setISBN("Foo.Bar.Baz"); // (invalid)
 
@@ -207,9 +212,9 @@ class ValidatorTest extends BookstoreTestBase
 		$failures = $book->getValidationFailures();
 
 		$this->assertEquals(1, count($failures), "Expected 1 column to fail validation.");
-		$this->assertEquals(array(BookPeer::ISBN), array_keys($failures), "Expected EMAIL to fail validation.");
+		$this->assertEquals(array(PropelPeer::BookPeer::ISBN), array_keys($failures), "Expected EMAIL to fail validation.");
 
-		$validator = $failures[BookPeer::ISBN]->getValidator();
+		$validator = $failures[PropelPeer::BookPeer::ISBN]->getValidator();
 		$this->assertType('ISBNValidator', $validator, "Expected validator that failed to be ISBNValidator");
 	}
 
@@ -228,3 +233,5 @@ class ValidatorTest extends BookstoreTestBase
 	}
 
 }
+
+?>
