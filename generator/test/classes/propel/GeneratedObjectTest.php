@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Model as PropelModel;
-use bookstore::Peer as PropelPeer;
+use bookstore\Model as PropelModel;
+use bookstore\Peer as PropelPeer;
 
 /*
  *  $Id$
@@ -52,13 +52,13 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		//  - that 2001-01-01 is the default ReviewDate for a Review
 
 		// 1) check regular values (VARCHAR)
-		$pub = new PropelModel::Publisher();
+		$pub = new PropelModel\Publisher();
 		$pub->setName('Penguin');
 		$pub->save();
 		$this->assertTrue($pub->getId() !== null, "Expect Publisher to have been saved when default value set.");
 
 		// 2) check date/time values
-		$review = new PropelModel::Review();
+		$review = new PropelModel\Review();
 		// note that this is different from how it's represented in schema, but should resolve to same unix timestamp
 		$review->setReviewDate('2001-01-01');
 		$this->assertTrue($review->isModified(), "Expect Review to have been marked 'modified' after default date/time value set.");
@@ -70,12 +70,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultValues()
 	{
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 		$this->assertEquals('2001-01-01', $r->getReviewDate('Y-m-d'));
 
 		$this->assertFalse($r->isModified(), "expected isModified() to be false");
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$this->assertEquals(true, $acct->getEnabled());
 		$this->assertFalse($acct->isModified());
 
@@ -92,18 +92,18 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultExpresions()
 	{
-		if (::Propel::getDb(PropelPeer::BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
+		if (Propel::getDb(PropelPeer\BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
 			$this->markTestSkipped("Cannot test default expressions with SQLite");
 		}
 
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Foo!");
 		$b->save();
 
-		$employee = new PropelModel::BookstoreEmployee();
+		$employee = new PropelModel\BookstoreEmployee();
 		$employee->setName("Johnny Walker");
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$acct->setBookstoreEmployee($employee);
 		$acct->setLogin("test-login");
 
@@ -112,7 +112,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$acct->save();
 
-		$acct = PropelPeer::BookstoreEmployeeAccountPeer::retrieveByPK($acct->getEmployeeId());
+		$acct = PropelPeer\BookstoreEmployeeAccountPeer::retrieveByPK($acct->getEmployeeId());
 
 		$this->assertNotNull($acct->getAuthenticator(), "Expected a valid (non-NULL) authenticator column after save.");
 		$this->assertEquals('Password', $acct->getAuthenticator(), "Expected authenticator='Password' after save.");
@@ -136,30 +136,30 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultExpresions_ReloadOnInsert()
 	{
-		if (::Propel::getDb(PropelPeer::BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
+		if (Propel::getDb(PropelPeer\BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
 			$this->markTestSkipped("Cannot test default date expressions with SQLite");
 		}
 
 		// Create a new bookstore, contest, bookstore_contest, and bookstore_contest_entry
 
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Barnes & Noble");
 		$b->save();
 
-		$c = new PropelModel::Contest();
+		$c = new PropelModel\Contest();
 		$c->setName("Bookathon Contest");
 		$c->save();
 
-		$bc = new PropelModel::BookstoreContest();
+		$bc = new PropelModel\BookstoreContest();
 		$bc->setBookstore($b);
 		$bc->setContest($c);
 		$bc->save();
 
-		$c = new PropelModel::Customer();
+		$c = new PropelModel\Customer();
 		$c->setName("Happy Customer");
 		$c->save();
 
-		$bce = new PropelModel::BookstoreContestEntry();
+		$bce = new PropelModel\BookstoreContestEntry();
 		$bce->setBookstore($b);
 		$bce->setBookstoreContest($bc);
 		$bce->setCustomer($c);
@@ -176,29 +176,29 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultExpresions_ReloadOnInsert_Override()
 	{
-		if (::Propel::getDb(PropelPeer::BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
+		if (Propel::getDb(PropelPeer\BookstoreEmployeePeer::DATABASE_NAME) instanceof DBSqlite) {
 			$this->markTestSkipped("Cannot test default date expressions with SQLite");
 		}
 
 		// Create a new bookstore, contest, bookstore_contest, and bookstore_contest_entry
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Barnes & Noble");
 		$b->save();
 
-		$c = new PropelModel::Contest();
+		$c = new PropelModel\Contest();
 		$c->setName("Bookathon Contest");
 		$c->save();
 
-		$bc = new PropelModel::BookstoreContest();
+		$bc = new PropelModel\BookstoreContest();
 		$bc->setBookstore($b);
 		$bc->setContest($c);
 		$bc->save();
 
-		$c = new PropelModel::Customer();
+		$c = new PropelModel\Customer();
 		$c->setName("Happy Customer");
 		$c->save();
 
-		$bce = new PropelModel::BookstoreContestEntry();
+		$bce = new PropelModel\BookstoreContestEntry();
 		$bce->setBookstore($b);
 		$bce->setBookstoreContest($bc);
 		$bce->setCustomer($c);
@@ -214,12 +214,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultExpresions_ReloadOnUpdate()
 	{
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Foo!");
 		$b->save();
 
-		$sale = new PropelModel::BookstoreSale();
-		$sale->setBookstore(PropelPeer::BookstorePeer::doSelectOne(new ::Criteria()));
+		$sale = new PropelModel\BookstoreSale();
+		$sale->setBookstore(PropelPeer\BookstorePeer::doSelectOne(new Criteria()));
 		$sale->setSaleName("Spring Sale");
 		$sale->save();
 
@@ -241,12 +241,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testDefaultExpresions_ReloadOnUpdate_Override()
 	{
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Foo!");
 		$b->save();
 
-		$sale = new PropelModel::BookstoreSale();
-		$sale->setBookstore(PropelPeer::BookstorePeer::doSelectOne(new ::Criteria()));
+		$sale = new PropelModel\BookstoreSale();
+		$sale->setBookstore(PropelPeer\BookstorePeer::doSelectOne(new Criteria()));
 		$sale->setSaleName("Spring Sale");
 		$sale->save();
 
@@ -267,7 +267,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTemporalValues_PreEpoch()
 	{
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 
 		$preEpochDate = new DateTime('1602-02-02');
 
@@ -295,11 +295,11 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->markTestSkipped();
 		// FIXME - Figure out why this doesn't work (causes a PHP ERROR instead of throwing Exception) in
 		// the Phing+PHPUnit context
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 		try {
 			$r->setReviewDate("Invalid Date");
 			$this->fail("Expected PropelException when setting date column w/ invalid date");
-		} catch (::PropelException $x) {
+		} catch (PropelException $x) {
 			print "Caught expected PropelException: " . $x->__toString();
 		}
 	}
@@ -309,17 +309,17 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTemporalValues_Unix()
 	{
-		$store = new PropelModel::Bookstore();
+		$store = new PropelModel\Bookstore();
 		$store->setStoreName("test");
 		$store->setStoreOpenTime(strtotime('12:55'));
 		$store->save();
 		$this->assertEquals('12:55', $store->getStoreOpenTime(null)->format('H:i'));
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$acct->setCreated(time());
 		$this->assertEquals(date('Y-m-d H:i'), $acct->getCreated('Y-m-d H:i'));
 
-		$review = new PropelModel::Review();
+		$review = new PropelModel\Review();
 		$review->setReviewDate(time());
 		$this->assertEquals(date('Y-m-d'), $review->getReviewDate('Y-m-d'));
 	}
@@ -330,7 +330,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTemporalValues_Empty()
 	{
-		$review = new PropelModel::Review();
+		$review = new PropelModel\Review();
 		$review->setReviewDate('');
 		$this->assertNull($review->getReviewDate());
 	}
@@ -340,12 +340,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTemporalValues_TimeSetting()
 	{
-		$store = new PropelModel::Bookstore();
+		$store = new PropelModel\Bookstore();
 		$store->setStoreName("test");
 		$store->setStoreOpenTime("12:55");
 		$store->save();
 
-		$store = new PropelModel::Bookstore();
+		$store = new PropelModel\Bookstore();
 		$store->setStoreName("test2");
 		$store->setStoreOpenTime(new DateTime("12:55"));
 		$store->save();
@@ -356,8 +356,8 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTemporalValues_DateSetting()
 	{
-		$r = new PropelModel::Review();
-		$r->setBook(PropelPeer::BookPeer::doSelectOne(new ::Criteria()));
+		$r = new PropelModel\Review();
+		$r->setBook(PropelPeer\BookPeer::doSelectOne(new Criteria()));
 		$r->setReviewDate(new DateTime('1999-12-20'));
 		$r->setReviewedBy("Hans");
 		$r->setRecommended(false);
@@ -369,12 +369,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testObjectInstances_New()
 	{
-		$emp = new PropelModel::BookstoreEmployee();
+		$emp = new PropelModel\BookstoreEmployee();
 		$emp->setName(md5(microtime()));
 		$emp->save();
 		$id = $emp->getId();
 
-		$retrieved = PropelPeer::BookstoreEmployeePeer::retrieveByPK($id);
+		$retrieved = PropelPeer\BookstoreEmployeePeer::retrieveByPK($id);
 		$this->assertSame($emp, $retrieved, "Expected same object (from instance pool)");
 	}
 
@@ -387,15 +387,15 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		// and then change the employee_id and ensure that the account
 		// is not pulling the old employee.
 
-		$pub1 = new PropelModel::Publisher();
+		$pub1 = new PropelModel\Publisher();
 		$pub1->setName('Publisher 1');
 		$pub1->save();
 
-		$pub2 = new PropelModel::Publisher();
+		$pub2 = new PropelModel\Publisher();
 		$pub2->setName('Publisher 2');
 		$pub2->save();
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle("Book Title");
 		$book->setISBN("1234");
 		$book->setPublisher($pub1);
@@ -404,13 +404,13 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->assertSame($pub1, $book->getPublisher());
 
 		// now change values behind the scenes
-		$con = ::Propel::getConnection(PropelPeer::BookstoreEmployeeAccountPeer::DATABASE_NAME);
-		$con->exec("UPDATE " . PropelPeer::BookPeer::TABLE_NAME . " SET "
+		$con = Propel::getConnection(PropelPeer\BookstoreEmployeeAccountPeer::DATABASE_NAME);
+		$con->exec("UPDATE " . PropelPeer\BookPeer::TABLE_NAME . " SET "
 		. " publisher_id = " . $pub2->getId()
 		. " WHERE id = " . $book->getId());
 
 
-		$book2 = PropelPeer::BookPeer::retrieveByPK($book->getId());
+		$book2 = PropelPeer\BookPeer::retrieveByPK($book->getId());
 		$this->assertSame($book, $book2, "Expected same book object instance");
 
 		$this->assertEquals($pub1->getId(), $book->getPublisherId(), "Expected book to have OLD publisher id before reload()");
@@ -422,7 +422,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		// Now let's set it back, just to be double sure ...
 
-		$con->exec("UPDATE " . PropelPeer::BookPeer::TABLE_NAME . " SET "
+		$con->exec("UPDATE " . PropelPeer\BookPeer::TABLE_NAME . " SET "
 		. " publisher_id = " . $pub1->getId()
 		. " WHERE id = " . $book->getId());
 
@@ -438,18 +438,18 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testObjectInstancePoolTypecasting()
 	{
-		$reader = new PropelModel::BookReader();
+		$reader = new PropelModel\BookReader();
 		$reader->setName("Tester");
 		$reader->save();
 		$readerId = $reader->getId();
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle("BookTest");
 		$book->setISBN("TEST");
 		$book->save();
 		$bookId = $book->getId();
 
-		$opinion = new PropelModel::BookOpinion();
+		$opinion = new PropelModel\BookOpinion();
 		$opinion->setBookId((string)$bookId);
 		$opinion->setReaderId((string)$readerId);
 		$opinion->setRating("BAD!");
@@ -457,7 +457,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$opinion->save();
 
 
-		$opinion2 = PropelPeer::BookOpinionPeer::retrieveByPK($bookId, $readerId);
+		$opinion2 = PropelPeer\BookOpinionPeer::retrieveByPK($bookId, $readerId);
 
 		$this->assertSame($opinion, $opinion2, "Expected same object to be retrieved from differently type-casted primary key values.");
 
@@ -468,7 +468,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testReload()
 	{
-		$a = PropelPeer::AuthorPeer::doSelectOne(new ::Criteria());
+		$a = PropelPeer\AuthorPeer::doSelectOne(new Criteria());
 
 		$origName = $a->getFirstName();
 
@@ -490,12 +490,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	public function testReloadDeep()
 	{
 		// arbitrary book
-		$b = PropelPeer::BookPeer::doSelectOne(new ::Criteria());
+		$b = PropelPeer\BookPeer::doSelectOne(new Criteria());
 
 		// arbitrary, different author
-		$c = new ::Criteria();
-		$c->add(PropelPeer::AuthorPeer::ID, $b->getAuthorId(), ::Criteria::NOT_EQUAL);
-		$a = PropelPeer::AuthorPeer::doSelectOne($c);
+		$c = new Criteria();
+		$c->add(PropelPeer\AuthorPeer::ID, $b->getAuthorId(), Criteria::NOT_EQUAL);
+		$a = PropelPeer\AuthorPeer::doSelectOne($c);
 
 		$origAuthor = $b->getAuthor();
 
@@ -517,16 +517,16 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	public function testSaveReturnValues()
 	{
 
-		$author = new PropelModel::Author();
+		$author = new PropelModel\Author();
 		$author->setFirstName("Mark");
 		$author->setLastName("Kurlansky");
 		// do not save
 
-		$pub = new PropelModel::Publisher();
+		$pub = new PropelModel\Publisher();
 		$pub->setName("Penguin Books");
 		// do not save
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle("Salt: A World History");
 		$book->setISBN("0142001619");
 		$book->setAuthor($author);
@@ -563,7 +563,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	public function testDelete() {
 
 		// 1) grab an arbitrary object
-		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer\BookPeer::doSelectOne(new Criteria());
 		$bookId = $book->getId();
 
 		// 2) delete it
@@ -574,10 +574,10 @@ class GeneratedObjectTest extends BookstoreTestBase {
 			$book->setTitle("Will Fail");
 			$book->save();
 			$this->fail("Expect an exception to be thrown when attempting to save() a deleted object.");
-		} catch (::PropelException $e) {}
+		} catch (PropelException $e) {}
 
 		// 4) make sure that it doesn't exist in db
-		$book = PropelPeer::BookPeer::retrieveByPK($bookId);
+		$book = PropelPeer\BookPeer::retrieveByPK($bookId);
 		$this->assertNull($book, "Expect NULL from retrieveByPK on deleted Book.");
 
 	}
@@ -587,13 +587,13 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testNoColsModified()
 	{
-		$e1 = new PropelModel::BookstoreEmployee();
+		$e1 = new PropelModel\BookstoreEmployee();
 		$e1->setName('Employee 1');
 
-		$e2 = new PropelModel::BookstoreEmployee();
+		$e2 = new PropelModel\BookstoreEmployee();
 		$e2->setName('Employee 2');
 
-		$super = new PropelModel::BookstoreEmployee();
+		$super = new PropelModel\BookstoreEmployee();
 		// we don't know who the supervisor is yet
 		$super->addSubordinate($e1);
 		$super->addSubordinate($e2);
@@ -607,9 +607,9 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testOneToOne()
 	{
-		$emp = PropelPeer::BookstoreEmployeePeer::doSelectOne(new Criteria());
+		$emp = PropelPeer\BookstoreEmployeePeer::doSelectOne(new Criteria());
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$acct->setBookstoreEmployee($emp);
 		$acct->setLogin("testuser");
 		$acct->setPassword("testpass");
@@ -623,9 +623,9 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testTypeSensitive()
 	{
-		$book = PropelPeer::BookPeer::doSelectOne(new Criteria());
+		$book = PropelPeer\BookPeer::doSelectOne(new Criteria());
 
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 		$r->setReviewedBy("testTypeSensitive Tester");
 		$r->setReviewDate(time());
 		$r->setBook($book);
@@ -636,16 +636,16 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		unset($r);
 
 		// clear the instance cache to force reload from database.
-		PropelPeer::ReviewPeer::clearInstancePool();
-		PropelPeer::BookPeer::clearInstancePool();
+		PropelPeer\ReviewPeer::clearInstancePool();
+		PropelPeer\BookPeer::clearInstancePool();
 
 		// reload and verify that the types are the same
-		$r2 = PropelPeer::ReviewPeer::retrieveByPK($id);
+		$r2 = PropelPeer\ReviewPeer::retrieveByPK($id);
 
 		$this->assertType('integer', $r2->getId(), "Expected getId() to return an integer.");
 		$this->assertType('string', $r2->getReviewedBy(), "Expected getReviewedBy() to return a string.");
 		$this->assertType('boolean', $r2->getRecommended(), "Expected getRecommended() to return a boolean.");
-		$this->assertType('bookstore::Model::Book', $r2->getBook(), "Expected getBook() to return a Book.");
+		$this->assertType('bookstore\Model\Book', $r2->getBook(), "Expected getBook() to return a Book.");
 		$this->assertType('float', $r2->getBook()->getPrice(), "Expected Book->getPrice() to return a float.");
 		$this->assertType('DateTime', $r2->getReviewDate(null), "Expected Book->getReviewDate() to return a DateTime.");
 
@@ -657,10 +657,10 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testSaveUnique()
 	{
-		$emp = new PropelModel::BookstoreEmployee();
+		$emp = new PropelModel\BookstoreEmployee();
 		$emp->setName(md5(microtime()));
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$acct->setBookstoreEmployee($emp);
 		$acct->setLogin("foo");
 		$acct->setPassword("bar");
@@ -694,7 +694,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	{
 		// 1) Basic test
 
-		$a = new PropelModel::Author();
+		$a = new PropelModel\Author();
 		$a->setFirstName("John");
 		$a->setLastName("Doe");
 		$a->setAge(25);
@@ -753,12 +753,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testEquals()
 	{
-		$b = PropelPeer::BookPeer::doSelectOne(new Criteria());
-		$c = new PropelModel::Book();
+		$b = PropelPeer\BookPeer::doSelectOne(new Criteria());
+		$c = new PropelModel\Book();
 		$c->setId($b->getId());
 		$this->assertTrue($b->equals($c), "Expected Book objects to be equal()");
 
-		$a = new PropelModel::Author();
+		$a = new PropelModel\Author();
 		$a->setId($b->getId());
 		$this->assertFalse($b->equals($a), "Expected Book and Author with same primary key NOT to match.");
 	}
@@ -769,12 +769,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testHasOnlyDefaultValues()
 	{
-		$emp = new PropelModel::BookstoreEmployee();
+		$emp = new PropelModel\BookstoreEmployee();
 		$emp->setName(md5(microtime()));
 
-		$acct2 = new PropelModel::BookstoreEmployeeAccount();
+		$acct2 = new PropelModel\BookstoreEmployeeAccount();
 
-		$acct = new PropelModel::BookstoreEmployeeAccount();
+		$acct = new PropelModel\BookstoreEmployeeAccount();
 		$acct->setBookstoreEmployee($emp);
 		$acct->setLogin("foo");
 		$acct->setPassword("bar");
@@ -793,17 +793,17 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->assertFalse($acct->hasOnlyDefaultValues(), "Expected BookstoreEmployeeAccount to have at one non-default value after setting one value to non-default.");
 
 		// Test a default date/time value
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 		$r->setReviewDate(new DateTime("now"));
 		$this->assertFalse($r->hasOnlyDefaultValues());
 	}
 
 	public function testDefaultFkColVal()
 	{
-		$sale = new PropelModel::BookstoreSale();
+		$sale = new PropelModel\BookstoreSale();
 		$this->assertEquals(1, $sale->getBookstoreId(), "Expected BookstoreSale object to have a default bookstore_id of 1.");
 
-		$bookstore = PropelPeer::BookstorePeer::doSelectOne(new Criteria());
+		$bookstore = PropelPeer\BookstorePeer::doSelectOne(new Criteria());
 
 		$sale->setBookstore($bookstore);
 		$this->assertEquals($bookstore->getId(), $sale->getBookstoreId(), "Expected FK id to have changed when assigned a valid FK.");
@@ -817,14 +817,14 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 	public function testCountRefFk()
 	{
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle("Test Book");
 		$book->setISBN("TT-EE-SS-TT");
 
 		$num = 5;
 
 		for ($i=2; $i < $num + 2; $i++) {
-			$r = new PropelModel::Review();
+			$r = new PropelModel\Review();
 			$r->setReviewedBy('Hans ' . $num);
 			$dt = new DateTime("now");
 			$dt->modify("-".$i." weeks");
@@ -838,21 +838,21 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		$book->save();
 
-		PropelPeer::BookPeer::clearInstancePool();
-		PropelPeer::ReviewPeer::clearInstancePool();
+		PropelPeer\BookPeer::clearInstancePool();
+		PropelPeer\ReviewPeer::clearInstancePool();
 
-		$book = PropelPeer::BookPeer::retrieveByPK($book->getId());
+		$book = PropelPeer\BookPeer::retrieveByPK($book->getId());
 		$this->assertEquals($num, $book->countReviews(), "Expected countReviews() to return $num (after save)");
 		$this->assertEquals($num, count($book->getReviews()), "Expected getReviews() to return $num (after save)");
 
 		// Now set different criteria and expect different results
-		$c = new ::Criteria();
-		$c->add(PropelPeer::ReviewPeer::RECOMMENDED, false);
+		$c = new Criteria();
+		$c->add(PropelPeer\ReviewPeer::RECOMMENDED, false);
 		$this->assertEquals(floor($num/2), $book->countReviews($c), "Expected " . floor($num/2) . " results from countReviews(recomm=false)");
 
 		// Change Criteria, run again -- expect different.
-		$c = new ::Criteria();
-		$c->add(PropelPeer::ReviewPeer::RECOMMENDED, true);
+		$c = new Criteria();
+		$c->add(PropelPeer\ReviewPeer::RECOMMENDED, true);
 		$this->assertEquals(ceil($num/2), count($book->getReviews($c)), "Expected " . ceil($num/2) . " results from getReviews(recomm=true)");
 
 		$this->assertEquals($num, $book->countReviews(), "Expected countReviews to return $num with new empty Criteria");
@@ -864,14 +864,14 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	public function testCopyInto_Deep()
 	{
 		// Test a "normal" object
-		$c = new ::Criteria();
-		$c->add(PropelPeer::BookPeer::TITLE, 'Harry%', ::Criteria::LIKE);
+		$c = new Criteria();
+		$c->add(PropelPeer\BookPeer::TITLE, 'Harry%', Criteria::LIKE);
 
-		$book = PropelPeer::BookPeer::doSelectOne($c);
+		$book = PropelPeer\BookPeer::doSelectOne($c);
 		$reviews = $book->getReviews();
 
 		$b2 = $book->copy(true);
-		$this->assertType('bookstore::Model::Book', $b2);
+		$this->assertType('bookstore\Model\Book', $b2);
 		$this->assertNull($b2->getId());
 
 		$r2 = $b2->getReviews();
@@ -879,10 +879,10 @@ class GeneratedObjectTest extends BookstoreTestBase {
 		$this->assertEquals(count($reviews), count($r2));
 
 		// Test a one-to-one object
-		$emp = PropelPeer::BookstoreEmployeePeer::doSelectOne(new Criteria());
+		$emp = PropelPeer\BookstoreEmployeePeer::doSelectOne(new Criteria());
 		$e2 = $emp->copy(true);
 
-		$this->assertType('bookstore::Model::BookstoreEmployee', $e2);
+		$this->assertType('bookstore\\Model\\BookstoreEmployee', $e2);
 		$this->assertNull($e2->getId());
 
 		$this->assertEquals($emp->getBookstoreEmployeeAccount()->getLogin(), $e2->getBookstoreEmployeeAccount()->getLogin());
@@ -894,17 +894,17 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testCopy_CompositePK()
 	{
-		$br = new PropelModel::BookReader();
+		$br = new PropelModel\BookReader();
 		$br->setName("TestReader");
 		$br->save();
 		$br->copy();
 		
-		$b = new PropelModel::Book();
+		$b = new PropelModel\Book();
 		$b->setTitle("TestBook");
 		$b->setISBN("XX-XX-XX-XX");
 		$b->save();
 		
-		$op = new PropelModel::BookOpinion();
+		$op = new PropelModel\BookOpinion();
 		$op->setBookReader($br);
 		$op->setBook($b);
 		$op->setRating(10);
@@ -931,26 +931,26 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testToArrayLazyLoad()
 	{
-		$c = new ::Criteria();
-		$c->add(PropelPeer::MediaPeer::COVER_IMAGE, null, ::Criteria::NOT_EQUAL);
-		$c->add(PropelPeer::MediaPeer::EXCERPT, null, ::Criteria::NOT_EQUAL);
+		$c = new Criteria();
+		$c->add(PropelPeer\MediaPeer::COVER_IMAGE, null, Criteria::NOT_EQUAL);
+		$c->add(PropelPeer\MediaPeer::EXCERPT, null, Criteria::NOT_EQUAL);
 
-		$m = PropelPeer::MediaPeer::doSelectOne($c);
+		$m = PropelPeer\MediaPeer::doSelectOne($c);
 		if ($m === null) {
 			$this->fail("Test requires at least one media row w/ cover_image and excerpt NOT NULL");
 		}
 
-		$arr1 = $m->toArray(::BasePeer::TYPE_COLNAME);
-		$this->assertNotNull($arr1[PropelPeer::MediaPeer::COVER_IMAGE]);
-		$this->assertType('resource', $arr1[PropelPeer::MediaPeer::COVER_IMAGE]);
+		$arr1 = $m->toArray(BasePeer::TYPE_COLNAME);
+		$this->assertNotNull($arr1[PropelPeer\MediaPeer::COVER_IMAGE]);
+		$this->assertType('resource', $arr1[PropelPeer\MediaPeer::COVER_IMAGE]);
 
-		$arr2 = $m->toArray(::BasePeer::TYPE_COLNAME, false);
-		$this->assertNull($arr2[PropelPeer::MediaPeer::COVER_IMAGE]);
-		$this->assertNull($arr2[PropelPeer::MediaPeer::EXCERPT]);
+		$arr2 = $m->toArray(BasePeer::TYPE_COLNAME, false);
+		$this->assertNull($arr2[PropelPeer\MediaPeer::COVER_IMAGE]);
+		$this->assertNull($arr2[PropelPeer\MediaPeer::EXCERPT]);
 
 		$diffKeys = array_keys(array_diff($arr1, $arr2));
 
-		$expectedDiff = array(PropelPeer::MediaPeer::COVER_IMAGE, PropelPeer::MediaPeer::EXCERPT);
+		$expectedDiff = array(PropelPeer\MediaPeer::COVER_IMAGE, PropelPeer\MediaPeer::EXCERPT);
 
 		$this->assertEquals($expectedDiff, $diffKeys);
 	}
@@ -961,7 +961,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testRegexValidator()
 	{
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setWebsite("http://this.is.valid.com/foo.bar");
 		$res = $b->validate();
 		$this->assertTrue($res, "Expected URL to validate");
@@ -972,7 +972,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testSettingAutoIncrementPK()
 	{
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setId(1);
 		$b->setStoreName("Test");
 		try {
@@ -984,7 +984,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 
 		// ... but we should silently ignore NULL values, since these are really
 		// the same as "not set" in PHP world.
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setId(null);
 		$b->setStoreName("Test2");
 		try {
@@ -1004,12 +1004,12 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testAllowPkInsertOnIdMethodNativeTable()
 	{
-		$cu = new PropelModel::Customer;
+		$cu = new PropelModel\Customer;
 		$cu->setPrimaryKey(100000);
 		
 		$cu->save();
 		
-		$cu2 = PropelPeer::CustomerPeer::retrieveByPk(100000);
+		$cu2 = PropelPeer\CustomerPeer::retrieveByPk(100000);
 				
 		$this->assertSame($cu, $cu2);
 	}
@@ -1018,7 +1018,7 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	 */
 	public function testAllowEmptyWithAutoIncrement()
 	{
-		$bookreader = new PropelModel::BookReader();
+		$bookreader = new PropelModel\BookReader();
 		$bookreader->save();
 				
 		$this->assertFalse($bookreader->isNew() );
@@ -1033,8 +1033,8 @@ class GeneratedObjectTest extends BookstoreTestBase {
 	/**
 	 * Checks if the disabling of columns works
 	 */
-	public function testDisableColumn()
+	/*public function testDisableColumn()
 	{
-		$this->assertNull(constant("bookstore::Peer::BookstoreNonExistingTableFkPeer::BOOKSTORE_NON_EXISTING_TABLE_ID") );
-	}
+		$this->assertNull(constant("bookstore\\Peer\\BookstoreNonExistingTableFkPeer::BOOKSTORE_NON_EXISTING_TABLE_ID") );
+	}*/
 }

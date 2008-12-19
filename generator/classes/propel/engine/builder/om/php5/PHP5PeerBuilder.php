@@ -181,7 +181,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 	const TABLE_NAME = '$tableName';
 
 	/** A class that can be returned by this peer. */
-	const CLASS_DEFAULT = '".$this->getStubObjectBuilder()->getClasspath()."';
+	const CLASS_DEFAULT = '".$this->getStubObjectBuilder()->getClassname()."';
 
 	/** The total number of columns. */
 	const NUM_COLUMNS = ".$this->getTable()->getNumColumns().";
@@ -537,7 +537,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		// BasePeer returns a PDOStatement
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
-		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		if (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
 		} else {
 			\$count = 0; // no rows returned; we infer that means 0 matches.
@@ -946,8 +946,8 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 	 * @param      string &$script The script will be modified in this method.
 	 **/
 	protected function addPopupulateObjectsOpen(&$script) {
-		$script .= "
-	public static function populateObjects(PDOStatement \$stmt)
+        $script .= "
+	public static function populateObjects(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDOStatement \$stmt)
 	{";
 	}
 
@@ -961,15 +961,18 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		\$results = array();
 	";
 		if (!$table->getChildrenColumn()) {
-			$script .= "
+            $clsName = $this->getPeerClassname();
+            //if ($clsName[0] == '\\') $clsName = substr($clsName,1);
+			$script .= "        
 		// set the class once to avoid overhead in the loop
-		\$cls = ".$this->getPeerClassname()."::getOMClass();
+		\$cls = ".$clsName."::getOMClass();
+        if (\$cls[0] == '\\\') \$cls = substr(\$cls,1);
 		\$cls = substr('.'.\$cls, strrpos('.'.\$cls, '.') + 1);";
 		}
 
 		$script .= "
 		// populate the object(s)
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj = ".$this->getPeerClassname()."::getInstanceFromPool(\$key))) {
 				// We no longer rehydrate the object, since this can cause data loss.
@@ -1503,7 +1506,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 	 * @param      PropelPDO \$con
 	 * @return     int The number of affected rows (if supported by underlying database driver).
 	 */
-	protected static function doOnDeleteCascade(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, PropelPDO \$con)
+	protected static function doOnDeleteCascade(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con)
 	{
 		// initialize var to track total num of affected rows
 		\$affectedRows = 0;
@@ -1584,7 +1587,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 	 * @param      PropelPDO \$con
 	 * @return     void
 	 */
-	protected static function doOnDeleteSetNull(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, PropelPDO \$con)
+	protected static function doOnDeleteSetNull(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria \$criteria, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con)
 	{
 
 		// first find the objects that are implicated by the \$criteria
@@ -2038,7 +2041,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
 				// We no longer rehydrate the object, since this can cause data loss.
@@ -2193,7 +2196,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 						$script .= "), \$join_behavior);
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
-		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		if (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
 		} else {
 			\$count = 0; // no rows returned; we infer that means 0 matches.
@@ -2301,7 +2304,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
 				// We no longer rehydrate the object, since this can cause data loss.
@@ -2481,7 +2484,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		$script .= "
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
-		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		if (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
 		} else {
 			\$count = 0; // no rows returned; we infer that means 0 matches.
@@ -2560,8 +2563,8 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 					if ($joinClassName != $excludedClassName) {
 						$new_index = $index + 1;
 						$script .= "
-		".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$c);
-		\$startcol$new_index = \$startcol$index + (".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::NUM_COLUMNS - ".$this->getNamespaceQualifier(self::NAMESPACE_PEER).$joinTablePeerBuilder->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS);
+		".$joinTablePeerBuilder->getPeerClassname()."::addSelectColumns(\$c);
+		\$startcol$new_index = \$startcol$index + (".$joinTablePeerBuilder->getPeerClassname()."::NUM_COLUMNS - ".$joinTablePeerBuilder->getPeerClassname()."::NUM_LAZY_LOAD_COLUMNS);
 ";
 						$index = $new_index;
 					} // if joinClassName not excludeClassName
@@ -2608,7 +2611,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doSelect(\$c, \$con);
 		\$results = array();
 
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key1 = ".$this->getPeerClassname()."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null !== (\$obj1 = ".$this->getPeerClassname()."::getInstanceFromPool(\$key1))) {
 				// We no longer rehydrate the object, since this can cause data loss.
@@ -2799,7 +2802,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 			$script .= "
 		\$stmt = ".$this->getNamespaceQualifiedBasePeer()."::doCount(\$criteria, \$con);
 
-		if (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		if (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$count = (int) \$row[0];
 		} else {
 			\$count = 0; // no rows returned; we infer that means 0 matches.

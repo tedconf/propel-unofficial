@@ -85,7 +85,7 @@ class BasePeer
 		$peerclass = 'Base' . $classname . 'Peer'; // TODO is this always true?
                 $config = Propel::getConfiguration();
                 if ($config['namespaces']['enabled'] == 1) {
-                    $peerclass = $config['namespaces']['peer']['value'] . '::' . $peerclass;
+                    $peerclass = $config['namespaces']['peer']['value'] . '\\' . $peerclass;
                 }
 		$callable = array($peerclass, 'getFieldnames');
 		$args = array($type);
@@ -100,7 +100,7 @@ class BasePeer
 		$peerclass = 'Base' . $classname . 'Peer'; // TODO is this always true?
                 $config = Propel::getConfiguration();
                 if ($config['namespaces']['enabled'] == 1) {
-                    $peerclass = $config['namespaces']['peer']['value'] . '::' . $peerclass;
+                    $peerclass = $config['namespaces']['peer']['value'] . '\\' . $peerclass;
                 }
 		$callable = array($peerclass, 'translateFieldname');
 		$args = array($fieldname, $fromType, $toType);

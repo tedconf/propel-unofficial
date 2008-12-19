@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Peer as PropelPeer;
-use bookstore::Model as PropelModel;
+use bookstore\Peer as PropelPeer;
+use bookstore\Model as PropelModel;
 
 /*
  *  $Id$
@@ -48,17 +48,17 @@ class BasePeerTest extends BookstoreTestBase {
 	 */
 	public function testMultipleFunctionInCriteria()
 	{
-		$db = ::Propel::getDB(PropelPeer::BookPeer::DATABASE_NAME);
+		$db = Propel::getDB(PropelPeer\BookPeer::DATABASE_NAME);
 		try {
-			$c = new ::Criteria();
+			$c = new Criteria();
 			$c->setDistinct();
 			if ($db instanceof DBPostgres) {
-				$c->addSelectColumn("substring(".PropelPeer::BookPeer::TITLE." from position('Potter' in ".PropelPeer::BookPeer::TITLE.")) AS col");
+				$c->addSelectColumn("substring(".PropelPeer\BookPeer::TITLE." from position('Potter' in ".PropelPeer\BookPeer::TITLE.")) AS col");
 			} else {
 				$this->markTestSkipped();
 			}
-			$stmt = PropelPeer::BookPeer::doSelectStmt( $c );
-		} catch (::PropelException $x) {
+			$stmt = PropelPeer\BookPeer::doSelectStmt( $c );
+		} catch (PropelException $x) {
 			$this->fail("Paring of nested functions failed: " . $x->getMessage());
 		}
 	}
@@ -69,24 +69,24 @@ class BasePeerTest extends BookstoreTestBase {
 	public function testBigIntIgnoreCaseOrderBy()
 	{
 		// Some sample data
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("SortTest1")->setPopulationServed(2000)->save();
 
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("SortTest2")->setPopulationServed(201)->save();
 
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("SortTest3")->setPopulationServed(302)->save();
 
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("SortTest4")->setPopulationServed(10000000)->save();
 
-		$c = new ::Criteria();
+		$c = new Criteria();
 		$c->setIgnoreCase(true);
-		$c->add(PropelPeer::BookstorePeer::STORE_NAME, 'SortTest%', ::Criteria::LIKE);
-		$c->addAscendingOrderByColumn(PropelPeer::BookstorePeer::POPULATION_SERVED);
+		$c->add(PropelPeer\BookstorePeer::STORE_NAME, 'SortTest%', Criteria::LIKE);
+		$c->addAscendingOrderByColumn(PropelPeer\BookstorePeer::POPULATION_SERVED);
 
-		$rows = PropelPeer::BookstorePeer::doSelect($c);
+		$rows = PropelPeer\BookstorePeer::doSelect($c);
 		$this->assertEquals('SortTest2', $rows[0]->getStoreName());
 		$this->assertEquals('SortTest3', $rows[1]->getStoreName());
 		$this->assertEquals('SortTest1', $rows[2]->getStoreName());
@@ -99,15 +99,15 @@ class BasePeerTest extends BookstoreTestBase {
 	public function testMixedJoinOrder()
 	{
 		$this->markTestIncomplete();
-		$c = new ::Criteria(PropelPeer::BookPeer::DATABASE_NAME);
-		$c->addSelectColumn(PropelPeer::BookPeer::ID);
-		$c->addSelectColumn(PropelPeer::BookPeer::TITLE);
+		$c = new Criteria(PropelPeer\BookPeer::DATABASE_NAME);
+		$c->addSelectColumn(PropelPeer\BookPeer::ID);
+		$c->addSelectColumn(PropelPeer\BookPeer::TITLE);
 
-		$c->addJoin(PropelPeer::BookPeer::PUBLISHER_ID, PropelPeer::PublisherPeer::ID, ::Criteria::LEFT_JOIN);
-		$c->addJoin(PropelPeer::BookPeer::AUTHOR_ID, PropelPeer::AuthorPeer::ID);
+		$c->addJoin(PropelPeer\BookPeer::PUBLISHER_ID, PropelPeer\PublisherPeer::ID, Criteria::LEFT_JOIN);
+		$c->addJoin(PropelPeer\BookPeer::AUTHOR_ID, PropelPeer\AuthorPeer::ID);
 
 		$params = array();
-		$sql = PropelPeer::BasePeer::createSelectSql($c, $params);
+		$sql = PropelPeer\BasePeer::createSelectSql($c, $params);
 
 		$expectedSql = "SELECT book.ID, book.TITLE FROM book LEFT JOIN publisher ON (book.PUBLISHER_ID=publisher.ID), author WHERE book.AUTHOR_ID=author.ID";
 		// print $sql . "\n";

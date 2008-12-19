@@ -47,6 +47,7 @@ class PHP5ExtensionObjectBuilder extends ObjectBuilder {
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
 		
 		$namespaceToUse = $this->getBuildProperty('namespaceOm');
+        if ($namespaceToUse[0] == '\\') $namespaceToUse = substr($namespaceToUse,1);
 		$script .= "\nnamespace $namespaceToUse;\n";		
 	}
 	

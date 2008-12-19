@@ -101,10 +101,10 @@
 		</datasources>
 		<namespaces enabled="true">
 		    <namespace id="base" value="bookstore" />
-		    <namespace id="om" value="bookstore::Model" />
-		    <namespace id="peer" value="bookstore::Peer" />
-		    <namespace id="map" value="bookstore::Map" />
-		    <namespace id="nest" value="bookstore::Model" />
+		    <namespace id="om" value="bookstore\Model" />
+		    <namespace id="peer" value="bookstore\Peer" />
+		    <namespace id="map" value="bookstore\Map" />
+		    <namespace id="nest" value="bookstore\Model" />
 		</namespaces>
 	</propel>
 </config>

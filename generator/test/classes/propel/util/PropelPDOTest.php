@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Peer as PropelPeer;
-use bookstore::Model as PropelModel;
+use bookstore\Peer as PropelPeer;
+use bookstore\Model as PropelModel;
 
 /*
  *  $Id: PropelDateTimeTest.php 784 2007-11-08 10:15:50Z heltem $
@@ -36,10 +36,10 @@ class PropelPDOTest extends BookstoreTestBase
 
 	public function testSetAttribute()
 	{
-		$con = ::Propel::getConnection(PropelPeer::BookPeer::DATABASE_NAME);
-		$this->assertFalse($con->getAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
-		$con->setAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES, true);
-		$this->assertTrue($con->getAttribute(::PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
+		$this->assertFalse($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
+		$con->setAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES, true);
+		$this->assertTrue($con->getAttribute(PropelPDO::PROPEL_ATTR_CACHE_PREPARES));
 
 		$con->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
 		$this->assertEquals(PDO::CASE_LOWER, $con->getAttribute(PDO::ATTR_CASE));
@@ -50,7 +50,7 @@ class PropelPDOTest extends BookstoreTestBase
 	 */
 	public function testRollBack_NestedRethrow()
 	{
-		$con = Propel::getConnection(BookPeer::DATABASE_NAME);
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
 		$driver = $con->getAttribute(PDO::ATTR_DRIVER_NAME);
 		if ($driver == "mysql") {
 			$this->markTestSkipped();
@@ -91,7 +91,7 @@ class PropelPDOTest extends BookstoreTestBase
 	 */
 	public function testRollBack_NestedSwallow()
 	{
-		$con = Propel::getConnection(BookPeer::DATABASE_NAME);
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
 		$driver = $con->getAttribute(PDO::ATTR_DRIVER_NAME);
 		if ($driver == "mysql") {
 			$this->markTestSkipped();
@@ -128,8 +128,8 @@ class PropelPDOTest extends BookstoreTestBase
 			$this->fail("No outside rollback expected.");
 		}
 		
-		AuthorPeer::clearInstancePool();
-		$at = AuthorPeer::retrieveByPK($authorId);
+		PropelPeer\AuthorPeer::clearInstancePool();
+		$at = PropelPeer\AuthorPeer::retrieveByPK($authorId);
 		$this->assertNull($at, "Expected no author result for rolled-back save.");
 		
 		$at2 = AuthorPeer::retrieveByPK($authorId2);

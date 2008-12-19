@@ -713,7 +713,7 @@ abstract class ".$this->getClassname(false)." {
 	 * @param      ".$this->getNamespaceQualifier(self::GLOBAL_NAMESPACE)."Criteria
 	 * @return     array Array of $nodeObjectClassname objects.
 	 */
-	public static function populateNodes(PDOStatement \$stmt, \$criteria)
+	public static function populateNodes(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDOStatement \$stmt, \$criteria)
 	{
 		\$nodes = array();
 		\$targets = array();

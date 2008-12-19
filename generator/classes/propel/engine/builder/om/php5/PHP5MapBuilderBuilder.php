@@ -52,6 +52,7 @@ class PHP5MapBuilderBuilder extends OMBuilder {
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
 		
 		$namespaceToUse = $this->getBuildProperty('namespaceMap');
+        if ($namespaceToUse[0] == '\\') $namespaceToUse = substr($namespaceToUse,1);
 		$script .= "\nnamespace $namespaceToUse;\n";		
 	}
 	

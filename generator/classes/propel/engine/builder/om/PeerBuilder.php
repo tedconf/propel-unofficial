@@ -62,6 +62,7 @@ abstract class PeerBuilder extends OMBuilder {
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
 		
 		$namespaceToUse = $this->getBuildProperty('namespacePeer');
+        if ($namespaceToUse[0] == '\\') $namespaceToUse = substr($namespaceToUse,1);
 		$script .= "\nnamespace $namespaceToUse;\n";
 	}
 	

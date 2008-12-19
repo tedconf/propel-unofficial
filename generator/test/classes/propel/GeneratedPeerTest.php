@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Peer as PropelPeer;
-use bookstore::Model as PropelModel;
+use bookstore\Peer as PropelPeer;
+use bookstore\Model as PropelModel;
 
 /*
  *  $Id$
@@ -42,31 +42,31 @@ require_once 'bookstore/BookstoreTestBase.php';
 class GeneratedPeerTest extends BookstoreTestBase {
 
 	/**
-	 * Test ability to delete multiple rows via single ::Criteria object.
+	 * Test ability to delete multiple rows via single Criteria object.
 	 */
 	public function testDoDelete_MultiTable() {
 
-		$selc = new ::Criteria();
-		$selc->add(PropelPeer::BookPeer::TITLE, "Harry Potter and the Order of the Phoenix");
-		$hp = PropelPeer::BookPeer::doSelectOne($selc);
+		$selc = new Criteria();
+		$selc->add(PropelPeer\BookPeer::TITLE, "Harry Potter and the Order of the Phoenix");
+		$hp = PropelPeer\BookPeer::doSelectOne($selc);
 
 		// print "Attempting to delete [multi-table] by found pk: ";
-		$c = new ::Criteria();
-		$c->add(PropelPeer::BookPeer::ID, $hp->getId());
+		$c = new Criteria();
+		$c->add(PropelPeer\BookPeer::ID, $hp->getId());
 		// The only way for multi-delete to work currently
 		// is to specify the author_id and publisher_id (i.e. the fkeys
 		// have to be in the criteria).
-		$c->add(PropelPeer::AuthorPeer::ID, $hp->getAuthorId());
-		$c->add(PropelPeer::PublisherPeer::ID, $hp->getPublisherId());
+		$c->add(PropelPeer\AuthorPeer::ID, $hp->getAuthorId());
+		$c->add(PropelPeer\PublisherPeer::ID, $hp->getPublisherId());
 		$c->setSingleRecord(true);
-		PropelPeer::BookPeer::doDelete($c);
+		PropelPeer\BookPeer::doDelete($c);
 
-		//print_r(AuthorPeer::doSelect(new ::Criteria()));
+		//print_r(AuthorPeer::doSelect(new Criteria()));
 
 		// check to make sure the right # of records was removed
-		$this->assertEquals(3, count(PropelPeer::AuthorPeer::doSelect(new ::Criteria())), "Expected 3 authors after deleting.");
-		$this->assertEquals(3, count(PropelPeer::PublisherPeer::doSelect(new ::Criteria())), "Expected 3 publishers after deleting.");
-		$this->assertEquals(3, count(PropelPeer::BookPeer::doSelect(new ::Criteria())), "Expected 3 books after deleting.");
+		$this->assertEquals(3, count(PropelPeer\AuthorPeer::doSelect(new Criteria())), "Expected 3 authors after deleting.");
+		$this->assertEquals(3, count(PropelPeer\PublisherPeer::doSelect(new Criteria())), "Expected 3 publishers after deleting.");
+		$this->assertEquals(3, count(PropelPeer\BookPeer::doSelect(new Criteria())), "Expected 3 books after deleting.");
 	}
 
 	/**
@@ -75,16 +75,16 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoDelete_ComplexCriteria() {
 
 		//print "Attempting to delete books by complex criteria: ";
-		$c = new ::Criteria();
-		$cn = $c->getNewCriterion(PropelPeer::BookPeer::ISBN, "043935806X");
-		$cn->addOr($c->getNewCriterion(PropelPeer::BookPeer::ISBN, "0380977427"));
-		$cn->addOr($c->getNewCriterion(PropelPeer::BookPeer::ISBN, "0140422161"));
+		$c = new Criteria();
+		$cn = $c->getNewCriterion(PropelPeer\BookPeer::ISBN, "043935806X");
+		$cn->addOr($c->getNewCriterion(PropelPeer\BookPeer::ISBN, "0380977427"));
+		$cn->addOr($c->getNewCriterion(PropelPeer\BookPeer::ISBN, "0140422161"));
 		$c->add($cn);
-		PropelPeer::BookPeer::doDelete($c);
+		PropelPeer\BookPeer::doDelete($c);
 
 		// now there should only be one book left; "The Tin Drum"
 
-		$books = PropelPeer::BookPeer::doSelect(new ::Criteria());
+		$books = PropelPeer\BookPeer::doSelect(new Criteria());
 
 		$this->assertEquals(1, count($books), "Expected 1 book remaining after deleting.");
 		$this->assertEquals("The Tin Drum", $books[0]->getTitle(), "Expect the only remaining book to be 'The Tin Drum'");
@@ -100,7 +100,7 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 		// 1) Assert the row exists right now
 
-		$medias = PropelPeer::MediaPeer::doSelect(new ::Criteria());
+		$medias = PropelPeer\MediaPeer::doSelect(new Criteria());
 		$this->assertTrue(count($medias) > 0, "Expected to find at least one row in 'media' table.");
 		$media = $medias[0];
 		$mediaId = $media->getId();
@@ -108,11 +108,11 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		// 2) Delete the owning book
 
 		$owningBookId = $media->getBookId();
-		PropelPeer::BookPeer::doDelete($owningBookId);
+		PropelPeer\BookPeer::doDelete($owningBookId);
 
 		// 3) Assert that the media row is now also gone
 
-		$obj = PropelPeer::MediaPeer::retrieveByPK($mediaId);
+		$obj = PropelPeer\MediaPeer::retrieveByPK($mediaId);
 		$this->assertNull($obj, "Expect NULL when retrieving on no matching Media.");
 
 	}
@@ -124,45 +124,45 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoDelete_Cascade_CompositePK()
 	{
 
-		$origBceCount = PropelPeer::BookstoreContestEntryPeer::doCount(new ::Criteria());
+		$origBceCount = PropelPeer\BookstoreContestEntryPeer::doCount(new Criteria());
 
-		$cust1 = new PropelModel::Customer();
+		$cust1 = new PropelModel\Customer();
 		$cust1->setName("Cust1");
 		$cust1->save();
 
-		$cust2 = new PropelModel::Customer();
+		$cust2 = new PropelModel\Customer();
 		$cust2->setName("Cust2");
 		$cust2->save();
 
-		$c1 = new PropelModel::Contest();
+		$c1 = new PropelModel\Contest();
 		$c1->setName("Contest1");
 		$c1->save();
 
-		$c2 = new PropelModel::Contest();
+		$c2 = new PropelModel\Contest();
 		$c2->setName("Contest2");
 		$c2->save();
 
-		$store1 = new PropelModel::Bookstore();
+		$store1 = new PropelModel\Bookstore();
 		$store1->setStoreName("Store1");
 		$store1->save();
 
-		$bc1 = new PropelModel::BookstoreContest();
+		$bc1 = new PropelModel\BookstoreContest();
 		$bc1->setBookstore($store1);
 		$bc1->setContest($c1);
 		$bc1->save();
 
-		$bc2 = new PropelModel::BookstoreContest();
+		$bc2 = new PropelModel\BookstoreContest();
 		$bc2->setBookstore($store1);
 		$bc2->setContest($c2);
 		$bc2->save();
 
-		$bce1 = new PropelModel::BookstoreContestEntry();
+		$bce1 = new PropelModel\BookstoreContestEntry();
 		$bce1->setEntryDate("now");
 		$bce1->setCustomer($cust1);
 		$bce1->setBookstoreContest($bc1);
 		$bce1->save();
 
-		$bce2 = new PropelModel::BookstoreContestEntry();
+		$bce2 = new PropelModel\BookstoreContestEntry();
 		$bce2->setEntryDate("now");
 		$bce2->setCustomer($cust1);
 		$bce2->setBookstoreContest($bc2);
@@ -170,16 +170,16 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 		// Now, if we remove $bc1, we expect *only* bce1 to be no longer valid.
 
-		PropelPeer::BookstoreContestPeer::doDelete($bc1);
+		PropelPeer\BookstoreContestPeer::doDelete($bc1);
 
-		$newCount = PropelPeer::BookstoreContestEntryPeer::doCount(new ::Criteria());
+		$newCount = PropelPeer\BookstoreContestEntryPeer::doCount(new Criteria());
 
 		$this->assertEquals($origBceCount + 1, $newCount, "Expected new number of rows in BCE to be orig + 1");
 
-		$bcetest = PropelPeer::BookstoreContestEntryPeer::retrieveByPK($store1->getId(), $c1->getId(), $cust1->getId());
+		$bcetest = PropelPeer\BookstoreContestEntryPeer::retrieveByPK($store1->getId(), $c1->getId(), $cust1->getId());
 		$this->assertNull($bcetest, "Expected BCE for store1 to be cascade deleted.");
 
-		$bcetest2 = PropelPeer::BookstoreContestEntryPeer::retrieveByPK($store1->getId(), $c2->getId(), $cust1->getId());
+		$bcetest2 = PropelPeer\BookstoreContestEntryPeer::retrieveByPK($store1->getId(), $c2->getId(), $cust1->getId());
 		$this->assertNotNull($bcetest2, "Expected BCE for store2 to NOT be cascade deleted.");
 
 	}
@@ -192,18 +192,18 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		// The 'author_id' column in 'book' table will be set to null when author is deleted.
 
 		// 1) Get an arbitrary book
-		$c = new ::Criteria();
-		$book = PropelPeer::BookPeer::doSelectOne($c);
+		$c = new Criteria();
+		$book = PropelPeer\BookPeer::doSelectOne($c);
 		$bookId = $book->getId();
 		$authorId = $book->getAuthorId();
 		unset($book);
 
 		// 2) Delete the author for that book
-		PropelPeer::AuthorPeer::doDelete($authorId);
+		PropelPeer\AuthorPeer::doDelete($authorId);
 
 		// 3) Assert that the book.author_id column is now NULL
 
-		$book = PropelPeer::BookPeer::retrieveByPK($bookId);
+		$book = PropelPeer\BookPeer::retrieveByPK($bookId);
 		$this->assertNull($book->getAuthorId(), "Expect the book.author_id to be NULL after the author was removed.");
 
 	}
@@ -214,14 +214,14 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoDelete_ByPK() {
 
 		// 1) get an arbitrary book
-		$book = PropelPeer::BookPeer::doSelectOne(new ::Criteria());
+		$book = PropelPeer\BookPeer::doSelectOne(new Criteria());
 		$bookId = $book->getId();
 
 		// 2) now delete that book
-		PropelPeer::BookPeer::doDelete($bookId);
+		PropelPeer\BookPeer::doDelete($bookId);
 
 		// 3) now make sure it's gone
-		$obj = PropelPeer::BookPeer::retrieveByPK($bookId);
+		$obj = PropelPeer\BookPeer::retrieveByPK($bookId);
 		$this->assertNull($obj, "Expect NULL when retrieving on no matching Book.");
 
 	}
@@ -232,14 +232,14 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoDelete_ByObj() {
 
 		// 1) get an arbitrary book
-		$book = PropelPeer::BookPeer::doSelectOne(new ::Criteria());
+		$book = PropelPeer\BookPeer::doSelectOne(new Criteria());
 		$bookId = $book->getId();
 
 		// 2) now delete that book
-		PropelPeer::BookPeer::doDelete($book);
+		PropelPeer\BookPeer::doDelete($book);
 
 		// 3) now make sure it's gone
-		$obj = PropelPeer::BookPeer::retrieveByPK($bookId);
+		$obj = PropelPeer\BookPeer::retrieveByPK($bookId);
 		$this->assertNull($obj, "Expect NULL when retrieving on no matching Book.");
 
 	}
@@ -250,8 +250,8 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoDeleteAll() {
 
-		PropelPeer::BookPeer::doDeleteAll();
-		$this->assertEquals(0, count(PropelPeer::BookPeer::doSelect(new ::Criteria())), "Expect all book rows to have been deleted.");
+		PropelPeer\BookPeer::doDeleteAll();
+		$this->assertEquals(0, count(PropelPeer\BookPeer::doSelect(new Criteria())), "Expect all book rows to have been deleted.");
 	}
 
 	/**
@@ -259,9 +259,9 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoDeleteAll_Cascade() {
 
-		PropelPeer::BookPeer::doDeleteAll();
-		$this->assertEquals(0, count(PropelPeer::MediaPeer::doSelect(new ::Criteria())), "Expect all media rows to have been cascade deleted.");
-		$this->assertEquals(0, count(PropelPeer::ReviewPeer::doSelect(new ::Criteria())), "Expect all review rows to have been cascade deleted.");
+		PropelPeer\BookPeer::doDeleteAll();
+		$this->assertEquals(0, count(PropelPeer\MediaPeer::doSelect(new Criteria())), "Expect all media rows to have been cascade deleted.");
+		$this->assertEquals(0, count(PropelPeer\ReviewPeer::doSelect(new Criteria())), "Expect all review rows to have been cascade deleted.");
 	}
 
 	/**
@@ -269,36 +269,36 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoDeleteAll_SetNull() {
 
-		$c = new ::Criteria();
-		$c->add(PropelPeer::BookPeer::AUTHOR_ID, null, ::Criteria::NOT_EQUAL);
+		$c = new Criteria();
+		$c->add(PropelPeer\BookPeer::AUTHOR_ID, null, Criteria::NOT_EQUAL);
 
 		// 1) make sure there are some books with valid authors
-		$this->assertTrue(count(PropelPeer::BookPeer::doSelect($c)) > 0, "Expect some book.author_id columns that are not NULL.");
+		$this->assertTrue(count(PropelPeer\BookPeer::doSelect($c)) > 0, "Expect some book.author_id columns that are not NULL.");
 
 		// 2) delete all the authors
-		PropelPeer::AuthorPeer::doDeleteAll();
+		PropelPeer\AuthorPeer::doDeleteAll();
 
 		// 3) now verify that the book.author_id columns are all nul
-		$this->assertEquals(0, count(PropelPeer::BookPeer::doSelect($c)), "Expect all book.author_id columns to be NULL.");
+		$this->assertEquals(0, count(PropelPeer\BookPeer::doSelect($c)), "Expect all book.author_id columns to be NULL.");
 	}
 
 	/**
-	 * Test the doInsert() method when passed a ::Criteria object.
+	 * Test the doInsert() method when passed a Criteria object.
 	 */
 	public function testDoInsert_Criteria() {
 
 		$name = "A Sample Publisher - " . time();
 
-		$values = new ::Criteria();
-		$values->add(PropelPeer::PublisherPeer::NAME, $name);
-		PropelPeer::PublisherPeer::doInsert($values);
+		$values = new Criteria();
+		$values->add(PropelPeer\PublisherPeer::NAME, $name);
+		PropelPeer\PublisherPeer::doInsert($values);
 
-		$c = new ::Criteria();
-		$c->add(PropelPeer::PublisherPeer::NAME, $name);
+		$c = new Criteria();
+		$c->add(PropelPeer\PublisherPeer::NAME, $name);
 
-		$matches = PropelPeer::PublisherPeer::doSelect($c);
+		$matches = PropelPeer\PublisherPeer::doSelect($c);
 		$this->assertEquals(1, count($matches), "Expect there to be exactly 1 publisher just-inserted.");
-		$this->assertTrue( 1 != $matches[0]->getId(), "Expected to have different ID than one put in values ::Criteria.");
+		$this->assertTrue( 1 != $matches[0]->getId(), "Expected to have different ID than one put in values Criteria.");
 
 	}
 
@@ -309,16 +309,16 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 		$name = "A Sample Publisher - " . time();
 
-		$values = new PropelModel::Publisher();
+		$values = new PropelModel\Publisher();
 		$values->setName($name);
-		PropelPeer::PublisherPeer::doInsert($values);
+		PropelPeer\PublisherPeer::doInsert($values);
 
-		$c = new ::Criteria();
-		$c->add(PropelPeer::PublisherPeer::NAME, $name);
+		$c = new Criteria();
+		$c->add(PropelPeer\PublisherPeer::NAME, $name);
 
-		$matches = PropelPeer::PublisherPeer::doSelect($c);
+		$matches = PropelPeer\PublisherPeer::doSelect($c);
 		$this->assertEquals(1, count($matches), "Expect there to be exactly 1 publisher just-inserted.");
-		$this->assertTrue( 1 != $matches[0]->getId(), "Expected to have different ID than one put in values ::Criteria.");
+		$this->assertTrue( 1 != $matches[0]->getId(), "Expected to have different ID than one put in values Criteria.");
 
 	}
 
@@ -328,23 +328,23 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoSelect_Limit() {
 
 		// 1) get the total number of items in a particular table
-		$count = PropelPeer::BookPeer::doCount(new ::Criteria());
+		$count = PropelPeer\BookPeer::doCount(new Criteria());
 
 		$this->assertTrue($count > 1, "Need more than 1 record in books table to perform this test.");
 
 		$limitcount = $count - 1;
 
-		$lc = new ::Criteria();
+		$lc = new Criteria();
 		$lc->setLimit($limitcount);
 
-		$results = PropelPeer::BookPeer::doSelect($lc);
+		$results = PropelPeer\BookPeer::doSelect($lc);
 
 		$this->assertEquals($limitcount, count($results), "Expected $limitcount results from BookPeer::doSelect()");
 
 		// re-create it just to avoid side-effects
-		$lc2 = new ::Criteria();
+		$lc2 = new Criteria();
 		$lc2->setLimit($limitcount);
-		$results2 = PropelPeer::BookPeer::doSelectJoinAuthor($lc2);
+		$results2 = PropelPeer\BookPeer::doSelectJoinAuthor($lc2);
 
 		$this->assertEquals($limitcount, count($results2), "Expected $limitcount results from BookPeer::doSelectJoinAuthor()");
 
@@ -356,17 +356,17 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	public function testDoSelectJoin()
 	{
 
-		PropelPeer::BookPeer::clearInstancePool();
+		PropelPeer\BookPeer::clearInstancePool();
 
-		$c = new ::Criteria();
+		$c = new Criteria();
 
-		$books = PropelPeer::BookPeer::doSelect($c);
+		$books = PropelPeer\BookPeer::doSelect($c);
 		$obj = $books[0];
 		$size = strlen(serialize($obj));
 
-		PropelPeer::BookPeer::clearInstancePool();
+		PropelPeer\BookPeer::clearInstancePool();
 
-		$joinBooks = PropelPeer::BookPeer::doSelectJoinAuthor($c);
+		$joinBooks = PropelPeer\BookPeer::doSelectJoinAuthor($c);
 		$obj2 = $joinBooks[0];
 		$joinSize = strlen(serialize($obj2));
 
@@ -380,51 +380,51 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoSelectJoin_NullFk()
 	{
-		$b1 = new PropelModel::Book();
+		$b1 = new PropelModel\Book();
 		$b1->setTitle("Test NULLFK 1");
 		$b1->setISBN("NULLFK-1");
 		$b1->save();
 
-		$b2 = new PropelModel::Book();
+		$b2 = new PropelModel\Book();
 		$b2->setTitle("Test NULLFK 2");
 		$b2->setISBN("NULLFK-2");
-		$b2->setAuthor(new PropelModel::Author());
+		$b2->setAuthor(new PropelModel\Author());
 		$b2->getAuthor()->setFirstName("Hans")->setLastName("L");
 		$b2->save();
 
-		PropelPeer::BookPeer::clearInstancePool();
-		PropelPeer::AuthorPeer::clearInstancePool();
+		PropelPeer\BookPeer::clearInstancePool();
+		PropelPeer\AuthorPeer::clearInstancePool();
 
-		$c = new ::Criteria();
-		$c->add(PropelPeer::BookPeer::ISBN, 'NULLFK-%', ::Criteria::LIKE);
-		$c->addAscendingOrderByColumn(PropelPeer::BookPeer::ISBN);
+		$c = new Criteria();
+		$c->add(PropelPeer\BookPeer::ISBN, 'NULLFK-%', Criteria::LIKE);
+		$c->addAscendingOrderByColumn(PropelPeer\BookPeer::ISBN);
 
-		$matches = PropelPeer::BookPeer::doSelectJoinAuthor($c);
+		$matches = PropelPeer\BookPeer::doSelectJoinAuthor($c);
 		$this->assertEquals(2, count($matches), "Expected 2 matches back from new books; got back " . count($matches));
 
 		$this->assertNull($matches[0]->getAuthor(), "Expected first book author to be null");
 		// This doesn't seem to work in my version of PHPUnit (3.2.21)
 		//$this->assertType('bookstore::Model::Author', $matches[1]->getAuthor(), "Expected valid Author object for second book.");
-		$this->assertEquals('bookstore::Model::Author', get_class($matches[1]->getAuthor()));
+		$this->assertEquals('bookstore\\Model\\Author', get_class($matches[1]->getAuthor()));
 	}
 
 	public function testObjectInstances()
 	{
 
-		$sample = PropelPeer::BookPeer::doSelectOne(new ::Criteria());
+		$sample = PropelPeer\BookPeer::doSelectOne(new Criteria());
 		$samplePk = $sample->getPrimaryKey();
 
 		// 1) make sure consecutive calls to retrieveByPK() return the same object.
 
-		$b1 = PropelPeer::BookPeer::retrieveByPK($samplePk);
-		$b2 = PropelPeer::BookPeer::retrieveByPK($samplePk);
+		$b1 = PropelPeer\BookPeer::retrieveByPK($samplePk);
+		$b2 = PropelPeer\BookPeer::retrieveByPK($samplePk);
 
 		$sampleval = md5(microtime());
 
 		$this->assertTrue($b1 === $b2, "Expected object instances to match for calls with same retrieveByPK() method signature.");
 
 		// 2) make sure that calls to doSelect also return references to the same objects.
-		$allbooks = PropelPeer::BookPeer::doSelect(new ::Criteria());
+		$allbooks = PropelPeer\BookPeer::doSelect(new Criteria());
 		foreach ($allbooks as $testb) {
 			if ($testb->getPrimaryKey() == $b1->getPrimaryKey()) {
 				$this->assertTrue($testb === $b1, "Expected same object instance from doSelect() as from retrieveByPK()");
@@ -432,16 +432,16 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		}
 
 		// 3) test fetching related objects
-		$book = PropelPeer::BookPeer::retrieveByPK($samplePk);
+		$book = PropelPeer\BookPeer::retrieveByPK($samplePk);
 
 		$bookauthor = $book->getAuthor();
 
-		$author = PropelPeer::AuthorPeer::retrieveByPK($bookauthor->getId());
+		$author = PropelPeer\AuthorPeer::retrieveByPK($bookauthor->getId());
 
 		$this->assertTrue($bookauthor === $author, "Expected same object instance when calling fk object accessor as retrieveByPK()");
 
 		// 4) test a doSelectJoin()
-		$morebooks = PropelPeer::BookPeer::doSelectJoinAuthor(new ::Criteria());
+		$morebooks = PropelPeer\BookPeer::doSelectJoinAuthor(new Criteria());
 		for ($i=0,$j=0; $j < count($morebooks); $i++, $j++) {
 			$testb1 = $allbooks[$i];
 			$testb2 = $allbooks[$j];
@@ -454,14 +454,14 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 
 		// 5) test creating a new object, saving it, and then retrieving that object (should all be same instance)
-		$b = new PropelModel::BookstoreEmployee();
+		$b = new PropelModel\BookstoreEmployee();
 		$b->setName("Testing");
 		$b->setJobTitle("Testing");
 		$b->save();
 
 		$empId = $b->getId();
 
-		$this->assertSame($b, PropelPeer::BookstoreEmployeePeer::retrieveByPK($empId), "Expected newly saved object to be same instance as pooled.");
+		$this->assertSame($b, PropelPeer\BookstoreEmployeePeer::retrieveByPK($empId), "Expected newly saved object to be same instance as pooled.");
 
 	}
 
@@ -470,31 +470,31 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testInheritance()
 	{
-		$manager = new PropelModel::BookstoreManager();
+		$manager = new PropelModel\BookstoreManager();
 		$manager->setName("Manager 1");
 		$manager->setJobTitle("Warehouse Manager");
 		$manager->save();
 		$managerId = $manager->getId();
 
-		$employee = new PropelModel::BookstoreEmployee();
+		$employee = new PropelModel\BookstoreEmployee();
 		$employee->setName("Employee 1");
 		$employee->setJobTitle("Janitor");
 		$employee->setSupervisorId($managerId);
 		$employee->save();
 		$empId = $employee->getId();
 
-		$cashier = new PropelModel::BookstoreCashier();
+		$cashier = new PropelModel\BookstoreCashier();
 		$cashier->setName("Cashier 1");
 		$cashier->setJobTitle("Cashier");
 		$cashier->save();
 		$cashierId = $cashier->getId();
 
 		// 1) test the pooled instances'
-		$c = new ::Criteria();
-		$c->add(PropelPeer::BookstoreEmployeePeer::ID, array($managerId, $empId, $cashierId), ::Criteria::IN);
-		$c->addAscendingOrderByColumn(PropelPeer::BookstoreEmployeePeer::ID);
+		$c = new Criteria();
+		$c->add(PropelPeer\BookstoreEmployeePeer::ID, array($managerId, $empId, $cashierId), Criteria::IN);
+		$c->addAscendingOrderByColumn(PropelPeer\BookstoreEmployeePeer::ID);
 
-		$objects = PropelPeer::BookstoreEmployeePeer::doSelect($c);
+		$objects = PropelPeer\BookstoreEmployeePeer::doSelect($c);
 
 		$this->assertEquals(3, count($objects), "Expected 3 objects to be returned.");
 
@@ -505,13 +505,13 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		$this->assertSame($o3, $cashier);
 
 		// 2) test a forced reload from database
-		PropelPeer::BookstoreEmployeePeer::clearInstancePool();
+		PropelPeer\BookstoreEmployeePeer::clearInstancePool();
 
-		list($o1,$o2,$o3) = PropelPeer::BookstoreEmployeePeer::doSelect($c);
+		list($o1,$o2,$o3) = PropelPeer\BookstoreEmployeePeer::doSelect($c);
 
-		$this->assertTrue($o1 instanceof PropelModel::BookstoreManager, "Expected BookstoreManager object, got " . get_class($o1));
-		$this->assertTrue($o2 instanceof PropelModel::BookstoreEmployee, "Expected BookstoreEmployee object, got " . get_class($o2));
-		$this->assertTrue($o3 instanceof PropelModel::BookstoreCashier, "Expected BookstoreCashier object, got " . get_class($o3));
+		$this->assertTrue($o1 instanceof PropelModel\BookstoreManager, "Expected BookstoreManager object, got " . get_class($o1));
+		$this->assertTrue($o2 instanceof PropelModel\BookstoreEmployee, "Expected BookstoreEmployee object, got " . get_class($o2));
+		$this->assertTrue($o3 instanceof PropelModel\BookstoreCashier, "Expected BookstoreCashier object, got " . get_class($o3));
 
 	}
 
@@ -520,10 +520,10 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoCountType()
 	{
-		$c = new ::Criteria();
-		$this->assertType('integer', PropelPeer::BookPeer::doCount($c), "Expected doCount() to return an integer.");
-		$this->assertType('integer', PropelPeer::BookPeer::doCountJoinAll($c), "Expected doCountJoinAll() to return an integer.");
-		$this->assertType('integer', PropelPeer::BookPeer::doCountJoinAuthor($c), "Expected doCountJoinAuthor() to return an integer.");
+		$c = new Criteria();
+		$this->assertType('integer', PropelPeer\BookPeer::doCount($c), "Expected doCount() to return an integer.");
+		$this->assertType('integer', PropelPeer\BookPeer::doCountJoinAll($c), "Expected doCountJoinAll() to return an integer.");
+		$this->assertType('integer', PropelPeer\BookPeer::doCountJoinAuthor($c), "Expected doCountJoinAuthor() to return an integer.");
 	}
 
 	/**
@@ -531,37 +531,37 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoCountLimitOffset()
 	{
-		PropelPeer::BookPeer::doDeleteAll();
+		PropelPeer\BookPeer::doDeleteAll();
 
 		for ($i=0; $i < 25; $i++) {
-			$b = new PropelModel::Book();
+			$b = new PropelModel\Book();
 			$b->setTitle("Book $i");
 			$b->setISBN("ISBN $i");
 			$b->save();
 		}
 
-		$c = new ::Criteria();
-		$totalCount = PropelPeer::BookPeer::doCount($c);
+		$c = new Criteria();
+		$totalCount = PropelPeer\BookPeer::doCount($c);
 
 		$this->assertEquals(25, $totalCount);
 
-		$c2 = new ::Criteria();
+		$c2 = new Criteria();
 		$c2->setLimit(10);
-		$this->assertEquals(10, PropelPeer::BookPeer::doCount($c2));
+		$this->assertEquals(10, PropelPeer\BookPeer::doCount($c2));
 
-		$c3 = new ::Criteria();
+		$c3 = new Criteria();
 		$c3->setOffset(10);
-		$this->assertEquals(15, PropelPeer::BookPeer::doCount($c3));
+		$this->assertEquals(15, PropelPeer\BookPeer::doCount($c3));
 
-		$c4 = new ::Criteria();
+		$c4 = new Criteria();
 		$c4->setOffset(5);
 		$c4->setLimit(5);
-		$this->assertEquals(5, PropelPeer::BookPeer::doCount($c4));
+		$this->assertEquals(5, PropelPeer\BookPeer::doCount($c4));
 
-		$c5 = new ::Criteria();
+		$c5 = new Criteria();
 		$c5->setOffset(20);
 		$c5->setLimit(10);
-		$this->assertEquals(5, PropelPeer::BookPeer::doCount($c5));
+		$this->assertEquals(5, PropelPeer\BookPeer::doCount($c5));
 	}
 
 	/**
@@ -569,20 +569,20 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoCountJoin()
 	{
-		PropelPeer::BookPeer::doDeleteAll();
+		PropelPeer\BookPeer::doDeleteAll();
 
 		for ($i=0; $i < 25; $i++) {
-			$b = new PropelModel::Book();
+			$b = new PropelModel\Book();
 			$b->setTitle("Book $i");
 			$b->setISBN("ISBN $i");
 			$b->save();
 		}
 
-		$c = new ::Criteria();
-		$totalCount = PropelPeer::BookPeer::doCount($c);
+		$c = new Criteria();
+		$totalCount = PropelPeer\BookPeer::doCount($c);
 
-		$this->assertEquals($totalCount, PropelPeer::BookPeer::doCountJoinAuthor($c));
-		$this->assertEquals($totalCount, PropelPeer::BookPeer::doCountJoinPublisher($c));
+		$this->assertEquals($totalCount, PropelPeer\BookPeer::doCountJoinAuthor($c));
+		$this->assertEquals($totalCount, PropelPeer\BookPeer::doCountJoinPublisher($c));
 	}
 
 	/**
@@ -592,8 +592,8 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	{
 		// if it throws an exception, then it's broken.
 		try {
-			PropelPeer::BookPeer::removeInstanceFromPool(null);
-		} catch (::Exception $x) {
+			PropelPeer\BookPeer::removeInstanceFromPool(null);
+		} catch (Exception $x) {
 			$this->fail("Expected to get no exception when removing an instance from the pool.");
 		}
 	}
@@ -603,13 +603,13 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	private function createBookWithId($id)
 	{
-		$con = ::Propel::getConnection(PropelPeer::BookPeer::DATABASE_NAME);
-		$b = PropelPeer::BookPeer::retrieveByPK($id);
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
+		$b = PropelPeer\BookPeer::retrieveByPK($id);
 		if (!$b) {
-			$b = new PropelModel::Book();
+			$b = new PropelModel\Book();
 			$b->setTitle("Book$id")->setISBN("BookISBN$id")->save();
 			$b1Id = $b->getId();
-			$sql = "UPDATE " . PropelPeer::BookPeer::TABLE_NAME . " SET id = ? WHERE id = ?";
+			$sql = "UPDATE " . PropelPeer\BookPeer::TABLE_NAME . " SET id = ? WHERE id = ?";
 			$stmt = $con->prepare($sql);
 			$stmt->bindValue(1, $id);
 			$stmt->bindValue(2, $b1Id);
@@ -622,13 +622,13 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	private function createReaderWithId($id)
 	{
-		$con = ::Propel::getConnection(PropelPeer::BookReaderPeer::DATABASE_NAME);
-		$r = PropelPeer::BookReaderPeer::retrieveByPK($id);
+		$con = Propel::getConnection(PropelPeer\BookReaderPeer::DATABASE_NAME);
+		$r = PropelPeer\BookReaderPeer::retrieveByPK($id);
 		if (!$r) {
-			$r = new PropelModel::BookReader();
+			$r = new PropelModel\BookReader();
 			$r->setName('Reader'.$id)->save();
 			$r1Id = $r->getId();
-			$sql = "UPDATE " . PropelPeer::BookReaderPeer::TABLE_NAME . " SET id = ? WHERE id = ?";
+			$sql = "UPDATE " . PropelPeer\BookReaderPeer::TABLE_NAME . " SET id = ? WHERE id = ?";
 			$stmt = $con->prepare($sql);
 			$stmt->bindValue(1, $id);
 			$stmt->bindValue(2, $r1Id);
@@ -641,9 +641,9 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testDoDeleteCompositePK()
 	{
-		$con = ::Propel::getConnection(PropelPeer::BookPeer::DATABASE_NAME);
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
 
-		PropelPeer::ReaderFavoritePeer::doDeleteAll();
+		PropelPeer\ReaderFavoritePeer::doDeleteAll();
 		// Create book and reader with ID 1
 		// Create book and reader with ID 2
 
@@ -654,29 +654,29 @@ class GeneratedPeerTest extends BookstoreTestBase {
 
 		for ($i=1; $i <= 2; $i++) {
 			for ($j=1; $j <= 2; $j++) {
-				$bo = new PropelModel::BookOpinion();
+				$bo = new PropelModel\BookOpinion();
 				$bo->setBookId($i);
 				$bo->setReaderId($j);
 				$bo->save();
 				
-				$rf = new PropelModel::ReaderFavorite();
+				$rf = new PropelModel\ReaderFavorite();
 				$rf->setBookId($i);
 				$rf->setReaderId($j);
 				$rf->save();
 			}
 		}
 
-		$this->assertEquals(4, PropelPeer::ReaderFavoritePeer::doCount(new ::Criteria()));
+		$this->assertEquals(4, PropelPeer\ReaderFavoritePeer::doCount(new Criteria()));
 
 		// Now delete 2 of those rows
-		PropelPeer::ReaderFavoritePeer::doDelete(array(array(1,1), array(2,2)));
+		PropelPeer\ReaderFavoritePeer::doDelete(array(array(1,1), array(2,2)));
 
-		$this->assertEquals(2, PropelPeer::ReaderFavoritePeer::doCount(new ::Criteria()));
+		$this->assertEquals(2, PropelPeer\ReaderFavoritePeer::doCount(new Criteria()));
 
-		$this->assertNotNull(PropelPeer::ReaderFavoritePeer::retrieveByPK(2,1));
-		$this->assertNotNull(PropelPeer::ReaderFavoritePeer::retrieveByPK(1,2));
-		$this->assertNull(PropelPeer::ReaderFavoritePeer::retrieveByPK(1,1));
-		$this->assertNull(PropelPeer::ReaderFavoritePeer::retrieveByPK(2,2));
+		$this->assertNotNull(PropelPeer\ReaderFavoritePeer::retrieveByPK(2,1));
+		$this->assertNotNull(PropelPeer\ReaderFavoritePeer::retrieveByPK(1,2));
+		$this->assertNull(PropelPeer\ReaderFavoritePeer::retrieveByPK(1,1));
+		$this->assertNull(PropelPeer\ReaderFavoritePeer::retrieveByPK(2,2));
 	}
 
 
@@ -686,27 +686,27 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testHydrationJoinLazyLoad()
 	{
-		PropelPeer::BookstoreEmployeeAccountPeer::doDeleteAll();
-		PropelPeer::BookstoreEmployeePeer::doDeleteAll();
-		PropelPeer::AcctAccessRolePeer::doDeleteAll();
+		PropelPeer\BookstoreEmployeeAccountPeer::doDeleteAll();
+		PropelPeer\BookstoreEmployeePeer::doDeleteAll();
+		PropelPeer\AcctAccessRolePeer::doDeleteAll();
 
-		$bemp2 = new PropelModel::BookstoreEmployee();
+		$bemp2 = new PropelModel\BookstoreEmployee();
 		$bemp2->setName("Pieter");
 		$bemp2->setJobTitle("Clerk");
 		$bemp2->save();
 
-		$role = new PropelModel::AcctAccessRole();
+		$role = new PropelModel\AcctAccessRole();
 		$role->setName("Admin");
 
-		$bempacct = new PropelModel::BookstoreEmployeeAccount();
+		$bempacct = new PropelModel\BookstoreEmployeeAccount();
 		$bempacct->setBookstoreEmployee($bemp2);
 		$bempacct->setAcctAccessRole($role);
 		$bempacct->setLogin("john");
 		$bempacct->setPassword("johnp4ss");
 		$bempacct->save();
 
-		$c = new ::Criteria();
-		$results = PropelPeer::BookstoreEmployeeAccountPeer::doSelectJoinAll($c);
+		$c = new Criteria();
+		$results = PropelPeer\BookstoreEmployeeAccountPeer::doSelectJoinAll($c);
 		$o = $results[0];
 
 		$this->assertEquals('Admin', $o->getAcctAccessRole()->getName());
@@ -718,37 +718,37 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testMultiColFk()
 	{
-		$con = ::Propel::getConnection(PropelPeer::BookPeer::DATABASE_NAME);
+		$con = Propel::getConnection(PropelPeer\BookPeer::DATABASE_NAME);
 
-		PropelPeer::ReaderFavoritePeer::doDeleteAll();
+		PropelPeer\ReaderFavoritePeer::doDeleteAll();
 		
-		$b1 = new PropelModel::Book();
+		$b1 = new PropelModel\Book();
 		$b1->setTitle("Book1");
 		$b1->setISBN("ISBN-1");
 		$b1->save();
 		
-		$r1 = new PropelModel::BookReader();
+		$r1 = new PropelModel\BookReader();
 		$r1-> setName("Me");
 		$r1->save();
 		
-		$bo1 = new PropelModel::BookOpinion();
+		$bo1 = new PropelModel\BookOpinion();
 		$bo1->setBookId($b1->getId());
 		$bo1->setReaderId($r1->getId());
 		$bo1->setRating(9);
 		$bo1->setRecommendToFriend(true);
 		$bo1->save();
 		
-		$rf1 = new PropelModel::ReaderFavorite();
+		$rf1 = new PropelModel\ReaderFavorite();
 		$rf1->setReaderId($r1->getId());
 		$rf1->setBookId($b1->getId());
 		$rf1->save();
 		
-		$c = new ::Criteria(PropelPeer::ReaderFavoritePeer::DATABASE_NAME);
-		$c->add(PropelPeer::ReaderFavoritePeer::BOOK_ID, $b1->getId());
-		$c->add(PropelPeer::ReaderFavoritePeer::READER_ID, $r1->getId());
+		$c = new Criteria(PropelPeer\ReaderFavoritePeer::DATABASE_NAME);
+		$c->add(PropelPeer\ReaderFavoritePeer::BOOK_ID, $b1->getId());
+		$c->add(PropelPeer\ReaderFavoritePeer::READER_ID, $r1->getId());
 		
 		// This will produce an error!
-		$results = PropelPeer::ReaderFavoritePeer::doSelectJoinBookOpinion($c);
+		$results = PropelPeer\ReaderFavoritePeer::doSelectJoinBookOpinion($c);
 		$this->assertEquals(1, count($results), "Expected 1 result");
 	}
 	/**
@@ -757,58 +757,58 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	 */
 	public function testMultiColJoin()
 	{
-		PropelPeer::BookstoreContestPeer::doDeleteAll();
-		PropelPeer::BookstoreContestEntryPeer::doDeleteAll();
+		PropelPeer\BookstoreContestPeer::doDeleteAll();
+		PropelPeer\BookstoreContestEntryPeer::doDeleteAll();
 		
-		$bs = new PropelModel::Bookstore();
+		$bs = new PropelModel\Bookstore();
 		$bs->setStoreName("Test1");
 		$bs->setPopulationServed(5);
 		$bs->save();
 		$bs1Id = $bs->getId();
 		
-		$bs2 = new PropelModel::Bookstore();
+		$bs2 = new PropelModel\Bookstore();
 		$bs2->setStoreName("Test2");
 		$bs2->setPopulationServed(5);
 		$bs2->save();
 		$bs2Id = $bs2->getId();
 		
-		$ct1 = new PropelModel::Contest();
+		$ct1 = new PropelModel\Contest();
 		$ct1->setName("Contest1!");
 		$ct1->save();
 		$ct1Id = $ct1->getId();
 		
-		$ct2 = new PropelModel::Contest();
+		$ct2 = new PropelModel\Contest();
 		$ct2->setName("Contest2!");
 		$ct2->save();
 		$ct2Id = $ct2->getId();
 		
-		$cmr = new PropelModel::Customer();
+		$cmr = new PropelModel\Customer();
 		$cmr->setName("Customer1");
 		$cmr->save();
 		$cmr1Id = $cmr->getId();
 
-		$cmr2 = new PropelModel::Customer();
+		$cmr2 = new PropelModel\Customer();
 		$cmr2->setName("Customer2");
 		$cmr2->save();
 		$cmr2Id = $cmr2->getId();
 		
-		$contest = new PropelModel::BookstoreContest();
+		$contest = new PropelModel\BookstoreContest();
 		$contest->setBookstoreId($bs1Id);
 		$contest->setContestId($ct1Id);
 		$contest->save();
 		
-		$contest = new PropelModel::BookstoreContest();
+		$contest = new PropelModel\BookstoreContest();
 		$contest->setBookstoreId($bs2Id);
 		$contest->setContestId($ct1Id);
 		$contest->save();
 	
-		$entry = new PropelModel::BookstoreContestEntry();
+		$entry = new PropelModel\BookstoreContestEntry();
 		$entry->setBookstoreId($bs1Id);
 		$entry->setContestId($ct1Id);
 		$entry->setCustomerId($cmr1Id);
 		$entry->save();
 		
-		$entry = new PropelModel::BookstoreContestEntry();
+		$entry = new PropelModel\BookstoreContestEntry();
 		$entry->setBookstoreId($bs1Id);
 		$entry->setContestId($ct1Id);
 		$entry->setCustomerId($cmr2Id);
@@ -829,10 +829,10 @@ class GeneratedPeerTest extends BookstoreTestBase {
 		*/
 		
 	
-		$c = new ::Criteria();
-		$c->addJoin(array(PropelPeer::BookstoreContestEntryPeer::BOOKSTORE_ID, PropelPeer::BookstoreContestEntryPeer::CONTEST_ID), array(PropelPeer::BookstoreContestPeer::BOOKSTORE_ID, PropelPeer::BookstoreContestPeer::CONTEST_ID) );
+		$c = new Criteria();
+		$c->addJoin(array(PropelPeer\BookstoreContestEntryPeer::BOOKSTORE_ID, PropelPeer\BookstoreContestEntryPeer::CONTEST_ID), array(PropelPeer\BookstoreContestPeer::BOOKSTORE_ID, PropelPeer\BookstoreContestPeer::CONTEST_ID) );
 
-		$results = PropelPeer::BookstoreContestEntryPeer::doSelect($c);
+		$results = PropelPeer\BookstoreContestEntryPeer::doSelect($c);
 		$this->assertEquals(2, count($results) );
 		foreach ($results as $result) {
 			$this->assertEquals($bs1Id, $result->getBookstoreId() );
@@ -842,18 +842,18 @@ class GeneratedPeerTest extends BookstoreTestBase {
 	
 	
 	/**
-	 * Test doCountJoin*() methods with ORDER BY columns in ::Criteria.
+	 * Test doCountJoin*() methods with ORDER BY columns in Criteria.
 	 * @link http://propel.phpdb.org/trac/ticket/627
 	 */
 	public function testDoCountJoinWithOrderBy()
 	{
-		$c = new ::Criteria(PropelPeer::BookPeer::DATABASE_NAME);
-		$c->addAscendingOrderByColumn(PropelPeer::BookPeer::ID);
+		$c = new Criteria(PropelPeer\BookPeer::DATABASE_NAME);
+		$c->addAscendingOrderByColumn(PropelPeer\BookPeer::ID);
 		
 		// None of these should not throw an exception!
-		PropelPeer::BookPeer::doCountJoinAll($c); 
-		PropelPeer::BookPeer::doCountJoinAllExceptAuthor($c);
-		PropelPeer::BookPeer::doCountJoinAuthor($c);
+		PropelPeer\BookPeer::doCountJoinAll($c);
+		PropelPeer\BookPeer::doCountJoinAllExceptAuthor($c);
+		PropelPeer\BookPeer::doCountJoinAuthor($c);
 	}
 }
 

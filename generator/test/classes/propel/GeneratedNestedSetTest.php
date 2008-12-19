@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Peer as PropelPeer;
-use bookstore::Model as PropelModel;
+use bookstore\Peer as PropelPeer;
+use bookstore\Model as PropelModel;
 
 /*
  *  $Id: GeneratedNestedSetTest.php 989 2008-03-11 14:29:30Z heltem $
@@ -46,7 +46,7 @@ class GeneratedNestedSetTest extends CmsTestBase {
 	 */
 	private function showPageItems()
 	{
-		$tree = PropelPeer::PagePeer::retrieveTree();
+		$tree = PropelPeer\PagePeer::retrieveTree();
 		$iterator = new RecursiveIteratorIterator($tree, RecursiveIteratorIterator::SELF_FIRST);
 
 		foreach ($iterator as $item) { /* @var        $item Page */
@@ -65,12 +65,12 @@ class GeneratedNestedSetTest extends CmsTestBase {
 	 */
 	protected function addNewChildPage($parentId)
 	{
-		$db = ::Propel::getConnection(PropelPeer::PagePeer::DATABASE_NAME);
+		$db = Propel::getConnection(PropelPeer\PagePeer::DATABASE_NAME);
 
 		//$db->beginTransaction();
 
-		$parent = PropelPeer::PagePeer::retrieveByPK($parentId);
-		$page = new PropelModel::Page();
+		$parent = PropelPeer\PagePeer::retrieveByPK($parentId);
+		$page = new PropelModel\Page();
 		$page->setTitle('new page '.time());
 		$page->insertAsLastChildOf($parent);
 		$page->save();
@@ -83,7 +83,7 @@ class GeneratedNestedSetTest extends CmsTestBase {
 	 */
 	protected function assertPageTreeIntegrity()
 	{
-		$db = ::Propel::getConnection(PropelPeer::PagePeer::DATABASE_NAME);
+		$db = Propel::getConnection(PropelPeer\PagePeer::DATABASE_NAME);
 
 		$values = array();
 		$log = '';
@@ -122,7 +122,7 @@ class GeneratedNestedSetTest extends CmsTestBase {
 	 */
 	public function testAdd()
 	{
-		$db = ::Propel::getConnection(PropelPeer::PagePeer::DATABASE_NAME);
+		$db = Propel::getConnection(PropelPeer\PagePeer::DATABASE_NAME);
 
 		// I'm not sure if the specific ID matters, but this should match original
 		// code.  The ID will change with subsequent runs (e.g. the first time it will be 11)
@@ -132,3 +132,5 @@ class GeneratedNestedSetTest extends CmsTestBase {
 	}
 
 }
+
+?>

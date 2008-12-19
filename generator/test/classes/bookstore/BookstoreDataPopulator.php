@@ -1,6 +1,6 @@
 <?php
-use bookstore::Model as PropelModel;
-use bookstore::Peer as PropelPeer;
+use bookstore\Model as PropelModel;
+use bookstore\Peer as PropelPeer;
 
 /*
  *  $Id$
@@ -40,49 +40,49 @@ class BookstoreDataPopulator {
 		// Add publisher records
 		// ---------------------
 
-		$scholastic = new PropelModel::Publisher();
+		$scholastic = new PropelModel\Publisher();
 		$scholastic->setName("Scholastic");
 		// do not save, will do later to test cascade
 
-		$morrow = new PropelModel::Publisher();
+		$morrow = new PropelModel\Publisher();
 		$morrow->setName("William Morrow");
 		$morrow->save();
 		$morrow_id = $morrow->getId();
 
-		$penguin = new PropelModel::Publisher();
+		$penguin = new PropelModel\Publisher();
 		$penguin->setName("Penguin");
 		$penguin->save();
 		$penguin_id = $penguin->getId();
 
-		$vintage = new PropelModel::Publisher();
+		$vintage = new PropelModel\Publisher();
 		$vintage->setName("Vintage");
 		$vintage->save();
 		$vintage_id = $vintage->getId();
 
-		$rowling = new PropelModel::Author();
+		$rowling = new PropelModel\Author();
 		$rowling->setFirstName("J.K.");
 		$rowling->setLastName("Rowling");
 		// no save()
 
-		$stephenson = new PropelModel::Author();
+		$stephenson = new PropelModel\Author();
 		$stephenson->setFirstName("Neal");
 		$stephenson->setLastName("Stephenson");
 		$stephenson->save();
 		$stephenson_id = $stephenson->getId();
 
-		$byron = new PropelModel::Author();
+		$byron = new PropelModel\Author();
 		$byron->setFirstName("George");
 		$byron->setLastName("Byron");
 		$byron->save();
 		$byron_id = $byron->getId();
 
-		$grass = new PropelModel::Author();
+		$grass = new PropelModel\Author();
 		$grass->setFirstName("Gunter");
 		$grass->setLastName("Grass");
 		$grass->save();
 		$grass_id = $grass->getId();
 
-		$phoenix = new PropelModel::Book();
+		$phoenix = new PropelModel\Book();
 		$phoenix->setTitle("Harry Potter and the Order of the Phoenix");
 		$phoenix->setISBN("043935806X");
 		$phoenix->setAuthor($rowling);
@@ -91,7 +91,7 @@ class BookstoreDataPopulator {
 		$phoenix->save();
 		$phoenix_id = $phoenix->getId();
 
-		$qs = new PropelModel::Book();
+		$qs = new PropelModel\Book();
 		$qs->setISBN("0380977427");
 		$qs->setTitle("Quicksilver");
 		$qs->setPrice(11.99);
@@ -100,7 +100,7 @@ class BookstoreDataPopulator {
 		$qs->save();
 		$qs_id = $qs->getId();
 
-		$dj = new PropelModel::Book();
+		$dj = new PropelModel\Book();
 		$dj->setISBN("0140422161");
 		$dj->setTitle("Don Juan");
 		$dj->setPrice(12.99);
@@ -109,7 +109,7 @@ class BookstoreDataPopulator {
 		$dj->save();
 		$dj_id = $dj->getId();
 
-		$td = new PropelModel::Book();
+		$td = new PropelModel\Book();
 		$td->setISBN("067972575X");
 		$td->setTitle("The Tin Drum");
 		$td->setPrice(13.99);
@@ -118,7 +118,7 @@ class BookstoreDataPopulator {
 		$td->save();
 		$td_id = $td->getId();
 
-		$r1 = new PropelModel::Review();
+		$r1 = new PropelModel\Review();
 		$r1->setBook($phoenix);
 		$r1->setReviewedBy("Washington Post");
 		$r1->setRecommended(true);
@@ -126,7 +126,7 @@ class BookstoreDataPopulator {
 		$r1->save();
 		$r1_id = $r1->getId();
 
-		$r2 = new PropelModel::Review();
+		$r2 = new PropelModel\Review();
 		$r2->setBook($phoenix);
 		$r2->setReviewedBy("New York Times");
 		$r2->setRecommended(false);
@@ -137,7 +137,7 @@ class BookstoreDataPopulator {
 		$blob_path = _LOB_SAMPLE_FILE_PATH . '/tin_drum.gif';
 		$clob_path =  _LOB_SAMPLE_FILE_PATH . '/tin_drum.txt';
 
-		$m1 = new PropelModel::Media();
+		$m1 = new PropelModel\Media();
 		$m1->setBook($td);
 		$m1->setCoverImage(file_get_contents($blob_path));
 		$m1->setExcerpt(file_get_contents($clob_path));
@@ -147,33 +147,33 @@ class BookstoreDataPopulator {
 		// ---------------------
 		// (this is for many-to-many tests)
 
-		$blc1 = new PropelModel::BookClubList();
+		$blc1 = new PropelModel\BookClubList();
 		$blc1->setGroupLeader("Crazyleggs");
 		$blc1->setTheme("Happiness");
 
-		$brel1 = new PropelModel::BookListRel();
+		$brel1 = new PropelModel\BookListRel();
 		$brel1->setBook($phoenix);
 
-		$brel2 = new PropelModel::BookListRel();
+		$brel2 = new PropelModel\BookListRel();
 		$brel2->setBook($dj);
 
 		$blc1->addBookListRel($brel1);
 		$blc1->addBookListRel($brel2);
 
-		$bemp1 = new PropelModel::BookstoreEmployee();
+		$bemp1 = new PropelModel\BookstoreEmployee();
 		$bemp1->setName("John");
 		$bemp1->setJobTitle("Manager");
 
-		$bemp2 = new PropelModel::BookstoreEmployee();
+		$bemp2 = new PropelModel\BookstoreEmployee();
 		$bemp2->setName("Pieter");
 		$bemp2->setJobTitle("Clerk");
 		$bemp2->setSupervisor($bemp1);
 		$bemp2->save();
 
-		$role = new PropelModel::AcctAccessRole();
+		$role = new PropelModel\AcctAccessRole();
 		$role->setName("Admin");
 
-		$bempacct = new PropelModel::BookstoreEmployeeAccount();
+		$bempacct = new PropelModel\BookstoreEmployeeAccount();
 		$bempacct->setBookstoreEmployee($bemp1);
 		$bempacct->setAcctAccessRole($role);
 		$bempacct->setLogin("john");
@@ -182,13 +182,13 @@ class BookstoreDataPopulator {
 
 		// Add bookstores
 
-		$store = new PropelModel::Bookstore();
+		$store = new PropelModel\Bookstore();
 		$store->setStoreName("Amazon");
 		$store->setPopulationServed(5000000000); // world population
 		$store->setTotalBooks(300);
 		$store->save();
 
-		$store = new PropelModel::Bookstore();
+		$store = new PropelModel\Bookstore();
 		$store->setStoreName("Local Store");
 		$store->setPopulationServed(20);
 		$store->setTotalBooks(500000);
@@ -198,25 +198,25 @@ class BookstoreDataPopulator {
 	public static function depopulate()
 	{
 		//@todo figure out why I had to qualify these but not the stuff above.
-		PropelPeer::AcctAccessRolePeer::doDeleteAll();
-		PropelPeer::AuthorPeer::doDeleteAll();
-		PropelPeer::BookstorePeer::doDeleteAll();
-		PropelPeer::BookstoreContestPeer::doDeleteAll();
-		PropelPeer::BookstoreContestEntryPeer::doDeleteAll();
-		PropelPeer::BookstoreEmployeePeer::doDeleteAll();
-		PropelPeer::BookstoreEmployeeAccountPeer::doDeleteAll();
-		PropelPeer::BookstoreSalePeer::doDeleteAll();
-		PropelPeer::BookClubListPeer::doDeleteAll();
-		PropelPeer::BookOpinionPeer::doDeleteAll();
-		PropelPeer::BookReaderPeer::doDeleteAll();
-		PropelPeer::BookListRelPeer::doDeleteAll();
-		PropelPeer::BookPeer::doDeleteAll();
-		PropelPeer::ContestPeer::doDeleteAll();
-		PropelPeer::CustomerPeer::doDeleteAll();
-		PropelPeer::MediaPeer::doDeleteAll();
-		PropelPeer::PublisherPeer::doDeleteAll();
-		PropelPeer::ReaderFavoritePeer::doDeleteAll();
-		PropelPeer::ReviewPeer::doDeleteAll();
+		PropelPeer\AcctAccessRolePeer::doDeleteAll();
+		PropelPeer\AuthorPeer::doDeleteAll();
+		PropelPeer\BookstorePeer::doDeleteAll();
+		PropelPeer\BookstoreContestPeer::doDeleteAll();
+		PropelPeer\BookstoreContestEntryPeer::doDeleteAll();
+		PropelPeer\BookstoreEmployeePeer::doDeleteAll();
+		PropelPeer\BookstoreEmployeeAccountPeer::doDeleteAll();
+		PropelPeer\BookstoreSalePeer::doDeleteAll();
+		PropelPeer\BookClubListPeer::doDeleteAll();
+		PropelPeer\BookOpinionPeer::doDeleteAll();
+		PropelPeer\BookReaderPeer::doDeleteAll();
+		PropelPeer\BookListRelPeer::doDeleteAll();
+		PropelPeer\BookPeer::doDeleteAll();
+		PropelPeer\ContestPeer::doDeleteAll();
+		PropelPeer\CustomerPeer::doDeleteAll();
+		PropelPeer\MediaPeer::doDeleteAll();
+		PropelPeer\PublisherPeer::doDeleteAll();
+		PropelPeer\ReaderFavoritePeer::doDeleteAll();
+		PropelPeer\ReviewPeer::doDeleteAll();
 	}
 
 }

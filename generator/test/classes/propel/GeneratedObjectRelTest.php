@@ -1,7 +1,7 @@
 <?php
 
-use bookstore::Model as PropelModel;
-use bookstore::Peer as PropelPeer;
+use bookstore\Model as PropelModel;
+use bookstore\Peer as PropelPeer;
 
 /*
  *  $Id$
@@ -47,32 +47,32 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	 */
 	public function testManyToMany_Dir1()
 	{
-		$list = new PropelModel::BookClubList();
+		$list = new PropelModel\BookClubList();
 		$list->setGroupLeader('Archimedes Q. Porter');
 		// No save ...
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle( "Jungle Expedition Handbook" );
 		$book->setISBN('TEST');
 		// No save ...
 
 		$this->assertEquals(0, count($list->getBookListRels()) );
 		$this->assertEquals(0, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
-		$xref = new PropelModel::BookListRel();
+		$xref = new PropelModel\BookListRel();
 		$xref->setBook($book);
 		$list->addBookListRel($xref);
 
 		$this->assertEquals(1, count($list->getBookListRels()));
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
 		$list->save();
 
 		$this->assertEquals(1, count($list->getBookListRels()) );
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(1, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(1, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
 	}
 
@@ -81,31 +81,31 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	 */
 	public function testManyToMany_Dir2_Unsaved()
 	{
-		$list = new PropelModel::BookClubList();
+		$list = new PropelModel\BookClubList();
 		$list->setGroupLeader('Archimedes Q. Porter');
 		// No save ...
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle( "Jungle Expedition Handbook" );
 		$book->setISBN('TEST');
 		// No save (yet) ...
 
 		$this->assertEquals(0, count($list->getBookListRels()) );
 		$this->assertEquals(0, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
-		$xref = new PropelModel::BookListRel();
+		$xref = new PropelModel\BookListRel();
 		$xref->setBookClubList($list);
 		$book->addBookListRel($xref);
 
 		$this->assertEquals(1, count($list->getBookListRels()) );
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 		$book->save();
 
 		$this->assertEquals(1, count($list->getBookListRels()) );
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(1, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(1, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
 	}
 
@@ -115,33 +115,33 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	 */
 	public function testManyToMany_Dir2_Saved()
 	{
-		$list = new PropelModel::BookClubList();
+		$list = new PropelModel\BookClubList();
 		$list->setGroupLeader('Archimedes Q. Porter');
 		$list->save();
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle( "Jungle Expedition Handbook" );
 		$book->setISBN('TEST');
 		// No save (yet) ...
 
 		$this->assertEquals(0, count($list->getBookListRels()) );
 		$this->assertEquals(0, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
 		// Now set the relationship from the opposite direction.
 
-		$xref = new PropelModel::BookListRel();
+		$xref = new PropelModel\BookListRel();
 		$xref->setBookClubList($list);
 		$book->addBookListRel($xref);
 
 		$this->assertEquals(1, count($list->getBookListRels()) );
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(0, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(0, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 		$book->save();
 
 		$this->assertEquals(1, count($list->getBookListRels()) );
 		$this->assertEquals(1, count($book->getBookListRels()) );
-		$this->assertEquals(1, count(PropelPeer::BookListRelPeer::doSelect(new ::Criteria())) );
+		$this->assertEquals(1, count(PropelPeer\BookListRelPeer::doSelect(new Criteria())) );
 
 	}
 
@@ -152,24 +152,24 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	public function testMultiFkImplication()
 	{
 		// Create a new bookstore, contest, bookstore_contest, and bookstore_contest_entry
-		$b = new PropelModel::Bookstore();
+		$b = new PropelModel\Bookstore();
 		$b->setStoreName("Foo!");
 		$b->save();
 
-		$c = new PropelModel::Contest();
+		$c = new PropelModel\Contest();
 		$c->setName("Bookathon Contest");
 		$c->save();
 
-		$bc = new PropelModel::BookstoreContest();
+		$bc = new PropelModel\BookstoreContest();
 		$bc->setBookstore($b);
 		$bc->setContest($c);
 		$bc->save();
 
-		$c = new PropelModel::Customer();
+		$c = new PropelModel\Customer();
 		$c->setName("Happy Customer");
 		$c->save();
 
-		$bce = new PropelModel::BookstoreContestEntry();
+		$bce = new PropelModel\BookstoreContestEntry();
 		$bce->setBookstore($b);
 		$bce->setBookstoreContest($bc);
 		$bce->setCustomer($c);
@@ -187,15 +187,15 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	 */
 	public function testClearRefFk()
 	{
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setISBN("Foo-bar-baz");
 		$book->setTitle("The book title");
 
 		// No save ...
 
-		$r = new PropelModel::Review();
+		$r = new PropelModel\Review();
 		$r->setReviewedBy('Me');
-		$r->setReviewDate(new DateTime("now"));
+        $r->setReviewDate(new DateTime('now'));
 
 		$book->addReview($r);
 
@@ -212,14 +212,14 @@ class GeneratedObjectRelTest extends BookstoreTestBase {
 	 */
 	public function testModifiedObjectOverwrite()
 	{
-		$author = new PropelModel::Author();
+		$author = new PropelModel\Author();
 		$author->setFirstName("John");
 		$author->setLastName("Public");
 
 		$books = $author->getBooks(); // empty, of course
 		$this->assertEquals(array(), $books, "Expected empty array.");
 
-		$book = new PropelModel::Book();
+		$book = new PropelModel\Book();
 		$book->setTitle("A sample book");
 		$book->setISBN("INITIAL ISBN");
 

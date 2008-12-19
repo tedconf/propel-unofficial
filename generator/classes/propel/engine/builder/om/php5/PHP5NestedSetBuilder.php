@@ -53,6 +53,7 @@ class PHP5NestedSetBuilder extends ObjectBuilder {
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
 		
 		$namespaceToUse = $this->getBuildProperty('namespaceNest');
+        if ($namespaceToUse[0] == '\\') $namespaceToUse = substr($namespaceToUse,1);
 		$script .= "\nnamespace $namespaceToUse;\n";
 	}
 		
@@ -839,7 +840,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @return     $objectClassName The current object (for fluent API support)
 	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
+	public function insertAsPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
@@ -864,7 +865,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @return     $objectClassName The current object (for fluent API support)
 	 * @throws     ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException - if this object already exists
 	 */
-	public function insertAsNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
+	public function insertAsNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (!\$this->isNew())
 		{
@@ -888,7 +889,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
+	public function moveToFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
@@ -912,7 +913,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
+	public function moveToLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
@@ -936,7 +937,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
+	public function moveToPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{
@@ -960,7 +961,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getObjectBuilder(
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con Connection to use.
 	 * @return     $objectClassName The current object (for fluent API support)
 	 */
-	public function moveToNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
+	public function moveToNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$this->isNew())
 		{

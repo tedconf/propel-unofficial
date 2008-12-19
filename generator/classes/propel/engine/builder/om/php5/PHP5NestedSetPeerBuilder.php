@@ -277,7 +277,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     $objectClassname			Propel object for root node
 	 */
-	public static function retrieveRoot(\$scopeId = null, PropelPDO \$con = null)
+	public static function retrieveRoot(\$scopeId = null, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 
@@ -305,7 +305,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertAsFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
+	public static function insertAsFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		// Update \$child node properties
 		\$child->setLeftValue(\$parent->getLeftValue() + 1);
@@ -373,7 +373,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertAsPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$sibling, PropelPDO \$con = null)
+	public static function insertAsPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$sibling, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL).   "PropelPDO \$con = null)
 	{
 		if (\$sibling->isRoot()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Root nodes cannot have siblings');
@@ -410,7 +410,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertAsNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$sibling, PropelPDO \$con = null)
+	public static function insertAsNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$sibling, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$sibling->isRoot()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Root nodes cannot have siblings');
@@ -447,7 +447,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertAsParentOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function insertAsParentOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$sidv = null;
 		if (self::SCOPE_COL) {
@@ -488,7 +488,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertRoot(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function insertRoot(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$sidv = null;
 		if (self::SCOPE_COL) {
@@ -515,7 +515,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function insertParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, PropelPDO \$con = null)
+	public static function insertParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		self::insertAsParentOf(\$parent, \$child, \$con);
 	}
@@ -559,7 +559,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     boolean		Deletion status
 	 */
-	public static function deleteNode(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, PropelPDO \$con = null)
+	public static function deleteNode(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$dest->getLeftValue() == 1) {
 			// deleting root implies conditions (see deleteRoot() method)
@@ -591,7 +591,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function moveToFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, PropelPDO \$con = null)
+	public static function moveToFirstChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Moving nodes across trees is not supported');
@@ -618,7 +618,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function moveToLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, PropelPDO \$con = null)
+	public static function moveToLastChildOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$parent, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$child, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$parent->getScopeIdValue() != \$child->getScopeIdValue()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Moving nodes across trees is not supported');
@@ -645,7 +645,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function moveToPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function moveToPrevSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$dest->getScopeIdValue() != \$node->getScopeIdValue()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Moving nodes across trees is not supported');
@@ -672,7 +672,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     void
 	 */
-	public static function moveToNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function moveToNextSiblingOf(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$dest, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$dest->getScopeIdValue() != \$node->getScopeIdValue()) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Moving nodes across trees is not supported');
@@ -699,7 +699,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public static function retrieveFirstChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveFirstChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::LEFT_COL, \$node->getLeftValue() + 1, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::EQUAL);
@@ -724,7 +724,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public static function retrieveLastChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveLastChild(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::RIGHT_COL, \$node->getRightValue() - 1, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::EQUAL);
@@ -749,7 +749,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     mixed 		Propel object if exists else null
 	 */
-	public static function retrievePrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrievePrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::RIGHT_COL, \$node->getLeftValue() - 1, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::EQUAL);
@@ -775,7 +775,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     mixed 		Propel object if exists else false
 	 */
-	public static function retrieveNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->add(self::LEFT_COL, \$node->getRightValue() + 1, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::EQUAL);
@@ -806,7 +806,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 			\$c->add(self::SCOPE_COL, \$scopeId, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::EQUAL);
 		}
 		\$stmt = $peerClassname::doSelectStmt(\$c, \$con);
-		if (false !== (\$row = \$stmt->fetch(PDO::FETCH_NUM))) {
+		if (false !== (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM))) {
 			\$omClass = $peerClassname::getOMClass(\$row, 0);
 			\$cls = substr('.'.\$omClass, strrpos('.'.\$omClass, '.') + 1);
 
@@ -835,7 +835,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node	Propel object for parent node
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 */
-	public static function retrieveBranch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveBranch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::retrieveDescendants(\$node, \$con);
 	}
@@ -853,7 +853,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node	Propel object for parent node
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 */
-	public static function retrieveChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
@@ -880,7 +880,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node	Propel object for parent node
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 */
-	public static function retrieveDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c->addAscendingOrderByColumn(self::LEFT_COL);
@@ -907,7 +907,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node	Propel object for src node
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 */
-	public static function retrieveSiblings(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveSiblings(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$parent = $peerClassname::retrieveParent(\$node, \$con);
 		\$siblings = $peerClassname::retrieveChildren(\$parent, \$con);
@@ -929,7 +929,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     mixed 		Propel object if exists else null
 	 */
-	public static function retrieveParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function retrieveParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$c = new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria($peerClassname::DATABASE_NAME);
 		\$c1 = \$c->getNewCriterion(self::LEFT_COL, \$node->getLeftValue(), ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria::LESS_THAN);
@@ -964,7 +964,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     int			Level for the given node
 	 */
-	public static function getLevel(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function getLevel(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (\$con === null) {
 			\$con = Propel::getConnection($peerClassname::DATABASE_NAME, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Propel::CONNECTION_READ);
@@ -977,8 +977,8 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 		}
 
 		\$stmt = \$con->prepare(\$sql);
-		\$stmt->bindValue(':left', \$node->getLeftValue(), PDO::PARAM_INT);
-		\$stmt->bindValue(':right', \$node->getRightValue(), PDO::PARAM_INT);
+		\$stmt->bindValue(':left', \$node->getLeftValue(), ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::PARAM_INT);
+		\$stmt->bindValue(':right', \$node->getRightValue(), ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::PARAM_INT);
 		if (self::SCOPE_COL) {
 			\$stmt->bindValue(':scope', \$node->getScopeIdValue());
 		}
@@ -1001,7 +1001,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     int			Level for the given node
 	 */
-	public static function getNumberOfChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function getNumberOfChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$children = $peerClassname::retrieveChildren(\$node);
 		return count(\$children);
@@ -1021,7 +1021,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     int			Level for the given node
 	 */
-	public static function getNumberOfDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function getNumberOfDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$right = \$node->getRightValue();
 		\$left = \$node->getLeftValue();
@@ -1043,7 +1043,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con	Connection to use.
 	 * @return     array			Array in order of heirarchy
 	 */
-	public static function getPath(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function getPath(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$path = array();
 		\$path[] = \$node;
@@ -1190,7 +1190,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con		Connection to use.
 	 * @return     bool
 	 */
-	public static function hasParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function hasParent(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::isValid($peerClassname::retrieveParent(\$node, \$con));
 	}
@@ -1209,7 +1209,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con		Connection to use.
 	 * @return     bool
 	 */
-	public static function hasPrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function hasPrevSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::isValid($peerClassname::retrievePrevSibling(\$node, \$con));
 	}
@@ -1228,7 +1228,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con		Connection to use.
 	 * @return     bool
 	 */
-	public static function hasNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function hasNextSibling(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		return $peerClassname::isValid($peerClassname::retrieveNextSibling(\$node, \$con));
 	}
@@ -1264,7 +1264,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node		Propel object for source node
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con		Connection to use.
 	 */
-	public static function deleteDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PropelPDO \$con = null)
+	public static function deleteDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		\$left = \$node->getLeftValue();
 		\$right = \$node->getRightValue();
@@ -1302,7 +1302,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con		Connection to use.
 	 * @return     object		Propel object for model
 	 */
-	public static function getNode(\$node, PropelPDO \$con = null)
+	public static function getNode(\$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelPDO \$con = null)
 	{
 		if (is_object(\$node)) {
 			return \$node;
@@ -1326,7 +1326,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node	Propel object for src node
 	 * @param      PDOStatement \$stmt	Executed PDOStatement
 	 */
-	protected static function hydrateDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PDOStatement \$stmt)
+	protected static function hydrateDescendants(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDOStatement \$stmt)
 	{
 		\$descendants = array();
 		\$children = array();
@@ -1342,7 +1342,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 		}
 
 		$script .= "
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key = ".$peerClassname."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null === (\$child = ".$peerClassname."::getInstanceFromPool(\$key))) {";
 
@@ -1399,7 +1399,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 	 * @param      $objectClassname \$node Propel object for src node
 	 * @param      PDOStatement \$stmt Executed PDOStatement
 	 */
-	protected static function hydrateChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, PDOStatement \$stmt)
+	protected static function hydrateChildren(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."NodeObject \$node, ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDOStatement \$stmt)
 	{
 		\$children = array();
 		\$prevRight = 0;
@@ -1414,7 +1414,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 		}
 
 		$script .= "
-		while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+		while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM)) {
 			\$key = ".$peerClassname."::getPrimaryKeyHashFromRow(\$row, 0);
 			if (null === (\$child = ".$peerClassname."::getInstanceFromPool(\$key))) {";
 			
@@ -1539,7 +1539,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getPeerBuilder()-
 
 			$script .= "
 				\$stmt = $peerClassname::doSelectStmt(\$criteria, \$con);
-				while (\$row = \$stmt->fetch(PDO::FETCH_NUM)) {
+				while (\$row = \$stmt->fetch(".$this->getNamespaceQualifier()."PDO::FETCH_NUM)) {
 					\$key = $peerClassname::getPrimaryKeyHashFromRow(\$row, 0);
 					if (null !== (\$object = $peerClassname::getInstanceFromPool(\$key))) {";
 			$n = 0;

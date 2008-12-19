@@ -55,13 +55,13 @@ abstract class OMBuilder extends DataModelBuilder {
     	if ($this->getBuildProperty('namespaceEnabled') <> 1) return '';
     	switch ($nameSpaceToGet) {
     		case self::NAMESPACE_GLOBAL:
-    			return '::';
+    			return '\\';
     		case self::NAMESPACE_MAP:
-    			return $this->getBuildProperty('namespaceMap') . '::';
+    			return $this->getBuildProperty('namespaceMap') . '\\';
     		case self::NAMESPACE_OM:
-    			return $this->getBuildProperty('namespaceOm') . '::';
+    			return $this->getBuildProperty('namespaceOm') . '\\';
     		case self::NAMESPACE_PEER:
-    			return $this->getBuildProperty('namespacePeer') . '::';
+    			return $this->getBuildProperty('namespacePeer') . '\\';
     		default:
     			throw new Exception('Invalid namespace given');
     	}
@@ -77,7 +77,7 @@ abstract class OMBuilder extends DataModelBuilder {
 	protected function getNamespaceQualifiedBasePeer()
 	{
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return $this->basePeerClassname;
-		if ($this->basePeerClassname == 'BasePeer') return '::BasePeer';
+		if ($this->basePeerClassname == 'BasePeer') return '\\BasePeer';
 		return $this->getNamspaceQualifier(self::NAMESPACE_PEER) . $this->basePeerClassname;
 	}
 	
@@ -99,9 +99,15 @@ abstract class OMBuilder extends DataModelBuilder {
 		$newClassName = $this->getNamespaceQualifier(self::NAMESPACE_OM) . $clsName;
 		
 		// Now adjust if needed.
-		if ($clsName == 'BasePeer') $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL) . $clsName;
-		if (strstr($clsName,'Peer')) $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_PEER) . $clsName;
-		if (strstr($clsName,'MapBuilder')) $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_MAP) . $clsName;
+		if ($clsName == 'BasePeer') {
+            $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL) . $clsName;
+        }
+		if (strstr($clsName,'Peer')) {
+            $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_PEER) . $clsName;
+        }
+		if (strstr($clsName,'MapBuilder')) {
+            $newClassName = $this->getNamespaceQualifier(self::NAMESPACE_MAP) . $clsName;
+        }
 		
 		return $newClassName;
 	}
@@ -174,7 +180,8 @@ abstract class OMBuilder extends DataModelBuilder {
 		    OR !$includeNamespace) {
 		    return $this->prefixClassname($this->getUnprefixedClassname());
 		}
-		return $this->getNamespacedClassName($this->prefixClassname($this->getUnprefixedClassname()));
+		//return $this->getNamespacedClassName($this->prefixClassname($this->getUnprefixedClassname()));
+        return $this->getNamespacedClassName($this->getUnprefixedClassname());
 	}
 	
 	/**

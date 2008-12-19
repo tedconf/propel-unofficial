@@ -744,8 +744,8 @@ class Propel
 	 */
 	public static function autoload($className)
 	{
-		if (isset(self::$autoloadMap[$className])) {
-			require(self::$autoloadMap[$className]);
+        if (isset(self::$autoloadMap[$className])) {
+            require(self::$autoloadMap[$className]);
 			return true;
 		}
 		return false;

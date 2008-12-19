@@ -66,6 +66,7 @@ class PHP5ObjectBuilder extends ObjectBuilder {
 		if ($this->getBuildProperty('namespaceEnabled') <> 1) return;
 		
 		$namespaceToUse = $this->getBuildProperty('namespaceOm');
+        if ($namespaceToUse[0] == '\\') $namespaceToUse = substr($namespaceToUse,1);
 		$script .= "\nnamespace $namespaceToUse;\n";		
 	}
 	
@@ -735,6 +736,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQuali
 		if (!$dateTimeClass) {
 			$dateTimeClass = 'DateTime';
 		}
+        $dateTimeClass = $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL) . $dateTimeClass;
 
 		$defaultfmt = null;
 
@@ -981,7 +983,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQuali
 		\$c->addSelectColumn(".$this->getColumnConstant($col).");
 		try {
 			\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$c, \$con);
-			\$row = \$stmt->fetch(PDO::FETCH_NUM);
+			\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM);
 			\$stmt->closeCursor();";
 
 		if ($col->isLobType() && !$platform->hasStreamBlobImpl()) {
@@ -1225,7 +1227,8 @@ abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQuali
 		if (!$dateTimeClass) {
 			$dateTimeClass = 'DateTime';
 		}
-
+        $dateTimeClass = $this->getNamespaceQualifier(self::NAMESPACE_GLOBAL) . $dateTimeClass;
+        
 		$script .= "
 	/**
 	 * Sets the value of [$clo] column to a normalized version of the date/time value specified.
@@ -1253,17 +1256,17 @@ abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQuali
 		// -- which is unexpected, to say the least.
 		if (\$v === null || \$v === '') {
 			\$dt = null;
-		} elseif (\$v instanceof DateTime) {
+		} elseif (\$v instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."DateTime) {
 			\$dt = \$v;
 		} else {
 			// some string/numeric value passed; we normalize that so that we can
 			// validate it.
 			try {
 				if (is_numeric(\$v)) { // if it's a unix timestamp
-					\$dt = new $dateTimeClass('@'.\$v, new DateTimeZone('UTC'));
+					\$dt = new $dateTimeClass('@'.\$v, new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."DateTimeZone('UTC'));
 					// We have to explicitly specify and then change the time zone because of a
 					// DateTime bug: http://bugs.php.net/bug.php?id=43003
-					\$dt->setTimeZone(new DateTimeZone(date_default_timezone_get()));
+					\$dt->setTimeZone(new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."DateTimeZone(date_default_timezone_get()));
 				} else {
 					\$dt = new $dateTimeClass(\$v);
 				}
@@ -2098,7 +2101,7 @@ abstract class ".$this->getClassname(false)." extends ".$this->getNamespaceQuali
 		// already in the pool.
 
 		\$stmt = ".$this->getPeerClassname()."::doSelectStmt(\$this->buildPkeyCriteria(), \$con);
-		\$row = \$stmt->fetch(PDO::FETCH_NUM);
+		\$row = \$stmt->fetch(".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PDO::FETCH_NUM);
 		\$stmt->closeCursor();
 		if (!\$row) {
 			throw new ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."PropelException('Cannot find matching row in the database to reload object values.');

@@ -143,8 +143,14 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 						// (this code is based on PropelOMTask)
 						foreach (array('mapbuilder', 'peerstub', 'objectstub') as $target) {
 							$builder = $generatorConfig->getConfiguredBuilder($table, $target);
-							$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
-							$classMap[$builder->getClassname()] = $builder->getClassFilePath();
+                            $clsName = $builder->getClassname();
+                            if ($clsName[0] == '\\') {
+                                $clsName = substr($clsName,1);
+                            }
+							$this->log("Adding class mapping: " . $clsName . ' => ' . $builder->getClassFilePath());
+
+							$classMap[$clsName] = $builder->getClassFilePath();
+                            //$classMap[$builder->getClassname()] = $builder->getClassFilePath();
 						}
 
 						// @todo which namespace should be used for objectmultiextend?
@@ -154,8 +160,13 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 								foreach ($col->getChildren() as $child) {
 									$builder = $generatorConfig->getConfiguredBuilder($table, 'objectmultiextend');
 									$builder->setChild($child);
-									$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
-									$classMap[$builder->getClassname()] = $builder->getClassFilePath();
+                                    $clsName = $builder->getClassname();
+                                    if ($clsName[0] == '\\') {
+                                        $clsName = substr($clsName,1);
+                                    }
+									$this->log("Adding class mapping: " . $clsName . ' => ' . $builder->getClassFilePath());
+                                    //$classMap[$builder->getClassname()] = $builder->getClassFilePath();
+									$classMap[$clsName] = $builder->getClassFilePath();
 								}
 							}
 						}
@@ -188,8 +199,13 @@ class PropelConvertConfTask extends AbstractPropelDataModelTask {
 						if ('MaterializedPath' == $table->treeMode()) {
 							foreach (array('nodepeerstub', 'nodestub') as $target) {
 								$builder = $generatorConfig->getConfiguredBuilder($table, $target);
-								$this->log("Adding class mapping: " . $builder->getClassname() . ' => ' . $builder->getClassFilePath());
-								$classMap[$builder->getClassname()] = $builder->getClassFilePath();
+                                $clsName = $builder->getClassname();
+                                if ($clsName[0] == '\\') {
+                                    $clsName = substr($clsName,1);
+                                }
+								$this->log("Adding class mapping: " . $clsName . ' => ' . $builder->getClassFilePath());
+                                //$classMap[$builder->getClassname()] = $builder->getClassFilePath();
+								$classMap[$clsName] = $builder->getClassFilePath();
 							}
 						} // if Table->treeMode() == 'MaterializedPath'
 
