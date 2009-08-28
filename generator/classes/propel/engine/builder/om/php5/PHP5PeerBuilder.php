@@ -1430,7 +1430,7 @@ abstract class ".$this->getClassname(false). $extendingPeerClass . " {
 				// Because this db requires some delete cascade/set null emulation, we have to
 				// clear the cached instance *after* the emulation has happened (since
 				// instances get re-added by the select statement contained therein).
-				if (\$values instanceof Criteria) {
+				if (\$values instanceof ".$this->getNamespaceQualifier(self::NAMESPACE_GLOBAL)."Criteria) {
 					".$this->getPeerClassname()."::clearInstancePool();
 				} else { // it's a PK or object
 					".$this->getPeerClassname()."::removeInstanceFromPool(\$values);
