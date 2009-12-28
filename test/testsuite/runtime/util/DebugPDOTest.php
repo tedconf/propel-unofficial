@@ -30,4 +30,13 @@ class DebugPDOTest extends BookstoreTestBase
 		$this->assertEquals($latestExecutedQuery, $con->getLastExecutedQuery(), 'PropelPDO updates the last executed query on every request');
 	}
 
+	public function testGetLastQueryMoreThanTenArgs()
+	{
+		$con = Propel::getConnection(BookPeer::DATABASE_NAME);
+		$c = new Criteria();
+		$c->add(BookPeer::ID, array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1), Criteria::IN);
+		$books = BookPeer::doSelect($c, $con);
+		$expected = "SELECT book.ID, book.TITLE, book.ISBN, book.PRICE, book.PUBLISHER_ID, book.AUTHOR_ID FROM `book` WHERE book.ID IN (1,1,1,1,1,1,1,1,1,1,1,1)";
+		$this->assertEquals($expected, $con->getLastExecutedQuery(), 'PropelPDO correctly replaces arguments in queries');
+	}
 }
