@@ -420,6 +420,17 @@ class GeneratedPeerTest extends BookstoreEmptyTestBase
 		$this->assertNull($matches[0]->getAuthor(), "Expected first book author to be null");
 		$this->assertType('Author', $matches[1]->getAuthor(), "Expected valid Author object for second book.");
 	}
+	
+	public function testDoSelectJoinOneToOne()
+	{
+		$con = Propel::getConnection();
+		$count = $con->getQueryCount();
+		Propel::disableInstancePooling();
+		$c = new Criteria();
+		$accs = BookstoreEmployeeAccountPeer::doSelectJoinBookstoreEmployee($c);
+		Propel::enableInstancePooling();
+		$this->assertEquals(1, $con->getQueryCount() - $count, 'doSelectJoin() makes only one query in a one-to-one relationship');
+	}
 
 	public function testObjectInstances()
 	{
