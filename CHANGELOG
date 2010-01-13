@@ -1,5 +1,6 @@
-2010-01-12: Version 1.4.1
--------------------------
+= Changelog Of The Propel 1.4 Branch =
+
+== 2010-01-12: Version 1.4.1 ==
 
  * [1450] Fixed classPrefix support (refs #806)
  * [1448] Fixed doSelectJoinXXX() bug for one-to-one relationships (refs #808)
@@ -19,7 +20,6 @@
  * [1304] fixed typo (refs #800)
  * [1303] fixed typo (closes #800)
 
-2009-11-08: Version 1.4.0
--------------------------
+== 2009-11-08: Version 1.4.0 ==
 
-[1300] Tagged 1.4.0 stable
+ * [1300] Tagged 1.4.0 stable
