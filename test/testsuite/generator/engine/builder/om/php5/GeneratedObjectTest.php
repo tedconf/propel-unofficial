@@ -1229,4 +1229,24 @@ class GeneratedObjectTest extends BookstoreEmptyTestBase
 		$author->delete();
 		$this->assertEquals("Post-Deleted", $author->getLastName());
 	}
+
+	public static function conditionsForTestReadOnly()
+	{
+		return array(
+			array('reload'),
+			array('delete'),
+			array('save'),
+			array('doSave'),
+		);
+	}
+	
+	/**
+	 * @dataProvider conditionsForTestReadOnly
+	 */
+	public function testReadOnly($method)
+	{
+		$cv = new ContestView();
+		$this->assertFalse(method_exists($cv, $method), 'readOnly tables end up with no ' . $method . ' method in the generated object class');
+	}
+
 }
