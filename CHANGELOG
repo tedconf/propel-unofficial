@@ -1,5 +1,23 @@
 = Changelog Of The Propel 1.4 Branch =
 
+== 2010-04-20: Version 1.4.2 ==
+
+ * [1690] Fixed issue with duplicate indexes generated in SQL on foreign keys (patch from cheezy) (closes #725)
+ * [1684] Fixed check of external schema path before inclusion (closes #562)
+ * [1639] Removed save() methods from readOnly objects (closes #869)
+ * [1638] Fixed a syntax error in SoftDelete behavior
+ * [1608] Fixed Count subquery fails when identically named columns are in SELECT (closes #795) (based on a patch by cheezy)
+ * [1597] Fixed hardcoded ID field in soft_delete behavior (closes #879)
+ * [1595] Fixed composite primary keys in SQLite (closes #745)
+ * [1594] Fixed typo in `Column::getFullyQualifiedName()` (closes #873)
+ * [1559] Fixed detection of TEXT column default values in MySQL (closes #652)
+ * [1558] Fixed propel-gen.bat (closes #828)
+ * [1539] [doc] Made it clearer that a preInsert() hook must return true (closes #822)
+ * [1537] Fixed pear-propel-gen script (refs #737)
+ * [1524] Fixed OMBuilder::hasBehaviorModifier() only tests one behavior (closes #843)
+ * [1514] Fixed phpNname generator (closes #842)
+ * [1508] Made Propel compatible with Phing 2.4.0
+
 == 2010-01-12: Version 1.4.1 ==
 
  * [1450] Fixed classPrefix support (refs #806)
