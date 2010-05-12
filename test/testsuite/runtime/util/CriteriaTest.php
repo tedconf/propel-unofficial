@@ -44,7 +44,32 @@ class CriteriaTest extends BaseTestCase
     Propel::setDB(null, $this->savedAdapter);
     parent::tearDown();
   }
-
+	public function testOrderByIgnoreCase()
+	{
+		$originalDB = Propel::getDB();
+		Propel::setDB(null, new DBMySQL());
+		
+		$criteria = new Criteria();
+		$criteria->setIgnoreCase(true);
+		$criteria->addAscendingOrderByColumn(BookPeer::TITLE);
+		$criteria->addAsColumn(BookPeer::TITLE, 'title');
+		$params=array();
+		$sql = BasePeer::createSelectSql($criteria, $params);
+		$expectedSQL = 'SELECT UPPER(book.TITLE) FROM `book` ORDER BY UPPER(book.TITLE) ASC';
+		$this->assertEquals($expectedSQL, $sql);
+		
+		$criteria = new Criteria();
+		$criteria->setIgnoreCase(true);
+		$criteria->addAscendingOrderByColumn(BookPeer::TITLE);
+		BookPeer::addSelectColumns($criteria);
+		$params=array();
+		$sql = BasePeer::createSelectSql($criteria, $params);
+		$expectedSQL = 'SELECT book.ID, book.TITLE, book.ISBN, book.PRICE, book.PUBLISHER_ID, book.AUTHOR_ID, UPPER(book.TITLE) FROM `book` ORDER BY UPPER(book.TITLE) ASC';
+		$this->assertEquals($expectedSQL, $sql);
+		
+		Propel::setDB(null, $originalDB);
+	}
+	
   /**
    * Test basic adding of strings.
    */
