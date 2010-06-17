@@ -2620,7 +2620,7 @@ abstract class ".$this->getClassname()." extends ".ClassTools::classname($this->
 		if (\$this->$varName === null && ($conditional)) {";
 		if ($useRetrieveByPk) {
 			$script .= "
-			\$this->$varName = ".$fkPeerBuilder->getPeerClassname()."::retrieveByPk(\$this->$clo);";
+			\$this->$varName = ".$fkPeerBuilder->getPeerClassname()."::retrieveByPk(\$this->$clo, \$con);";
 		} else {
 			$script .= "
 			\$c = new Criteria(".$fkPeerBuilder->getPeerClassname()."::DATABASE_NAME);";
