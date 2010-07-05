@@ -39,9 +39,12 @@ class CriterionJoin extends Join
 	}
 	
 	/**
+	 *
+	 * @param $index this is obsolete/for BackwardsCompatibility with the interface of Join
+	 *  
 	 * @return     string the left table of the join condition
 	 */
-	public function getLeftTableName()
+	public function getLeftTableName($index = 0) // ($index = 0) is obsolete
 	{
 		return $this->leftTableName;
 	}
@@ -86,9 +89,11 @@ class CriterionJoin extends Join
 	}
 	
 	/**
+	 * @param $index this is obsolete/for BackwardsCompatibility with the interface of Join
+	 * 
 	 * @return     string the right table of the join condition
 	 */
-	public function getRightTableName()
+	public function getRightTableName($index = 0) // ($index = 0) is obsolete
 	{
 		return $this->rightTableName;
 	}
