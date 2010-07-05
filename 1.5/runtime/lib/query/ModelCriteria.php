@@ -527,11 +527,8 @@ class ModelCriteria extends Criteria
 	 * @throws PropelException
 	 * @throws PropelException
 	 */
-	// TODO: subQuery support, simple extra join criterions
-	// TODO: test/describe complex/custom join Criterions 
 	public function join($relation, $joinType = Criteria::INNER_JOIN, Criterion $extraJoinCriterion = null)
 	{
-		// TODO, use 
 		if ($relation instanceof ModelCriteria)
 		{
 			if (!$relationAlias = $relation->getSubQueryAlias()) {

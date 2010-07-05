@@ -86,6 +86,22 @@ class ModelJoinTest extends BookstoreTestBase
 		$joinCriterion = new Criterion($c, null, 'book.AUTHOR_ID=a.ID', Criteria::CUSTOM);
 		$this->assertEquals($joinCriterion, $join->getCondition(), 'setRelationMap() automatically sets the JoinCondition');
 	}
+	
+	public function testSetRelationMapExtraJoinCondition()
+	{
+		$c = new Criteria();
+		$bookTable = BookPeer::getTableMap();
+		$join = new ModelJoin();
+		$join->setTableMap($bookTable);
+		$extraJoinCriterion = new Criterion($c, 'book.TITLE', 'php');
+		$join->setRelationMap($c, $bookTable->getRelation('Author'), null, null, $extraJoinCriterion);
+		
+		
+		$joinCriterion = new Criterion($c, null, 'book.AUTHOR_ID=author.ID', Criteria::CUSTOM);
+		$joinCriterion->addAnd($extraJoinCriterion);
+		$this->assertEquals($joinCriterion, $join->getCondition(), 'setRelationMap() automatically sets the JoinCondition');
+	}
+	
 
 	public function testSetRelationMapComposite()
 	{
