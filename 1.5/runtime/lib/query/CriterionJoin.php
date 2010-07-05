@@ -120,7 +120,7 @@ class CriterionJoin extends Join
 		{
 			return '(' . BasePeer::createSelectSql($this->rightTableName, $params) . ') AS '.$this->rightTableName->getSubQueryAlias();
 		} else {
-			return null === $this->getRightTableAlias() ? $this->getRightTableName() : ($this->getRightTableName() . ' ' . $this->getRightTableAlias());
+			return (!$this->getRightTableAlias()) ? $this->getRightTableName() : ($this->getRightTableName() . ' ' . $this->getRightTableAlias());
 		}
 	}
 	
