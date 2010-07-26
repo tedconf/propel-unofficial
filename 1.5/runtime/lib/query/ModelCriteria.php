@@ -1007,7 +1007,7 @@ class ModelCriteria extends Criteria
 	{
 		$criteria = $this->isKeepQuery() ? clone $this : $this;
 		$criteria->limit(1);
-	  if (!$this->hasSelectClause() && !$this->getPrimaryCriteria()) {
+		if (!$this->hasSelectClause() && !$this->getPrimaryCriteria()) {
 			$this->addSelfSelectColumns();
 		}		
 		$stmt = $criteria->getSelectStatement($con);

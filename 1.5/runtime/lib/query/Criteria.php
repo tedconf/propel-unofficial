@@ -812,15 +812,13 @@ class Criteria implements IteratorAggregate
 			// simple join
 			$join->addCondition($left, $right, Join::EQUAL, $rightIsValue);
 		} else {
-			if (!is_array($rightIsValue)) {
-				$rightIsValue = array();
-		  }
 			// join with multiple conditions
 			// deprecated: use addMultipleJoin() instead
-			foreach ($left as $key => $value)
-			{
-				$currentRightIsValue = (isset($rightIsValue[$key])) ? $rightIsValue[$key] : false; 
-				
+			if (!is_array($rightIsValue)) {
+				$rightIsValue = array();
+			}
+			foreach ($left as $key => $value) {
+				$currentRightIsValue = isset($rightIsValue[$key]) ? $rightIsValue[$key] : false; 
 				$join->addCondition($value, $right[$key], Join::EQUAL, $currentRightIsValue);
 			}
 		}

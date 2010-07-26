@@ -24,7 +24,7 @@ class CriterionJoin extends Join
 		$leftTableAlias,
 		$rightTableName,
 		$rightTableAlias,
-	    $tableMap,
+		$tableMap,
 		$condition;
 
 	/**
