@@ -584,6 +584,7 @@ class ModelCriteriaTest extends BookstoreTestBase
 		$q->addSelfSelectColumns();
 		$q->join($subQuery, 'LEFT JOIN');
 		
+		// TODO: unfortunately you have to set the join-condition manually!
 		$join = $q->getJoin('b');
 		$q->condition('innerQueryClause', 'b.AuthorId = Author.Id');
 		$join->setCondition($q->getCond('innerQueryClause'));

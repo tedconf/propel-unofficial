@@ -741,7 +741,7 @@ abstract class ".$this->getClassname()." extends " . $parentClass . "
 		$script .= "
 	/**
 	 * Adds a JOIN clause to the query using the " . $relationName . " relation
-	 * 
+	 *
 	 * @param     string \$relationAlias optional alias for the relation
 	 * @param     string \$joinType Accepted values are null, 'left join', 'right join', 'inner join'
 	 *
@@ -749,20 +749,19 @@ abstract class ".$this->getClassname()." extends " . $parentClass . "
 	 */
 	public function join" . $relationName . "(\$relationAlias = null, \$joinType = " . $joinType . ")
 	{
-		// TODO compare with join Method of ModelCriteria, and check for subQuery support
 		\$tableMap = \$this->getTableMap();
-		\$relationMap = \$tableMap->getRelation('" . $relationName . "');
-		
 		\$leftTableAlias = \$this->useAliasInSQL ? \$this->getModelAlias() : null;
+
+		\$relationMap = \$tableMap->getRelation('" . $relationName . "');
 		
 		// create a ModelJoin object for this join
 		\$join = new ModelJoin();
 		\$join->setJoinType(\$joinType);
-		\$join->setRelationMap(\$this, \$relationMap, \$leftTableAlias, \$relationAlias);
 		if (\$previousJoin = \$this->getPreviousJoin()) {
 			\$join->setPreviousJoin(\$previousJoin);
 		}
-		
+		\$join->setRelationMap(\$this, \$relationMap, \$leftTableAlias, \$relationAlias);
+
 		// add the ModelJoin to the current object
 		if(\$relationAlias) {
 			\$this->addAlias(\$relationAlias, \$relationMap->getRightTable()->getName());
