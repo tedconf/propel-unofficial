@@ -527,13 +527,15 @@ class ModelCriteria extends Criteria
 	 * @throws PropelException
 	 * @throws PropelException
 	 */
-	public function join($relation, $joinType = Criteria::INNER_JOIN)
+	public function join($relation, $joinType = Criteria::INNER_JOIN, Criterion $extraJoinCriterion = null)
 	{
-		// subQuery support: join another Criteria
 		if ($relation instanceof ModelCriteria)
 		{
 			if (!$relationAlias = $relation->getSubQueryAlias()) {
 				throw new PropelException('setSubQueryAlias() needs to be called on the relation, when providing a ModelCrtieria as a relation');
+			}
+			if (null !== $extraJoinCriterion) {
+				throw new PropelException('$extraJoinCriterion is impossible when joining a subQuery, the condition can only be set after the join has been defined!'); 
 			}
 			
 			$previousJoin = $this->getPreviousJoin();

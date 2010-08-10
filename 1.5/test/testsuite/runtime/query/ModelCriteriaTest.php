@@ -625,7 +625,17 @@ class ModelCriteriaTest extends BookstoreTestBase
 		$params = array();
 		$this->assertCriteriaTranslation($c, $sql, $params, 'join() knows how to create a JOIN clause for relationships with composite fkeys');
 	}
-		
+	
+	public function testJoinWithExtraJoinCriterion()
+	{
+		$c = new ModelCriteria('bookstore', 'Book');
+		$c->condition('extraJoinCriterion', 'Book.AuthorId = 1');
+		$c->join('Book.Author', Criteria::INNER_JOIN, $c->getCond('extraJoinCriterion'));
+		$sql = 'SELECT  FROM `book` INNER JOIN author ON ((book.AUTHOR_ID=author.ID AND book.AUTHOR_ID = 1))';
+		$params = array();
+		$this->assertCriteriaTranslation($c, $sql, $params, 'join() adds an INNER JOIN by default');
+	}
+	
 	public function testJoinType()
 	{
 		$c = new ModelCriteria('bookstore', 'Book');
