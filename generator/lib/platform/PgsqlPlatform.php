@@ -104,7 +104,7 @@ class PgsqlPlatform extends DefaultPlatform
 	 */
 	public function hasSize($sqlType)
 	{
-		return !("BYTEA" == $sqlType || "TEXT" == $sqlType);
+		return !("BYTEA" == $sqlType || "TEXT" == $sqlType || "DOUBLE PRECISION" == $sqlType);
 	}
 
 	/**
