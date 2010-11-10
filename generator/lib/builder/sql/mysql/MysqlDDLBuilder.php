@@ -102,20 +102,7 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 		$databaseType = $this->getPlatform()->getDatabaseType();
 
 		foreach ($table->getColumns() as $col) {
-			$entry = $this->getColumnDDL($col);
-			$colinfo = $col->getVendorInfoForType($databaseType);
-			if ( $colinfo->hasParameter('Charset') ) {
-				$entry .= ' CHARACTER SET '.$platform->quote($colinfo->getParameter('Charset'));
-			}
-			if ( $colinfo->hasParameter('Collation') ) {
-				$entry .= ' COLLATE '.$platform->quote($colinfo->getParameter('Collation'));
-			} elseif ( $colinfo->hasParameter('Collate') ) {
-				$entry .= ' COLLATE '.$platform->quote($colinfo->getParameter('Collate'));
-			}
-			if ($col->getDescription()) {
-				$entry .= " COMMENT ".$platform->quote($col->getDescription());
-			}
-			$lines[] = $entry;
+			$lines[] = $this->getColumnDDL($col);
 		}
 
 		if ($table->hasPrimaryKey()) {
@@ -390,7 +377,15 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 		if ($platform->hasSize($sqlType)) {
 			$sb .= $domain->printSize();
 		}
-		$sb .= " ";
+		$colinfo = $col->getVendorInfoForType($platform->getDatabaseType());
+		if ($colinfo->hasParameter('Charset')) {
+			$sb .= ' CHARACTER SET '. $platform->quote($colinfo->getParameter('Charset'));
+		}
+		if ($colinfo->hasParameter('Collation')) {
+			$sb .= ' COLLATE ' . $platform->quote($colinfo->getParameter('Collation'));
+		} elseif ($colinfo->hasParameter('Collate')) {
+			$sb .= ' COLLATE ' . $platform->quote($colinfo->getParameter('Collate'));
+		}
 
 		if ($sqlType == 'TIMESTAMP') {
 			$notNullString = $col->getNotNullString();
@@ -401,12 +396,17 @@ CREATE TABLE ".$this->quoteIdentifier($table->getName())."
 			if ($defaultSetting == '' && $notNullString == 'NOT NULL') {
 				$defaultSetting = 'DEFAULT CURRENT_TIMESTAMP';
 			}
-			$sb .= $notNullString . " " . $defaultSetting . " ";
+			$sb .= ' ' . $notNullString . ' ' . $defaultSetting;
 		} else {
-			$sb .= $defaultSetting . " ";
-			$sb .= $notNullString . " ";
+			$sb .= ' ' . $defaultSetting . ' ' . $notNullString;
 		}
-		$sb .= $col->getAutoIncrementString();
+		if ($autoIncrement = $col->getAutoIncrementString()) {
+			$sb .= ' ' . $autoIncrement;
+		}
+
+		if ($col->getDescription()) {
+			$sb .= ' COMMENT '.$platform->quote($col->getDescription());
+		}
 
 		return trim($sb);
 	}
