@@ -84,6 +84,17 @@ class PropelModelPagerTest extends BookstoreEmptyTestBase
 		$this->assertEquals(1, count($pager->getResults()), 'getResults() returns the results of the last page when called on nonexistent pages');
 	}
 
+	public function testGetResultsRespectsFormatter()
+	{
+		$this->createBooks(5);
+		$query = BookQuery::create();
+		$query->setFormatter(ModelCriteria::FORMAT_ARRAY);
+		$pager = new PropelModelPager($query, 4);
+		$pager->setPage(1);
+		$pager->init();
+		$this->assertTrue($pager->getResults() instanceof PropelArrayCollection, 'getResults() returns a PropelArrayCollection if the query uses array hydration');
+	}
+
 	public function testGetIterator()
 	{
 		$this->createBooks(5);
