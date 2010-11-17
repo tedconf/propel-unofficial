@@ -1,5 +1,31 @@
 = Changelog Of The Propel 1.5 Branch =
 
+== 2010-11-17: Version 1.5.5 ==
+
+* [2039] Fixed wrong Peer classname in `BaseObject` when using sluggable together with basePrefix (closes #1134)
+* [2038] Fixed wrong package on Query class when overriding parent package in single table inheritance (raebbar) (closes #1077)
+* [2037] Fixed warning when using quotes in conditions (closes #1152)
+* [2036] Fixed runtime warning when datasource name is "default" (closes #1127)
+* [2035] Fixed failing test because of too tight timing (fonsinchen) (closes #1139)
+* [2034] Fixed typo in validators documentation (closes #1168)
+* [2033] Fixed `PropelModelPager` overrides query formatter (closes #1166)
+* [2032] Fixed incorrect Column DDL on MySQL when using Charset vendor (based on a patch by Jorrit) (closes #1167)
+* [2030] Fixed notice in `ModelCriteria` (closes #1161)
+* [2029] Fixed single table inheritance documentation (closes #1163)
+* [2028] Fixed bug in generated files when using namespaces on a case-sensitive system
+* [2027] Fixed xml schema sort (ddalmais)
+* [2026] Correct problem of DBOracle and applyLimit fixes #1153 (ddalmais)
+* [2024] Fixed nested set getSiblings() order (based on a patch by Richtermeister) (closes #1149)
+* [2023] Fixed Limit of 30 characters on Oracle Column aliases (ddalmais) (closes #1148)
+* [2021] Fixed missing namespace declaration on AR objects using timestamp columns in PHP 5.3 (based on a patch by jan-victor) (closes #1100)
+* [2020] Fixed getPath() in nested set AR classes (based on a patch by andyr12345) (closes #1125)
+* [2019] Fixed findOneOrCreate() makes two queries instead of one (closes #1128)
+* [2018] Disabled XML rendered in Phing unit test buildfile to enable the use of latest phpunit releases (you can re-eanable it by decommenting the line)
+* [2012] Backporting [2010] to 1.5, properly closes #1145
+* [1978] Coding standards in object builder template
+* [1973] Line break regressions from whitespace cleanup
+* [1963] Fixed use of autoloaded behavior (closes #1126)
+
 == 2010-09-14: Version 1.5.4 ==
 
  * [1954] Changed schema mappings for MSSQL that mapped to TEXT to map to VARCHAR(MAX) and mappings that mapped to IMAGE to map to VARBINARY(MAX). (KRavEN) (refs #1084)
