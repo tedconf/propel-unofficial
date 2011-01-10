@@ -54,7 +54,9 @@ class MssqlSchemaParser extends BaseSchemaParser
 		"tinyint" => PropelTypes::TINYINT,
 		"uniqueidentifier" => PropelTypes::CHAR,
 		"varbinary" => PropelTypes::VARBINARY,
+		"varbinary(max)" => PropelTypes::CLOB,
 		"varchar" => PropelTypes::VARCHAR,
+		"varchar(max)" => PropelTypes::CLOB,
 		"uniqueidentifier" => PropelTypes::CHAR,
 	// SQL Server 2000 only
 		"bigint identity" => PropelTypes::BIGINT,
@@ -62,11 +64,9 @@ class MssqlSchemaParser extends BaseSchemaParser
 		"sql_variant" => PropelTypes::VARCHAR,
 	);
 
-	/**
-	 * Gets a type mapping from native types to Propel types
-	 *
-	 * @return     array
-	 */
+  /**
+   * @see        BaseSchemaParser::getTypeMapping()
+   */
 	protected function getTypeMapping()
 	{
 		return self::$mssqlTypeMap;
@@ -168,15 +168,12 @@ class MssqlSchemaParser extends BaseSchemaParser
 								      INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE ccu2 ON ccu2.CONSTRAINT_NAME = rc1.UNIQUE_CONSTRAINT_NAME
 									WHERE (ccu1.table_name = '".$table->getName()."')");
 
-		$row = $stmt->fetch(PDO::FETCH_NUM);
-
 		$foreignKeys = array(); // local store to avoid duplicates
 		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 
 			$lcol = $row['COLUMN_NAME'];
 			$ftbl = $row['FK_TABLE_NAME'];
 			$fcol = $row['FK_COLUMN_NAME'];
-
 
 			$foreignTable = $database->getTable($ftbl);
 			$foreignColumn = $foreignTable->getColumn($fcol);
