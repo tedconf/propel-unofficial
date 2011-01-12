@@ -1,5 +1,20 @@
 = Changelog Of The Propel 1.5 Branch =
 
+== 2011-01-12: Version 1.5.6 ==
+
+ * [2142] Fixed infinite loop when reverse engineering date fields in postgresql and in PHP5.3 (closes #1218)
+ * [2141] Fixed `useQuery()` when using namespaces (closes #1187)
+ * [2139] Fixed nested set `updateLoadedNodes()` when using lazy loaded columns (patch by rozwell) (closes #1132)
+ * [2138] Fixed problem when adding more than one root in a `nested_set` tree with no scope (based on a patch by rozwell) (closes #1203, #1202)
+ * [2137] Fixed Nested Set behavior doesn't insert already persisted objects correctly (closes #1217)
+ * [2135] Added reverse support for `pdo_sqlsrv` driver. (KRavEN) (closes #1147)
+ * [2108] Fixed skipped SQL queries when using new SQLSRV adapter (closes #1205)
+ * [2106] Fixed the `PropelCollection::toKeyValue()` documentation
+ * [2068] Fixed wrong php doc in concrete inheritance classes (closes #1188)
+ * [2067] Fixed regression in `query_cache` behavior (patch by kupokomapa) (refs #1148) (closes #1191)
+ * [2066] Fixed typo in schema DTD (patch by omeaart) (closes #1194)
+ * [2065] Added a few details about lazy loaded columns
+
 == 2010-11-17: Version 1.5.5 ==
 
  * [2039] Fixed wrong Peer classname in `BaseObject` when using sluggable together with basePrefix (closes #1134)
